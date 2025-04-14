@@ -1,0 +1,179 @@
+#include <cstring>
+#include <cstdarg>
+#include <cstdio>
+#include "dsa_task.hpp"
+
+void DSAtask::clear(){
+    memset( &desc , 0 , sizeof( desc ) ) ;
+    memset( &comp , 0 , sizeof( comp ) ) ;
+    wq_portal = 0 ; 
+    is_doing_flag = false ;
+    desc.completion_addr = (uintptr_t)&comp ;
+}
+
+DSAtask::DSAtask(){
+    clear() ;  
+}
+ 
+DSAtask::DSAtask( void *portal_ ){
+    clear() ; 
+    wq_portal = portal_ ;
+}
+
+void DSAtask::prepare_desc( dsa_opcode op_type ){
+    desc.opcode = op_type ;
+    desc.flags = IDXD_OP_FLAG_RCR | IDXD_OP_FLAG_CRAV ;
+    switch ( desc.opcode ) {
+    case DSA_OPCODE_NOOP :  // 0
+        desc.src_addr = desc.dst_addr = desc.xfer_size = 0 ;
+        break ;
+    default:
+        printf( "prepare_desc(type %s) Unimplemented\n" , dsa_op_str( op_type ) ) ;
+        exit( 1 ) ;  
+    }
+    comp.status = 0 ; // DSA_COMP_NONE     
+} 
+
+void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){ 
+    desc.opcode = op_type ;
+    desc.region_size = len ;  // @ bytes 32, also xfer_size
+
+    desc.flags = IDXD_OP_FLAG_RCR ; // Request Completion Record 
+    desc.flags |= IDXD_OP_FLAG_CRAV ; // Completion Record Address Valid 
+    #ifdef FLAG_BLOCK_ON_FAULT
+        desc.flags |= IDXD_OP_FLAG_BOF ;
+    #endif
+
+    switch ( desc.opcode ) {
+    case DSA_OPCODE_TRANSL_FETCH :  // 10
+        desc.region_stride = stride ; // @ bytes 48
+        if( stride ) desc.flags |= ( 1 << 16 ) ;
+        desc.src_addr = (uintptr_t) src ;
+        break ;
+    case DSA_OPCODE_CFLUSH :        // 32
+        desc.dst_addr = (uintptr_t) src ;  
+        if( stride ) printf( "prepare_desc(type %s, src %p, len %u, stride %u) stride ignored\n" , 
+            dsa_op_str( op_type ) , src , len , stride ) ;
+        break ;
+    default:
+        printf( "prepare_desc(type %s, src %p, len %u, stride %u) Unimplemented\n" , 
+            dsa_op_str( op_type ) , src , len , stride ) ;
+        exit( 1 ) ;  
+        break;
+    }
+    comp.status = 0 ; // DSA_COMP_NONE     
+} 
+
+void DSAtask::prepare_desc( dsa_opcode op_type , const void *dest , const void* src , uint32_t len ){ 
+    desc.opcode = op_type ;
+    desc.xfer_size = len ;  // @ bytes 32 
+
+    desc.flags = IDXD_OP_FLAG_RCR ; // Request Completion Record 
+    desc.flags |= IDXD_OP_FLAG_CRAV ; // Completion Record Address Valid 
+    #ifdef FLAG_BLOCK_ON_FAULT
+        desc.flags |= IDXD_OP_FLAG_BOF ;
+    #endif
+
+    switch ( desc.opcode ) {
+    case DSA_OPCODE_MEMMOVE : // 3
+        // desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
+        // desc.dst_addr  = (uintptr_t) dest ;      // @ bytes 24
+    case DSA_OPCODE_MEMFILL : // 4 
+        // desc.pattern_lower = (uint64_t) src ;    // @ bytes 16
+        // desc.dst_addr  = (uintptr_t) dest ;      // @ bytes 24
+        #ifdef FLAG_CACHE_CONTROL
+            desc.flags |= IDXD_OP_FLAG_CC ;
+        #endif 
+        #ifdef FLAG_DEST_READBACK
+            desc.flags |= IDXD_OP_FLAG_DRDBK ;
+        #endif
+        [[fallthrough]] ;
+    case DSA_OPCODE_COMPARE : // 5
+        // desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
+        // desc.src2_addr = (uintptr_t) dest ;      // @ bytes 24
+    case DSA_OPCODE_COMPVAL : // 6 
+        // desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
+        // desc.comp_pattern = (uint64_t) dest ;    // @ bytes 24
+        desc.src_addr  = (uintptr_t) src ;          // @ bytes 16
+        desc.dst_addr  = (uintptr_t) dest ;         // @ bytes 24 
+        break;   
+    default:        
+        printf( "prepare_desc(type %s, dest %p, src %p, len %u) Unimplemented\n" , 
+            dsa_op_str( op_type ) , dest , src , len ) ;
+        exit( 1 ) ;  
+        break;
+    }
+    comp.status = 0 ; // DSA_COMP_NONE     
+}
+
+void DSAtask::PF_adjust_desc(){
+    desc.xfer_size -= comp.bytes_completed ;
+    switch ( desc.opcode ) {
+    case DSA_OPCODE_MEMMOVE : // 3 
+        desc.src_addr += comp.bytes_completed ;
+        desc.dst_addr += comp.bytes_completed ;
+        break ;
+    case DSA_OPCODE_MEMFILL : // 4
+        desc.dst_addr += comp.bytes_completed ;
+        break; 
+    case DSA_OPCODE_COMPARE : // 5
+        desc.src_addr += comp.bytes_completed ;
+        desc.src2_addr += comp.bytes_completed ;
+        break ;
+    case DSA_OPCODE_COMPVAL : // 6
+        desc.src_addr += comp.bytes_completed ;
+        break ;
+    case DSA_OPCODE_CFLUSH  : // 32
+        desc.dst_addr += comp.bytes_completed ;
+        break ;
+    default:
+        printf( "%s page fault handler unimplemented" , dsa_op_str( desc.opcode ) ) ;
+        exit( 1 ) ;
+        break;
+    }        
+}
+
+// public 
+
+void DSAtask::set_port( void* wq_portal_ ){ wq_portal = wq_portal_ ; }
+
+void DSAtask::solve_pf(){
+    int wr = comp.status & DSA_COMP_STATUS_WRITE ;
+    volatile char *t = (char*) comp.fault_addr ;
+    wr ? *t = *t : *t ; 
+    PF_adjust_desc() ;
+    comp.status = 0 ; // reset comp.status, or if will be triggered repeatedly
+} 
+
+bool DSAtask::check(){
+    if( is_doing_flag == false ) return true ;
+
+    volatile uint8_t &status = comp.status ;
+    switch ( op_status( status ) ) {
+    case DSA_COMP_SUCCESS :
+        is_doing_flag = false ;
+        return true ;
+    case DSA_COMP_NONE :
+        break ;
+    case DSA_COMP_PAGE_FAULT_NOBOF :
+        printf( "DSA op page fault(3) occurred\n" ) ;
+        solve_pf() ; 
+        do_op() ;
+        break ;
+    default:
+        printf( "DSA op error code 0x%x, %s\n" , status , dsa_comp_status_str( status ) ) ;
+        exit( -1 ) ;
+    }
+    return false ;
+}
+
+void DSAtask::do_op() noexcept( true ) {
+    is_doing_flag = true ; 
+    submit_desc( wq_portal , ACCFG_WQ_SHARED , &desc ) ; // 提交之后就开始DSA操作了
+} 
+
+uint64_t DSAtask::comp_fault_addr(){ return (comp.fault_addr) ; }
+
+volatile uint8_t &DSAtask::comp_status_ref(){ return (comp.status) ; }
+
+volatile uint8_t *DSAtask::comp_status_ptr(){ return &(comp.status) ; }

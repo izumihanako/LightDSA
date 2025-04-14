@@ -1,0 +1,28 @@
+#ifndef QWQ_DSA_BATCH_HPP
+#define QWQ_DSA_BATCH_HPP
+
+#include "details/dsa_batch_task.hpp" 
+#include "details/dsa_conf.hpp"
+
+struct DSAbatch{ 
+public :
+    DSAbatch_task db_task ;
+
+    DSAbatch( int bsiz = DEFAULT_BATCH_SIZE , int cap = DEFAULT_BATCH_CAPACITY  ) ;
+
+    bool submit_comp_pattern( void *src , uint64_t pattern , size_t len ) noexcept( true ) ;
+
+    bool submit_memfill( void *dest , uint64_t pattern , size_t len ) noexcept( true ) ;
+
+    bool submit_memcpy( void *dest , const void* src , size_t len ) noexcept( true ) ;
+
+    bool submit_flush( void *dest , size_t len ) noexcept( true ) ;
+     
+    bool check() ;
+
+    void wait() ;
+
+    int cnt ;
+} ;
+
+#endif 
