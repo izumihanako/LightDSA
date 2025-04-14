@@ -7,25 +7,12 @@
 
 // public
 DSAbatch_task::DSAbatch_task( int bsiz , int cap ){
-    clear() ; 
-    if( cap < 2 ) {
-        printf( "batch capacity should be geq than 2\n" ) ;
-        cap = 2 ;
-    }
-    batch_siz = bsiz ;
-    alloc_descs( cap ) ;
+    init( bsiz , cap ) ; 
 }
 
 DSAbatch_task::DSAbatch_task( int bsiz , int cap , DSAworkingqueue *wq ){
-    clear() ; 
-    if( cap < 2 ) {
-        printf( "batch capacity should be geq than 2\n" ) ;
-        cap = 2 ;
-    }
-    batch_siz = bsiz ;
-    alloc_descs( cap ) ;
-    working_queue = wq ;
-    wq_portal = wq->get_portal() ;
+    init( bsiz , cap ) ; 
+    set_wq( wq ) ; 
 }
 
 DSAbatch_task::~DSAbatch_task(){
@@ -33,6 +20,22 @@ DSAbatch_task::~DSAbatch_task(){
 }
 
 // private 
+void DSAbatch_task::init( int bsiz , int cap ) {
+    if( cap < 2 ) {
+        printf( "batch capacity adjusted: %d -> 2\n" , cap ) ;
+        cap = 2 ;
+    }
+    batch_siz = bsiz ;
+    batch_capacity = cap ;
+    desc_capacity = cap * batch_siz ; 
+    descs = bdesc = nullptr ;
+    comps = bcomp = nullptr ;
+    q_front = 0 , q_submit = 0 , q_back = 0 , q_ecnt = 0 ;
+    front_comp = nullptr ;
+    wq_portal = nullptr ;
+    working_queue = nullptr ;
+}
+
 void DSAbatch_task::prepare_desc( dsa_opcode op_type ){
     dsa_hw_desc *desc =  descs + q_back ;
     dsa_completion_record* comp = comps + q_back ;
@@ -156,24 +159,22 @@ void DSAbatch_task::alloc_descs( int cap ){
 
 void DSAbatch_task::free_descs(){
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
-        working_queue->allocator->deallocate( descs ) ;
-        working_queue->allocator->deallocate( comps ) ;
-        working_queue->allocator->deallocate( bdesc ) ; 
-        working_queue->allocator->deallocate( bcomp ) ; 
+        if( working_queue == nullptr ) return ;
+        if(descs) working_queue->allocator->deallocate( descs ) ;
+        if(comps) working_queue->allocator->deallocate( comps ) ;
+        if(bdesc) working_queue->allocator->deallocate( bdesc ) ; 
+        if(bcomp) working_queue->allocator->deallocate( bcomp ) ; 
     #else 
-        free( descs ) ;
-        free( comps ) ;
-        free( bdesc ) ; 
-        free( bcomp ) ;
+        if(descs) free( descs ) ;
+        if(comps) free( comps ) ; 
+        if(bdesc) free( bdesc ) ; 
+        if(bcomp) free( bcomp ) ; 
     #endif
 }
 
-void DSAbatch_task::clear(){ 
-    // batch_siz                   init at constructor()
-    // descs, comps, desc_capacity 
-    // bdesc, bcomp,batch_capacity init at alloc_descs()
+void DSAbatch_task::clear(){  
     q_front = 0 , q_back = 0 , q_ecnt = 0 , q_submit = 0 ;
-    front_comp = &bcomp[0] ;
+    if( front_comp && bcomp ) front_comp = &bcomp[0] ;
     // back always point to a empty slot
     // front always point to something( or nothing if empty ) 
 }
@@ -280,15 +281,16 @@ void DSAbatch_task::solve_pf( int batch_idx ){
 
 // public
 bool DSAbatch_task::set_wq( DSAworkingqueue *new_wq ){ 
-    if( new_wq == NULL ) return ;
-    if( check() == false ) {
+    if( new_wq == NULL ) return false ;
+    if( working_queue != nullptr && check() == false ) {
         printf( "DSAbatch_task::set_wq() : task not finished\n" ) ;
         return false ;
     }
-
-
+    free_descs() ; 
+    working_queue = new_wq ;
     wq_portal = working_queue->get_portal() ;
-    // printf( "set_wq(): %p\n" , wq_portal ) ; fflush( stdout ) ;    
+    alloc_descs( batch_capacity ) ; 
+    return true ;
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type ){

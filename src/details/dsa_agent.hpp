@@ -1,7 +1,6 @@
 #ifndef QWQ_DSA_AGENT_HPP
 #define QWQ_DSA_AGENT_HPP
 
-#include "dsa_task.hpp"
 #include "dsa_allocator.hpp"
 #include <atomic>
 #include <vector>
@@ -30,9 +29,9 @@ struct DSAdevice{
     __always_inline const char* get_dev_name() const {
         return accfg_device_get_devname( device ) ;
     }
-    __always_inline void* get_portal() {
+    __always_inline DSAworkingqueue* get_wq() {
         uint64_t tmp = now_wq_id.fetch_add( 1 ) ;
-        return  wq_list[tmp%wq_cnt]->get_portal() ;
+        return wq_list[tmp%wq_cnt] ;
     }
 } ;
 
@@ -55,15 +54,15 @@ private :
 public :
     void print_wqs() ; 
 
-    __always_inline int getDevCnt(){ return devices.size() ; }
+    __always_inline int get_dev_cnt(){ return devices.size() ; }
     
-    __always_inline int getWQCnt( int dev_id ){ return devices[dev_id]->wq_list.size() ; }
+    __always_inline int get_wq_cnt( int dev_id ){ return devices[dev_id]->wq_list.size() ; }
 
-    void *get_portal() ;
+    DSAworkingqueue *get_wq() ;
 
-    void *get_portal( int dev_id ) ;
+    DSAworkingqueue *get_wq( int dev_id ) ;
 
-    void *get_portal( int dev_id , int wq_id ) ;
+    DSAworkingqueue *get_wq( int dev_id , int wq_id ) ;
 
     DSAdevice* get_device( int dev_id ) const ;
  

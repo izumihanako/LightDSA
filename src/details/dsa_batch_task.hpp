@@ -35,6 +35,8 @@ public :
     ~DSAbatch_task() ;
 
 // private : 
+    void init( int bsiz , int cap ) ;
+
     __always_inline int add_1_cap( int x ) { return x < 0 ? x + desc_capacity : x ; } 
 
     void prepare_desc( dsa_opcode op_type ) ;

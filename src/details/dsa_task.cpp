@@ -1,23 +1,36 @@
 #include <cstring>
 #include <cstdarg>
 #include <cstdio>
+#include "dsa_agent.hpp"
 #include "dsa_task.hpp"
 
-void DSAtask::clear(){
+void DSAtask::init(){
     memset( &desc , 0 , sizeof( desc ) ) ;
-    memset( &comp , 0 , sizeof( comp ) ) ;
-    wq_portal = 0 ; 
-    is_doing_flag = false ;
-    desc.completion_addr = (uintptr_t)&comp ;
+    wq_portal = nullptr ;
+    working_queue = nullptr ;
+    is_doing_flag = false ; 
+    comp = nullptr ;
+}
+
+void DSAtask::free_comp(){ 
+    #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
+        if( comp && working_queue ) working_queue->allocator->deallocate( comp ) ;
+    #else 
+        if( comp ) free( comp ) ;
+    #endif 
 }
 
 DSAtask::DSAtask(){
-    clear() ;  
+    init() ;  
 }
  
-DSAtask::DSAtask( void *portal_ ){
-    clear() ; 
-    wq_portal = portal_ ;
+DSAtask::DSAtask( DSAworkingqueue *wq ){
+    init() ; 
+    set_wq( wq ) ;
+}
+
+DSAtask::~DSAtask(){
+    free_comp() ;
 }
 
 void DSAtask::prepare_desc( dsa_opcode op_type ){
@@ -31,7 +44,7 @@ void DSAtask::prepare_desc( dsa_opcode op_type ){
         printf( "prepare_desc(type %s) Unimplemented\n" , dsa_op_str( op_type ) ) ;
         exit( 1 ) ;  
     }
-    comp.status = 0 ; // DSA_COMP_NONE     
+    comp->status = 0 ; // DSA_COMP_NONE     
 } 
 
 void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){ 
@@ -61,7 +74,7 @@ void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint
         exit( 1 ) ;  
         break;
     }
-    comp.status = 0 ; // DSA_COMP_NONE     
+    comp->status = 0 ; // DSA_COMP_NONE     
 } 
 
 void DSAtask::prepare_desc( dsa_opcode op_type , const void *dest , const void* src , uint32_t len ){ 
@@ -103,28 +116,28 @@ void DSAtask::prepare_desc( dsa_opcode op_type , const void *dest , const void* 
         exit( 1 ) ;  
         break;
     }
-    comp.status = 0 ; // DSA_COMP_NONE     
+    comp->status = 0 ; // DSA_COMP_NONE     
 }
 
 void DSAtask::PF_adjust_desc(){
-    desc.xfer_size -= comp.bytes_completed ;
+    desc.xfer_size -= comp->bytes_completed ;
     switch ( desc.opcode ) {
     case DSA_OPCODE_MEMMOVE : // 3 
-        desc.src_addr += comp.bytes_completed ;
-        desc.dst_addr += comp.bytes_completed ;
+        desc.src_addr += comp->bytes_completed ;
+        desc.dst_addr += comp->bytes_completed ;
         break ;
     case DSA_OPCODE_MEMFILL : // 4
-        desc.dst_addr += comp.bytes_completed ;
+        desc.dst_addr += comp->bytes_completed ;
         break; 
     case DSA_OPCODE_COMPARE : // 5
-        desc.src_addr += comp.bytes_completed ;
-        desc.src2_addr += comp.bytes_completed ;
+        desc.src_addr += comp->bytes_completed ;
+        desc.src2_addr += comp->bytes_completed ;
         break ;
     case DSA_OPCODE_COMPVAL : // 6
-        desc.src_addr += comp.bytes_completed ;
+        desc.src_addr += comp->bytes_completed ;
         break ;
     case DSA_OPCODE_CFLUSH  : // 32
-        desc.dst_addr += comp.bytes_completed ;
+        desc.dst_addr += comp->bytes_completed ;
         break ;
     default:
         printf( "%s page fault handler unimplemented" , dsa_op_str( desc.opcode ) ) ;
@@ -135,20 +148,33 @@ void DSAtask::PF_adjust_desc(){
 
 // public 
 
-void DSAtask::set_port( void* wq_portal_ ){ wq_portal = wq_portal_ ; }
+void DSAtask::set_wq( DSAworkingqueue *new_wq ){
+    if( new_wq == nullptr ) return ;
+    free_comp() ;
+    working_queue = new_wq ;
+    wq_portal = working_queue->get_portal() ;
+    #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
+        comp = (dsa_completion_record*) working_queue->allocator->allocate( sizeof( dsa_completion_record ) ) ;
+    #else 
+        comp = (dsa_completion_record*) aligned_alloc( 32 , sizeof( dsa_completion_record ) ) ;
+    #endif
+    memset( comp , 0 , sizeof( dsa_completion_record ) ) ;
+    comp->status = 0 ; // DSA_COMP_NONE
+    desc.completion_addr = (uintptr_t) comp ; // @ bytes 8
+}
 
 void DSAtask::solve_pf(){
-    int wr = comp.status & DSA_COMP_STATUS_WRITE ;
-    volatile char *t = (char*) comp.fault_addr ;
+    int wr = comp->status & DSA_COMP_STATUS_WRITE ;
+    volatile char *t = (char*) comp->fault_addr ;
     wr ? *t = *t : *t ; 
     PF_adjust_desc() ;
-    comp.status = 0 ; // reset comp.status, or if will be triggered repeatedly
+    comp->status = 0 ; // reset comp->status, or if will be triggered repeatedly
 } 
 
 bool DSAtask::check(){
     if( is_doing_flag == false ) return true ;
 
-    volatile uint8_t &status = comp.status ;
+    volatile uint8_t &status = comp->status ;
     switch ( op_status( status ) ) {
     case DSA_COMP_SUCCESS :
         is_doing_flag = false ;
@@ -172,8 +198,8 @@ void DSAtask::do_op() noexcept( true ) {
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &desc ) ; // 提交之后就开始DSA操作了
 } 
 
-uint64_t DSAtask::comp_fault_addr(){ return (comp.fault_addr) ; }
+uint64_t DSAtask::comp_fault_addr(){ return (comp->fault_addr) ; }
 
-volatile uint8_t &DSAtask::comp_status_ref(){ return (comp.status) ; }
+volatile uint8_t &DSAtask::comp_status_ref(){ return (comp->status) ; }
 
-volatile uint8_t *DSAtask::comp_status_ptr(){ return &(comp.status) ; }
+volatile uint8_t *DSAtask::comp_status_ptr(){ return &(comp->status) ; }

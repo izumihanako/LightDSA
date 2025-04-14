@@ -1,16 +1,19 @@
 #ifndef QWQ_DSA_TASK_HPP
 #define QWQ_DSA_TASK_HPP
 
-#include "dsa_util.hpp"
 #include "util.hpp"
+#include "dsa_agent.hpp"
+#include "dsa_util.hpp"
 #include <cstdio>
 
 class DSAtask{
 private : 
-    dsa_hw_desc desc  __attribute__( (aligned(64)) ) ;
-    dsa_completion_record __attribute__( (aligned(32)) ) comp ; 
-    void *wq_portal ;
+    dsa_hw_desc desc __attribute__( (aligned(64)) ) ;
+    dsa_completion_record *comp ; 
     bool is_doing_flag ; 
+
+    void *wq_portal ;
+    DSAworkingqueue *working_queue ;
 
 private :
     void PF_adjust_desc() ;
@@ -21,15 +24,19 @@ private :
     
     void prepare_desc( dsa_opcode op_type , const void *dest , const void* src , uint32_t len ) ;
     
-    void clear() ;
+    void init() ;
+
+    void free_comp() ;
 
 public : 
     DSAtask() ;
 
-    DSAtask( void* portal_ ) ;
+    DSAtask( DSAworkingqueue *wq ) ;
+
+    ~DSAtask() ;
 
 public :  
-    void set_port( void* wq_portal_ ) ;
+    void set_wq( DSAworkingqueue *wq ) ;
 
     __always_inline void set_op( dsa_opcode op_type ){ 
         prepare_desc( op_type ) ;     

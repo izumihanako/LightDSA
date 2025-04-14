@@ -23,7 +23,7 @@ void test_dsa_batch( int cnt ){
     char *mem = (char*) aligned_alloc( 4096 , bsiz * 4096 ) ; 
     DSAtask** tasks = new DSAtask*[bsiz]; 
     for( int i = 0 ; i < bsiz ; i ++ )
-        tasks[i] = new (mem + i * 4096) DSAtask( DSAagent::get_instance().get_portal() ) ;
+        tasks[i] = new (mem + i * 4096) DSAtask( DSAagent::get_instance().get_wq() ) ;
     for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
         st_time = timeStamp_hires() ;  
         for( int i = 0 ; i < cnt ; i ++ ){

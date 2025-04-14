@@ -52,7 +52,7 @@ void* DSAallocator::allocate( size_t size ){
         printf( "Allocate size is aligned: %ld -> %ld\n" , size , ( size + 31 ) & ~0x1f ) ;
         size = ( size + 31 ) & ~0x1f ;
     }
-    void *rt = _alloc( 1 , 0 , pool_size - 1 , 0 , 0 , size , false ) ;
+    void *rt = _alloc( 1 , 0 , pool_size - 1 , 0 , 0 , (int)size , false ) ;
     if( rt == nullptr ) {
         printf( "Allocate %lu Bytes Failed, no enough memory\n" , size ) ;
         return nullptr ;
@@ -81,8 +81,8 @@ void DSAallocator::print_space(){
     _bfs_on_tree() ;
 }
 
-void* DSAallocator::_alloc( int node_id , int lf , int rg , int L , int R , size_t size , bool finded ) {
-    printf( "_alloc N%d[%d %d] , L = %d , R = %d\n" , node_id , lf , rg , L , R ) ;
+void* DSAallocator::_alloc( int node_id , int lf , int rg , int L , int R , int size , bool finded ) {
+    // printf( "_alloc N%d[%d %d] , L = %d , R = %d\n" , node_id , lf , rg , L , R ) ;
     if( finded ){
         if( L <= lf && rg <= R ){
             mark_node( node_id , true , rg - lf + 1 ) ;

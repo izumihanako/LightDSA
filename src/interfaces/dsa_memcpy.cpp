@@ -4,7 +4,7 @@
 #include <cstring>
 
 DSAmemcpy::DSAmemcpy(){
-    dtask.set_port( DSAagent::get_instance().get_portal() ) ;        
+    dtask.set_wq( DSAagent::get_instance().get_wq() ) ;        
 } ;
     
 void DSAmemcpy::do_async( void *dest , const void* src , size_t len ) noexcept( true ) {

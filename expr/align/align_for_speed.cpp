@@ -114,10 +114,10 @@ int main(){
         // test_DSA( a , b , len , true ) ;
         // puts( "testing DSA batch with flush") ;
         // test_DSA_batch( a , b , len , true ) ;
-        puts( "testing DSA without flush") ;
-        test_DSA( a , b , 1 * KB , false ) ; 
-        // puts( "testing DSA batch without flush") ;
-        // test_DSA_batch( a , b , 32 , false ) ;  
+        // puts( "testing DSA without flush") ;
+        // test_DSA( a , b , 1 * KB , false ) ; 
+        puts( "testing DSA batch without flush") ;
+        test_DSA_batch( a , b , 32 , false ) ;  
     }
 
     free( a ) ;

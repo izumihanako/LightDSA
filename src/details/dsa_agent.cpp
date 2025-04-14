@@ -1,4 +1,5 @@
 #include "dsa_agent.hpp"
+#include "util.hpp"
 #include <sys/mman.h>
 #include <cstdio>
 
@@ -86,33 +87,35 @@ void DSAagent::init(){
 }
 
 void DSAagent::print_wqs(){
-    printf( "There are a total of %d device\n" , dev_cnt ) ;
+    printf_RGB( 0x88B806 , "There are a total of %d device\n" , dev_cnt ) ;
     for( const auto &dev : devices ){
-        printf( "device : %s\n" , dev->get_dev_name() ) ;
+        printf_RGB( 0x88B806 , "device : %s\n" , dev->get_dev_name() ) ;
         for( const auto &x : dev->wq_list ){
-            printf( "%s, %s, group %d\n" , x->get_name() ,
+            printf_RGB( 0x1450B8 , "- %s, %s, group %d\n" , x->get_name() ,
                     accfg_wq_get_mode( x->wq ) == ACCFG_WQ_DEDICATED ? "dedicated" : "shared" ,
                     accfg_wq_get_group_id( x->wq ) ) ;
         }
         accfg_engine *engine ;
         accfg_engine_foreach( dev->device , engine ){
-            printf( "%s, group %d\n" , accfg_engine_get_devname( engine ) , 
+            if( accfg_engine_get_group_id( engine ) == -1 )
+                continue ;
+            printf_RGB( 0xB8B104 , "- %s, group %d\n" , accfg_engine_get_devname( engine ) , 
                     accfg_engine_get_group_id( engine ) ) ;
         }
     } 
 }
 
-void *DSAagent::get_portal(){
+DSAworkingqueue *DSAagent::get_wq(){
     uint64_t tmp = now_dev_id.fetch_add( 1 ) ;
-    return devices[tmp%dev_cnt]->get_portal() ;
+    return devices[tmp%dev_cnt]->get_wq() ;
 }
 
-void *DSAagent::get_portal( int dev_id ){ 
-    return devices[dev_id]->get_portal() ;
+DSAworkingqueue *DSAagent::get_wq( int dev_id ){ 
+    return devices[dev_id]->get_wq() ;
 }
 
-void *DSAagent::get_portal( int dev_id , int wq_id ){ 
-    return devices[dev_id]->wq_list[wq_id]->get_portal(); 
+DSAworkingqueue *DSAagent::get_wq( int dev_id , int wq_id ){ 
+    return devices[dev_id]->wq_list[wq_id] ; 
 }
 
 DSAdevice* DSAagent::get_device( int dev_id ) const {

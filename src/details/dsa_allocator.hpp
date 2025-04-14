@@ -24,7 +24,7 @@ private :
 
 private : 
     struct seg_tree_node{
-        uint32_t l_len , r_len , len ;
+        int     l_len , r_len , len ;
         int     this_len : 30 ;
         bool    push_down : 1 ;
         bool    pd_flag : 1 ;
@@ -57,11 +57,11 @@ private :
         if( node[node_id * 2 + 1].r_len == rg - mid ) node[node_id].r_len += node[node_id * 2].r_len ;
         
         node[node_id].len = std::max( node[node_id * 2].len , node[node_id * 2 + 1].len ) ;
-        uint32_t mid_len = node[node_id * 2].r_len + node[node_id * 2 + 1].l_len ;
+        int mid_len = node[node_id * 2].r_len + node[node_id * 2 + 1].l_len ;
         if( mid_len > node[node_id].len ) node[node_id].len = mid_len ;
     }
 
-    void *_alloc( int node_id , int lf , int rg , int L , int R , size_t size , bool finded ) ;
+    void *_alloc( int node_id , int lf , int rg , int L , int R , int size , bool finded ) ;
 
     void _dealloc( int node_id , int lf , int rg , int L , int R ) ;
 

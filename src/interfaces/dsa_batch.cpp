@@ -3,7 +3,7 @@
 #include <cstring>
  
 DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
-    db_task.set_port( DSAagent::get_instance().get_portal() ) ;
+    db_task.set_wq( DSAagent::get_instance().get_wq() ) ;
     cnt = 0 ; 
 }
 
