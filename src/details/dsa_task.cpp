@@ -1,8 +1,9 @@
+#include "dsa_constant.hpp"
+#include "dsa_task.hpp"
+
 #include <cstring>
 #include <cstdarg>
 #include <cstdio>
-#include "dsa_agent.hpp"
-#include "dsa_task.hpp"
 
 void DSAtask::init(){
     memset( &desc , 0 , sizeof( desc ) ) ;
@@ -49,22 +50,17 @@ void DSAtask::prepare_desc( dsa_opcode op_type ){
 
 void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){ 
     desc.opcode = op_type ;
-    desc.region_size = len ;  // @ bytes 32, also xfer_size
-
-    desc.flags = IDXD_OP_FLAG_RCR ; // Request Completion Record 
-    desc.flags |= IDXD_OP_FLAG_CRAV ; // Completion Record Address Valid 
-    #ifdef FLAG_BLOCK_ON_FAULT
-        desc.flags |= IDXD_OP_FLAG_BOF ;
-    #endif
-
+    desc.region_size = len ;  // @ bytes 32, also xfer_size  
     switch ( desc.opcode ) {
     case DSA_OPCODE_TRANSL_FETCH :  // 10
         desc.region_stride = stride ; // @ bytes 48
+        desc.flags = DSA_TRANSL_FETCH_FLAG ;
         if( stride ) desc.flags |= ( 1 << 16 ) ;
         desc.src_addr = (uintptr_t) src ;
         break ;
     case DSA_OPCODE_CFLUSH :        // 32
         desc.dst_addr = (uintptr_t) src ;  
+        desc.flags = DSA_CFLUSH_FLAG ;
         if( stride ) printf( "prepare_desc(type %s, src %p, len %u, stride %u) stride ignored\n" , 
             dsa_op_str( op_type ) , src , len , stride ) ;
         break ;
@@ -79,42 +75,33 @@ void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint
 
 void DSAtask::prepare_desc( dsa_opcode op_type , const void *dest , const void* src , uint32_t len ){ 
     desc.opcode = op_type ;
-    desc.xfer_size = len ;  // @ bytes 32 
-
-    desc.flags = IDXD_OP_FLAG_RCR ; // Request Completion Record 
-    desc.flags |= IDXD_OP_FLAG_CRAV ; // Completion Record Address Valid 
-    #ifdef FLAG_BLOCK_ON_FAULT
-        desc.flags |= IDXD_OP_FLAG_BOF ;
-    #endif
-
+    desc.xfer_size = len ;  // @ bytes 32  
     switch ( desc.opcode ) {
     case DSA_OPCODE_MEMMOVE : // 3
-        // desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
-        // desc.dst_addr  = (uintptr_t) dest ;      // @ bytes 24
+        desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
+        desc.dst_addr  = (uintptr_t) dest ;      // @ bytes 24
+        desc.flags     = DSA_MEMMOVE_FLAG ;
+        break ;
     case DSA_OPCODE_MEMFILL : // 4 
-        // desc.pattern_lower = (uint64_t) src ;    // @ bytes 16
-        // desc.dst_addr  = (uintptr_t) dest ;      // @ bytes 24
-        #ifdef FLAG_CACHE_CONTROL
-            desc.flags |= IDXD_OP_FLAG_CC ;
-        #endif 
-        #ifdef FLAG_DEST_READBACK
-            desc.flags |= IDXD_OP_FLAG_DRDBK ;
-        #endif
-        [[fallthrough]] ;
+        desc.pattern_lower = (uint64_t) src ;    // @ bytes 16
+        desc.dst_addr  = (uintptr_t) dest ;      // @ bytes 24
+        desc.flags     = DSA_MEMFILL_FLAG ;
+        break ;
     case DSA_OPCODE_COMPARE : // 5
-        // desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
-        // desc.src2_addr = (uintptr_t) dest ;      // @ bytes 24
+        desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
+        desc.src2_addr = (uintptr_t) dest ;      // @ bytes 24
+        desc.flags     = DSA_COMPARE_FLAG ;
+        break ;
     case DSA_OPCODE_COMPVAL : // 6 
-        // desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
-        // desc.comp_pattern = (uint64_t) dest ;    // @ bytes 24
-        desc.src_addr  = (uintptr_t) src ;          // @ bytes 16
-        desc.dst_addr  = (uintptr_t) dest ;         // @ bytes 24 
-        break;   
+        desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
+        desc.comp_pattern = (uint64_t) dest ;    // @ bytes 24
+        desc.flags     = DSA_COMPVAL_FLAG ;
+        break ;   
     default:        
         printf( "prepare_desc(type %s, dest %p, src %p, len %u) Unimplemented\n" , 
             dsa_op_str( op_type ) , dest , src , len ) ;
         exit( 1 ) ;  
-        break;
+        break ;
     }
     comp->status = 0 ; // DSA_COMP_NONE     
 }
