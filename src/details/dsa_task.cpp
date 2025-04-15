@@ -15,7 +15,7 @@ void DSAtask::init(){
 
 void DSAtask::free_comp(){ 
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
-        if( comp && working_queue ) working_queue->allocator->deallocate( comp ) ;
+        if( comp ) working_queue->allocator->deallocate( comp ) ;
     #else 
         if( comp ) free( comp ) ;
     #endif 

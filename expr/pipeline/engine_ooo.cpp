@@ -13,7 +13,7 @@ double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 ;
 constexpr int bsiz = 64 , COPY_LEN = 512 ; 
-int desc_cnt = 1 , method = 0 , is_random = 0 ;
+int desc_cnt = 1 , method = 0 , is_random = 0 , wq_cnt = 4 ;
 size_t array_len , stride ;
 
 struct OffLen{
@@ -52,14 +52,15 @@ void test_dsa_batch( size_t array_len , int cnt , vector<OffLen> test_set , int 
     printf( "a @ %p , b @ %p\n" , a , b ) ;
 
     if( method == 0 ){ 
-        DSAbatch xfer( bsiz , DEFAULT_BATCH_CAPACITY ) ; 
+        DSAbatch xfer[4] = { DSAbatch(bsiz , DEFAULT_BATCH_CAPACITY), DSAbatch(bsiz , DEFAULT_BATCH_CAPACITY), DSAbatch(bsiz , DEFAULT_BATCH_CAPACITY), DSAbatch(bsiz , DEFAULT_BATCH_CAPACITY) }; 
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){ 
             invld_range( a , array_len ) ;
             invld_range( b , array_len ) ;
-            xfer.db_task.clear() ; 
+            for (int j = 0; j < 4; j++) { xfer[j].db_task.clear(); }
             st_time = timeStamp_hires() ;
-            for( int i = 0 ; i < cnt ; i ++ ) xfer.submit_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ; 
-            xfer.db_task.wait() ;
+            for( int i = 0 ; i < cnt ; i ++ )
+                xfer[i % 4].submit_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ); 
+            for (int j = 0; j < 4; j++)xfer[j].db_task.wait(); 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
         }
@@ -103,8 +104,8 @@ vector<OffLen> genSeparate( uint64_t len , int desc_cnt , uint64_t stride ) {
 
 DSAmemcpy ___ ;
 int main( int argc , char** argv ){ 
-    if( argc < 6 ){ 
-        printf("Usage: %s <method> <desc_cnt> <stride> <array_len> <is_random>\n", argv[0]) ;
+    if( argc < 7 ){ 
+        printf("Usage: %s <method> <wq_cnt> <desc_cnt> <stride> <array_len> <is_random>\n", argv[0]) ;
         printf( "method    : 0 is DSA_batch, 1 is DSA_memcpy\n" ) ;
         printf( "desc_cnt  : number of descs\n" ) ;
         printf( "stride(KB): diff between nearest descs\n" ) ;
@@ -113,14 +114,15 @@ int main( int argc , char** argv ){
         return 0 ;
     } else {
         method = atoi( argv[1] ) ; 
-        desc_cnt = atoi( argv[2] ) ;
-        stride = atoi( argv[3] ) * KB ; 
-        array_len = atoi( argv[4] ) * MB ; 
-        is_random = atoi( argv[5] ) ;
+        wq_cnt = atoi( argv[2] ) ;
+        desc_cnt = atoi( argv[3] ) ;
+        stride = atoi( argv[4] ) * KB ; 
+        array_len = atoi( argv[5] ) * MB ; 
+        is_random = atoi( argv[6] ) ;
     } 
     // method = 0 , desc_cnt = 4096 , stride = 512 * KB , array_len = 4096 * MB , is_random = 0 ;
-    printf( "method = %s , desc_cnt = %d * %s, stride = %s, array_len = %s, %s\n" ,
-            method == 0 ? "DSA_batch" : "DSA_memcpy" , desc_cnt , stdsiz(COPY_LEN).c_str() 
+    printf( "method = %s , wq_cnt = %d , desc_cnt = %d * %s, stride = %s, array_len = %s, %s\n" ,
+            method == 0 ? "DSA_batch" : "DSA_memcpy" , wq_cnt , desc_cnt , stdsiz(COPY_LEN).c_str() 
             , stdsiz( stride ).c_str() , stdsiz( array_len ).c_str() , is_random == 0 ? "seq" : "random" ) ;
     fflush( stdout ) ;
 
@@ -128,3 +130,11 @@ int main( int argc , char** argv ){
     test_dsa_batch( array_len , desc_cnt , test_set , method ) ;
     return 0 ;
 }
+/*
+./setup_dsa.sh -d dsa0 -g0 -w1 -q0 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g1 -w1 -q1 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g2 -w1 -q2 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g3 -w1 -q3 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -b1
+
+*/

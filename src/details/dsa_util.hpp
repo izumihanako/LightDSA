@@ -34,7 +34,7 @@ inline void submit_desc(void *wq_portal, int dedicated,
         }
 }
 
-__always_inline uint8_t op_status( uint8_t status ){
+__always_inline uint8_t op_status( volatile uint8_t &status ){
     return status & DSA_COMP_STATUS_MASK ;
 }
 

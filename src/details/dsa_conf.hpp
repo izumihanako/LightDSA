@@ -3,8 +3,8 @@
 #include "dsa_constant.hpp"
   
 /*** DSABatch 内的队列有 BATCH_CAPACITY 个Batch，每个Batch的大小为 BATCH_SIZE ***/
-constexpr int DEFAULT_BATCH_CAPACITY = 10 ;
-constexpr int DEFAULT_BATCH_SIZE = 64 ;
+constexpr int DEFAULT_BATCH_CAPACITY = 20 ;
+constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
 /*** 如果使用CONTIGUOUS分配策略，则每个WQ对应的内存池大小为POOL_SIZE ***/
 constexpr int DEFAULT_POOL_SIZE = 4 * MB ; 

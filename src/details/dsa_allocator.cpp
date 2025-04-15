@@ -6,30 +6,43 @@
 #include <cassert>
 
 DSAallocator::DSAallocator( int pool_size_ ) {
+    if( pool_size_ & ( pool_size_ - 1 ) ) {
+        printf( "pool_size must be power of 2\n" ) ; fflush( stdout ) ;
+        exit( -1 ) ;
+    } 
     pool_size = pool_size_ ;
     memory_pool = MAP_FAILED ;
     node = nullptr ;
-    
+
+    void* _memory_pool = nullptr ;
+
     #ifdef ALLOCATOR_USE_HUGEPAGE
-    // try to malloc 2M page
-    memory_pool = mmap( NULL , pool_size , PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB , -1 , 0 ) ;
-    if( memory_pool == MAP_FAILED ) {
-        printf( "Failed to mmap 2M pages for DSA allocator, try to mmap 4K pages\n" ) ;
-        memory_pool = mmap( NULL , pool_size , PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS , -1 , 0 ) ;
-        if( memory_pool == MAP_FAILED ) {
+        // try to malloc 2M page
+        _memory_pool = mmap( NULL , pool_size * 2 , PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB , -1 , 0 ) ;
+        if( _memory_pool == MAP_FAILED ) {
+            printf( "Failed to mmap 2M pages for DSA allocator, try to mmap 4K pages\n" ) ;
+            _memory_pool = mmap( NULL , pool_size * 2 , PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS , -1 , 0 ) ;
+            if( _memory_pool == MAP_FAILED ) {
+                printf( "Failed to mmap for DSA allocator.\n" ) ;
+                exit( -1 ) ;
+            }
+        }
+    #else 
+        // try to malloc 4K page
+        _memory_pool = mmap( NULL , pool_size * 2 , PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS , -1 , 0 ) ;
+        if( _memory_pool == MAP_FAILED ) {
             printf( "Failed to mmap for DSA allocator.\n" ) ;
             exit( -1 ) ;
         }
-    }
-    #else 
-    // try to malloc 4K page
-    memory_pool = mmap( NULL , pool_size , PROT_READ | PROT_WRITE , MAP_PRIVATE | MAP_ANONYMOUS , -1 , 0 ) ;
-    if( memory_pool == MAP_FAILED ) {
-        printf( "Failed to mmap for DSA allocator.\n" ) ;
-        exit( -1 ) ;
-    }
     #endif
-    memset( memory_pool , 0 , pool_size ) ;
+    // align the memory pool to pool_size bytes
+    memory_pool = (void*)( ( (uintptr_t) _memory_pool + pool_size - 1 ) & ~( pool_size - 1 ) ) ;
+    size_t len1 = (uintptr_t)memory_pool - (uintptr_t)_memory_pool ; 
+    if( len1 ) munmap( _memory_pool , len1 ) ;
+    uintptr_t start2 = (uintptr_t)memory_pool + pool_size ;
+    size_t len2 = (uintptr_t)_memory_pool + pool_size * 2 - start2 ;
+    if( len2 ) munmap( (void*)start2 , len2 ) ; 
+    memset( memory_pool , 0 , pool_size ) ; 
 
     leaf_cnt = pool_size / 32 ;
     // 非叶节点编号为 1 ~ leaf_cnt - 1, 叶节点编号为 leaf_cnt ~ 2*leaf_cnt - 1
@@ -38,28 +51,35 @@ DSAallocator::DSAallocator( int pool_size_ ) {
         printf("Failed to allocate memory for segment tree nodes.\n");
         exit(-1);
     }
-    mark_node( 1 , false , pool_size ) ;
+    mark_node( 1 , false , pool_size ) ; 
 }
 
 DSAallocator::~DSAallocator() {
     if( node != nullptr ) free(node);
-    if( memory_pool != MAP_FAILED ) munmap(memory_pool, pool_size);
+    if( memory_pool != MAP_FAILED ) munmap( memory_pool, pool_size );
 }
 
-void* DSAallocator::allocate( size_t size ){ 
+void* DSAallocator::allocate( size_t size , size_t alignment ){ 
     if( size == 0 ) return nullptr ;
-    if( size & 0x1f ) {
-        printf( "Allocate size is aligned: %ld -> %ld\n" , size , ( size + 31 ) & ~0x1f ) ;
-        size = ( size + 31 ) & ~0x1f ;
+    if( alignment & ( alignment - 1 ) ) {
+        printf( "Alignment must be power of 2\n" ) ; fflush( stdout ) ;
+        return nullptr ;
+    } 
+    if( size & ( alignment - 1 ) ) {
+        printf( "Allocate size is aligned: %ld -> %ld\n" , size , ( size + alignment - 1 ) & ~( alignment - 1 ) ) ; fflush( stdout ) ;
+        size = ( size + alignment - 1 ) & ~( alignment - 1 ) ;
     }
-    void *rt = _alloc( 1 , 0 , pool_size - 1 , 0 , 0 , (int)size , false ) ;
-    if( rt == nullptr ) {
-        printf( "Allocate %lu Bytes Failed, no enough memory\n" , size ) ;
+    int Lpos = _find( 1 , 0 , pool_size - 1 , size + ( alignment == 32 ? 0 : alignment ) ) ;
+    if( Lpos == -1 ) {
+        printf( "Allocate %lu Bytes Failed, no enough memory\n" , size ) ; fflush( stdout ) ;
         return nullptr ;
     }
-    int pos = ( (char*)rt - (char*)memory_pool ) / 32 ;
-    node[leaf_cnt-1+pos].this_len = size / 32 ;
-    return rt;
+    if( Lpos & ( alignment - 1 ) ) Lpos += alignment - ( Lpos & ( alignment - 1 ) ) ; 
+    int Rpos = Lpos + size - 1 ; 
+    _alloc( 1 , 0 , pool_size - 1 , Lpos , Rpos ) ; 
+    int leaf_offset = Lpos / 32 ;
+    node[leaf_cnt-1+leaf_offset].this_len = size / 32 ;
+    return (char*)memory_pool + Lpos ;
 }
 
 void DSAallocator::deallocate( void* ptr ){
@@ -68,12 +88,12 @@ void DSAallocator::deallocate( void* ptr ){
         printf( "Deallocate Failed, pointer out of range\n" ) ;
         return ;
     }
-    int pos = ( (char*)ptr - (char*)memory_pool ) / 32 ;
-    if( pos < 0 || pos >= leaf_cnt ) {
+    int leaf_offset = ( (char*)ptr - (char*)memory_pool ) / 32 ;
+    if( leaf_offset < 0 || leaf_offset >= leaf_cnt ) {
         printf( "Deallocate Failed, pointer out of range\n" ) ;
         return ;
     }
-    int L = pos * 32 , R = L + node[leaf_cnt-1+pos].this_len * 32 - 1 ; 
+    int L = leaf_offset * 32 , R = L + node[leaf_cnt-1+leaf_offset].this_len * 32 - 1 ; 
     _dealloc( 1 , 0 , pool_size - 1 , L , R ) ;
 }
 
@@ -81,64 +101,36 @@ void DSAallocator::print_space(){
     _bfs_on_tree() ;
 }
 
-void* DSAallocator::_alloc( int node_id , int lf , int rg , int L , int R , int size , bool finded ) {
-    // printf( "_alloc N%d[%d %d] , L = %d , R = %d\n" , node_id , lf , rg , L , R ) ;
-    if( finded ){
-        if( L <= lf && rg <= R ){
-            mark_node( node_id , true , rg - lf + 1 ) ;
-            return (char*)memory_pool + lf ;
-        }
-        int mid = ( lf + rg ) >> 1 ;
-        push_down( node_id , lf , rg ) ;
-        void *retL = nullptr , *retR = nullptr ;
-        if( L <= mid ) retL = _alloc( node_id * 2 , lf , mid , L , R , size , true ) ;
-        if( R >  mid ) retR = _alloc( node_id*2+1 , mid + 1 , rg , L , R , size , true ) ;
-        update_node( node_id , lf , rg ) ;
-        return retL ? retL : retR ;
-    } else {
-        if( node[node_id].len < size ) return nullptr ;
-        int mid = ( lf + rg ) >> 1 ;
-        push_down( node_id , lf , rg ) ;
-        // 先尝试分配左边
-        if( node[node_id * 2].len >= size ) {
-            void *ret = _alloc( node_id * 2 , lf , mid , 0 , 0 , size , false ) ; 
-            update_node( node_id , lf , rg ) ;
-            if( ret != nullptr ) return ret ;
-            else {
-                printf( "Allocate Seg Tree Failed, len >= size but nullptr\n" ) ;
-                exit( -1 ) ;
-            }
-        }
-        // 然后看中间的部分有没有
-        if( node[node_id * 2].r_len + node[node_id * 2 + 1].l_len >= size ) { 
-            int Lpos = mid - node[node_id * 2].r_len + 1 ;
-            int Rpos = Lpos + size - 1 ;
-            void *retL = nullptr , *retR = nullptr ;
-            if( Lpos == lf && Rpos == rg ) {
-                mark_node( node_id , true , rg - lf + 1 ) ;
-                return (char*)memory_pool + lf ;
-            }
-            if( Lpos <=mid ) retL = _alloc( node_id * 2 , lf , mid , Lpos , mid , size , true ) ;
-            if( Rpos > mid ) retR = _alloc( node_id*2+1 , mid + 1 , rg , mid + 1 , Rpos , size , true ) ;
-            update_node( node_id , lf , rg ) ;
-            if( !retL && !retR ) {
-                printf( "Allocate Seg Tree Failed, mid len >= size but nullptr\n" ) ;
-                exit( -1 ) ;
-            }
-            return retL ? retL : retR ; 
-        }
-        // 最后尝试分配右边
-        if( node[node_id * 2 + 1].len >= size ) {
-            void *ret = _alloc( node_id * 2 + 1 , mid + 1 , rg , 0 , 0 , size , false ) ;
-            update_node( node_id , lf , rg ) ;
-            if( ret != nullptr ) return ret ;
-            else {
-                printf( "Allocate Seg Tree Failed, len >= size but nullptr\n" ) ;
-                exit( -1 ) ;
-            }
-        }
-        return nullptr ;
+int DSAallocator::_find( int node_id , int lf , int rg , int size ){ 
+    if( node[node_id].len < size ) return -1 ;
+    if( rg - lf == 32 ){
+        if( node[node_id].len >= size ) return lf ;
+        else assert( false && "Error in Allocator" ) ;
     }
+    int mid = ( lf + rg ) >> 1 ;
+    push_down( node_id , lf , rg ) ;
+    // 先看左边
+    if( node[node_id * 2].len >= size ) return _find( node_id * 2 , lf , mid , size ) ;
+    // 再看中间
+    if( node[node_id*2].r_len + node[node_id*2+1].l_len >= size ) {
+        // Lpos = mid - node[node_id * 2].r_len + 1 ;
+        // Rpos = Lpos + size - 1 ; 
+        return mid - node[node_id*2].r_len + 1 ;
+    } 
+    if( node[node_id * 2 + 1].len >= size ) return _find( node_id * 2 + 1 , mid + 1 , rg , size ) ;
+    return -1;
+}
+
+void DSAallocator::_alloc( int node_id , int lf , int rg , int L , int R ) {  
+    if( L <= lf && rg <= R ){
+        mark_node( node_id , true , rg - lf + 1 ) ;
+        return ;
+    }
+    int mid = ( lf + rg ) >> 1 ;
+    push_down( node_id , lf , rg ) ; 
+    if( L <= mid ) _alloc( node_id * 2 , lf , mid , L , R ) ;
+    if( R >  mid ) _alloc( node_id*2+1 , mid + 1 , rg , L , R ) ;
+    update_node( node_id , lf , rg ) ; 
 }
 
 void DSAallocator::_dealloc( int node_id , int lf , int rg , int L , int R ) {

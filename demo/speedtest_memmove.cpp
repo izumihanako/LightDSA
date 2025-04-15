@@ -132,7 +132,7 @@ int main(){
     for( size_t i = 0 ; i < ARRAY_LEN ; i ++ ) a[i] = i ; 
     for( size_t i = 0 ; i < ARRAY_LEN ; i += 4096 ) b[i] = 0 , c[i] = 2 ;
 
-    for( size_t len = 64 , warmup = 0 ; len <= 8 * MB ; len *= 2 ){ 
+    for( size_t len = 64 , warmup = 1 ; len <= 8 * MB ; len *= 2 ){
         double st_time , ed_time , alloc_time , submit_time , do_time ;  
         
         // single op
@@ -208,7 +208,7 @@ int main(){
         }
         multi_single_do *= ns_to_us ;
         multi_single_time = multi_single_do ;
-        multi_single_speed = len / ( multi_single_time * us_to_s ) / MB ; 
+        multi_single_speed = len / ( multi_single_time * us_to_s ) / MB ;
 
         double pure_batch_do = 0 , pure_batch_submit = 0 ;
         double pure_batch_time = 0 , pure_batch_speed = 0 ;
@@ -256,7 +256,7 @@ int main(){
                 pure_batch_time , pure_batch_speed , memcpy_time - pure_batch_time ,
                 pure_batch_submit , 
                 pure_batch_do ) ; 
-        fflush( stdout ) ; 
+        fflush( stdout ) ;  
     } 
 }
 

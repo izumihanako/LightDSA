@@ -3,25 +3,52 @@
  
 #include "dsa_agent.hpp"
 #include "dsa_util.hpp"
-#include "util.hpp"
-#ifndef FLAG_CACHE_CONTROL
-#include <xmmintrin.h> 
-#endif
+#include "util.hpp" 
+#include <xmmintrin.h>  
+
+class batch_record_queue{
+public:
+    int queue_cap ;
+    int q_front , q_back , q_ecnt ;
+    // back always point to a empty slot
+    // front always point to something( or nothing if empty ) 
+    int *queue ;
+    batch_record_queue() = default ; 
+    ~batch_record_queue() ;
+
+    __always_inline void clear(){ q_front = 0 ; q_back = 0 ; q_ecnt = 0 ; } 
+    __always_inline int front(){ return queue[q_front] ; }
+    __always_inline int back(){ return queue[q_back] ; }
+    __always_inline int empty(){ return q_ecnt == 0 ; }
+    __always_inline int full(){ return q_ecnt == queue_cap ; }
+    __always_inline int count(){ return q_ecnt ; }
+    __always_inline int next( int x ){ return x + 1 == queue_cap ? 0 : x + 1 ; }
+    void init( int cap ) ;
+    void push_back( int x ) ;
+    void pop() ;
+    int pop_front() ;
+    void delay_front_and_pop( int pos ) ;
+    void print() ;
+};
 
 struct DSAbatch_task{
 // private : 
     // main desc
     dsa_hw_desc *bdesc ;
     // main comp
-    dsa_completion_record *bcomp ;
+    dsa_completion_record *bcomp ; 
     
-    // queue info
-    int q_front , q_submit , q_back , q_ecnt , desc_capacity ;
-    int batch_capacity , batch_siz ;
+    // free queue and buzy queue
+    batch_record_queue free_queue , buzy_queue ;
+
+    // now writing batch
+    int batch_idx , batch_base , desc_idx ;
+    
+    int batch_capacity , batch_siz , desc_capacity;
     // descs in batch
     dsa_hw_desc *descs ;
     // comps in batch
-    dsa_completion_record *comps , *front_comp ;
+    dsa_completion_record *comps ;
     // volatile uint8_t *front_status ;
 
     void *wq_portal ;
@@ -34,18 +61,18 @@ public :
 
     ~DSAbatch_task() ;
 
-// private : 
+private : 
     void init( int bsiz , int cap ) ;
 
     __always_inline int add_1_cap( int x ) { return x < 0 ? x + desc_capacity : x ; } 
 
-    void prepare_desc( dsa_opcode op_type ) ;
+    void prepare_desc( int idx , dsa_opcode op_type ) ;
 
-    void prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint32_t stride = 0 ) ;
+    void prepare_desc( int idx , dsa_opcode op_type , void *src , uint32_t len , uint32_t stride = 0 ) ;
     
-    void prepare_desc( dsa_opcode op_type , void *dest , const void* src , uint32_t len ) ;
+    void prepare_desc( int idx , dsa_opcode op_type , void *dest , const void* src , uint32_t len ) ;
 
-    void alloc_descs( int cap ) ;
+    void alloc_descs() ;
 
     void free_descs() ;
 
@@ -55,13 +82,19 @@ public :
 
     void collect_private() ;
     
-    void PF_adjust_desc( int desc_idx ) ;
+    void PF_adjust_desc( int idx ) ;
 
-    void check_front() ;
+    void resolve_error( int batch_idx ) ;
 
-    void do_op( int desc_idx )  ;
+    void do_op( int batch_idx )  ; 
 
-    void solve_pf( int desc_idx ) ; 
+    __always_inline bool is_pos_valid() { return batch_idx != -1 ; }
+
+    __always_inline int now_pos(){ return desc_idx + batch_base ; }
+
+    __always_inline void forward_pos(){ desc_idx ++ ; }
+
+    __always_inline bool now_batch_full(){ return desc_idx == batch_siz ; }
 
 public :  
     bool set_wq( DSAworkingqueue *new_wq ) ; 
@@ -83,14 +116,12 @@ public :
 
     // clear submit queue
     void clear() ;
-
-    dsa_completion_record* get_front_comp() ;
     
-    __always_inline bool empty() { return q_ecnt == 0 ; }
+    __always_inline bool empty() { return buzy_queue.empty() && desc_idx == 0 ; }
 
-    __always_inline bool full() { return q_ecnt == desc_capacity ; }
+    __always_inline bool full() { return buzy_queue.count() == batch_capacity ; }
 
-    __always_inline int count() { return q_ecnt ; }  
+    __always_inline int count() { return buzy_queue.count() * batch_siz + desc_idx ; }  
 } ; 
 
 #endif

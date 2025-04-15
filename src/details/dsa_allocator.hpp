@@ -12,14 +12,14 @@ public :
 
     ~DSAallocator() ;
  
-    void* allocate( size_t size ) ;
+    void* allocate( size_t size , size_t alignment = 32 ) ;
 
     void deallocate( void* ptr ) ;
 
     void print_space() ;
 
 private :
-    void* memory_pool ;
+    void *memory_pool ;
     size_t pool_size ;
 
 private : 
@@ -61,7 +61,9 @@ private :
         if( mid_len > node[node_id].len ) node[node_id].len = mid_len ;
     }
 
-    void *_alloc( int node_id , int lf , int rg , int L , int R , int size , bool finded ) ;
+    void _alloc( int node_id , int lf , int rg , int L , int R ) ;
+
+    int _find( int node_id , int lf , int rg , int size ) ;
 
     void _dealloc( int node_id , int lf , int rg , int L , int R ) ;
 

@@ -7,7 +7,7 @@
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 
-constexpr int DSA_CNT = 64 , DSAmemcpy_cnt = 64;
+constexpr int DSA_CNT = 4 , DSAmemcpy_cnt = 64;
 constexpr int REPEAT = 1 ;
 constexpr int bsiz = 64 , tdesc = 4096 , MAX_LEN = 16 * MB ; 
 constexpr int ARRAY_LEN = bsiz * MAX_LEN ;
@@ -109,7 +109,7 @@ int main(){
     for( int i = 0 ; i < ARRAY_LEN ; i += 1 ) b[i] = 2 ; 
     
     // while( 1 ) 
-    for( size_t len = 4 * KB ; len <= 4 * KB ; len *= 2 ){
+    for( size_t len = 2 * KB ; len <= 4 * KB ; len *= 2 ){
         // puts( "testing DSA with flush") ;
         // test_DSA( a , b , len , true ) ;
         // puts( "testing DSA batch with flush") ;
@@ -117,7 +117,7 @@ int main(){
         // puts( "testing DSA without flush") ;
         // test_DSA( a , b , 1 * KB , false ) ; 
         puts( "testing DSA batch without flush") ;
-        test_DSA_batch( a , b , 32 , false ) ;  
+        test_DSA_batch( a , b , len , false ) ;  
     }
 
     free( a ) ;

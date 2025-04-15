@@ -1,10 +1,66 @@
 #include "dsa_batch_task.hpp"
-#include "dsa_constant.hpp"
+#include "dsa_constant.hpp" 
+#include "util.hpp"
 
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
 #include <algorithm>
+ 
+void batch_record_queue::init( int cap ){
+    queue_cap = cap ;
+    queue = (int*) malloc( sizeof(int) * queue_cap ) ; 
+    clear() ;
+}
+
+batch_record_queue::~batch_record_queue(){
+    if( queue ) free( queue ) ;
+}
+
+void batch_record_queue::push_back( int x ){
+    if( full() ) {
+        printf( "batch_record_queue::push_back() : queue full\n" ) ;
+        return ;
+    }
+    queue[q_back] = x ;
+    q_back = ( q_back + 1 == queue_cap ? 0 : q_back + 1 ) ;
+    q_ecnt ++ ;
+}
+
+void batch_record_queue::pop(){
+    if( empty() ) {
+        printf( "batch_record_queue::pop() : queue empty\n" ) ;
+        return ;
+    }
+    q_front = ( q_front + 1 == queue_cap ? 0 : q_front + 1 ) ;
+    q_ecnt -- ;
+}
+
+int batch_record_queue::pop_front(){
+    if( empty() ) return -1 ;
+    int tmp = queue[q_front] ;
+    q_front = (q_front + 1 == queue_cap ? 0 : q_front + 1);
+    q_ecnt -- ;  
+    return tmp ;
+} 
+
+void batch_record_queue::delay_front_and_pop( int pos ){  
+    queue[pos] = queue[q_front] ;
+    q_front = (q_front + 1 == queue_cap ? 0 : q_front + 1);
+    q_ecnt -- ; 
+} 
+
+void batch_record_queue::print() {
+    printf_RGB( 0xff0000 , "batch_record_queue:: %d elements : " , q_ecnt ) ;
+    bool inside = q_back >= q_front ? false : true ;
+    for( int i = 0 ; i < queue_cap ; i ++ ){
+        if( q_front == i ) printf_RGB( 0x00ff00 , "[" ) , inside ^= 1 ;
+        if( q_back  == i ) printf_RGB( 0x00ff00 , "]" ) , inside ^= 1 ;
+        if( inside ) printf_RGB( 0x00ff00 , "%d " , queue[i] ) ;
+        else printf_RGB( 0xffffff , "%d " , queue[i] ) ;
+    }
+    printf("\n"); fflush( stdout ) ;
+}
 
 // public
 DSAbatch_task::DSAbatch_task( int bsiz , int cap ){
@@ -22,24 +78,25 @@ DSAbatch_task::~DSAbatch_task(){
 
 // private 
 void DSAbatch_task::init( int bsiz , int cap ) {
+    printf( "DSAbatch_task::init( %d , %d )\n" , bsiz , cap ) ;
     if( cap < 2 ) {
         printf( "batch capacity adjusted: %d -> 2\n" , cap ) ;
         cap = 2 ;
     }
-    batch_siz = bsiz ;
-    batch_capacity = cap ;
+    batch_siz = bsiz , batch_capacity = cap ;
     desc_capacity = cap * batch_siz ; 
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ;
-    q_front = 0 , q_submit = 0 , q_back = 0 , q_ecnt = 0 ;
-    front_comp = nullptr ;
     wq_portal = nullptr ;
-    working_queue = nullptr ;
+    working_queue = nullptr ; 
+    free_queue.init( batch_capacity + 1 ) ;
+    buzy_queue.init( batch_capacity + 1 ) ;
+    clear() ;
 }
 
-void DSAbatch_task::prepare_desc( dsa_opcode op_type ){
-    dsa_hw_desc *desc =  descs + q_back ;
-    dsa_completion_record* comp = comps + q_back ;
+void DSAbatch_task::prepare_desc( int idx , dsa_opcode op_type ){
+    dsa_hw_desc *desc =  descs + idx ;
+    dsa_completion_record* comp = comps + idx ;
     desc->opcode = op_type ;   
     switch ( desc->opcode ) {
     case DSA_OPCODE_NOOP :
@@ -53,10 +110,10 @@ void DSAbatch_task::prepare_desc( dsa_opcode op_type ){
     comp->status = 0 ;
 }
 
-void DSAbatch_task::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){
+void DSAbatch_task::prepare_desc( int idx , dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){
     // printf( "prepare_desc(type %s, src(dst) %p, len %u) @ %d\n" , dsa_op_str( op_type ) , src , len , q_back ) ;
-    dsa_hw_desc *desc =  descs + q_back ;
-    dsa_completion_record* comp = comps + q_back ;
+    dsa_hw_desc *desc =  descs + idx ;
+    dsa_completion_record* comp = comps + idx ;
     desc->opcode = op_type ;
     desc->xfer_size = len ;
     switch ( desc->opcode ) {
@@ -79,10 +136,10 @@ void DSAbatch_task::prepare_desc( dsa_opcode op_type , void *src , uint32_t len 
     comp->status = 0 ;
 }
 
-void DSAbatch_task::prepare_desc( dsa_opcode op_type , void *dest , const void* src , uint32_t len ){
+void DSAbatch_task::prepare_desc( int idx , dsa_opcode op_type , void *dest , const void* src , uint32_t len ){
     // printf( "prepare_desc(type %s, dest %p, src %p, len %u) @ %d\n" , dsa_op_str( op_type ) , dest , src , len , q_back ) ;
-    dsa_hw_desc *desc =  descs + q_back ;
-    dsa_completion_record* comp = comps + q_back ;
+    dsa_hw_desc *desc =  descs + idx ;
+    dsa_completion_record* comp = comps + idx ;
     desc->opcode = op_type ;
     desc->xfer_size = len ;
     switch ( desc->opcode ) {
@@ -114,18 +171,20 @@ void DSAbatch_task::prepare_desc( dsa_opcode op_type , void *dest , const void* 
     comp->status = 0 ;
 }
 
-void DSAbatch_task::alloc_descs( int cap ){
-    if( cap < 2 ){
+void DSAbatch_task::alloc_descs(){
+    if( batch_capacity < 2 ){
         printf( "DSA batch capacity needs to be greater than 1") ;
         exit( 1 ) ;
     }
-    batch_capacity = cap ;
-    desc_capacity = cap * batch_siz ; 
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
-        descs = ( dsa_hw_desc *) working_queue->allocator->allocate( desc_capacity * 64 ) ; // sizeof( desc ) = 64
-        comps = ( dsa_completion_record *) working_queue->allocator->allocate( desc_capacity * 32 ) ; // sizeof( comp ) = 32
-        bdesc = ( dsa_hw_desc *) working_queue->allocator->allocate( batch_capacity * 64 ) ; // sizeof( desc ) = 64
-        bcomp = ( dsa_completion_record *) working_queue->allocator->allocate( batch_capacity * 32 ) ; // sizeof( comp ) = 32
+        descs = ( dsa_hw_desc *) working_queue->allocator->allocate( desc_capacity * 64 , 64 ) ; // sizeof( desc ) = 64
+        // working_queue->allocator->print_space() ;
+        comps = ( dsa_completion_record *) working_queue->allocator->allocate( desc_capacity * 32 , 32 ) ; // sizeof( comp ) = 32
+        // working_queue->allocator->print_space() ;
+        bdesc = ( dsa_hw_desc *) working_queue->allocator->allocate( batch_capacity * 64 , 64 ) ; // sizeof( desc ) = 64
+        // working_queue->allocator->print_space() ;
+        bcomp = ( dsa_completion_record *) working_queue->allocator->allocate( batch_capacity * 32 , 32 ) ; // sizeof( comp ) = 32
+        // working_queue->allocator->print_space() ; 
     #else 
         descs = ( dsa_hw_desc *) aligned_alloc( 64 , desc_capacity * 64 ) ; // sizeof( desc ) = 64
         comps = ( dsa_completion_record *) aligned_alloc( 32 , desc_capacity * 32 ) ; // sizeof( comp ) = 32 
@@ -142,9 +201,10 @@ void DSAbatch_task::alloc_descs( int cap ){
     for( int i = 0 ; i < batch_capacity ; i ++ ){  
         bdesc[i].flags = IDXD_OP_FLAG_CRAV | IDXD_OP_FLAG_RCR ;
         bdesc[i].completion_addr = (uintptr_t)&bcomp[i] ;
-        bdesc[i].opcode = DSA_OPCODE_BATCH ;
-    } 
-    front_comp = &bcomp[0] ;
+        bdesc[i].opcode = DSA_OPCODE_BATCH ; 
+        bdesc[i].desc_count = batch_siz ;
+        bdesc[i].desc_list_addr = (uintptr_t) &descs[i*batch_siz] ;
+    }
 }
 
 void DSAbatch_task::free_descs(){
@@ -162,28 +222,34 @@ void DSAbatch_task::free_descs(){
     #endif
 }
 
-void DSAbatch_task::clear(){  
-    q_front = 0 , q_back = 0 , q_ecnt = 0 , q_submit = 0 ;
-    if( front_comp && bcomp ) front_comp = &bcomp[0] ;
-    // back always point to a empty slot
-    // front always point to something( or nothing if empty ) 
+void DSAbatch_task::clear(){
+    batch_idx = batch_base = desc_idx = 0 ;
+    free_queue.clear() ;
+    buzy_queue.clear() ; 
+    // 0 is already in use
+    for( int i = 1 ; i < batch_capacity ; i ++ ) free_queue.push_back( i ) ; 
 }
 
-void DSAbatch_task::add_no_op(){ 
-    prepare_desc( DSA_OPCODE_NOOP ) ;
-    q_back = ( q_back + 1 == desc_capacity ? 0 : q_back + 1 ) ; 
-    q_ecnt ++ ;
+void DSAbatch_task::add_no_op(){
+    prepare_desc( now_pos() , DSA_OPCODE_NOOP ) ;
+    forward_pos() ;
 }
 
 void DSAbatch_task::submit_forward(){
-    // printf( "submit_forward(): fr:%d  submit:%d  ba:%d  q_ecnt:%d\n" , q_front , q_submit , q_back , q_ecnt ) ; fflush( stdout ) ;
-    do_op( q_submit ) ; 
-    q_submit = ( q_submit + batch_siz == desc_capacity ? 0 : q_submit + batch_siz ) ; 
+    do_op( batch_idx ) ;
+    buzy_queue.push_back( batch_idx ) ; 
+    batch_idx = free_queue.pop_front() ;
+    if( batch_idx == -1 ) {
+        batch_base = 0 , desc_idx = 0 ; 
+        return ;
+    }
+    batch_base = batch_idx * batch_siz , desc_idx = 0 ;
+    // if( buzy_queue.count() > batch_capacity / 2 ) collect() ;
 }
 
-void DSAbatch_task::PF_adjust_desc( int desc_idx ){
-    dsa_hw_desc *desc = &descs[desc_idx] ;
-    dsa_completion_record *comp = &comps[desc_idx] ;
+void DSAbatch_task::PF_adjust_desc( int idx ){
+    dsa_hw_desc *desc = descs + idx ;
+    dsa_completion_record *comp = comps + idx ;
     desc->xfer_size -= comp->bytes_completed ;
     switch ( desc->opcode ) {
     case DSA_OPCODE_MEMMOVE : // 3 
@@ -210,65 +276,37 @@ void DSAbatch_task::PF_adjust_desc( int desc_idx ){
     }        
 }
 
-void DSAbatch_task::check_front() {
-    // printf( "check_op(): fr:%d  submit:%d  ba:%d\n" , q_front , q_submit , q_back ) ; fflush( stdout ) ;
-    switch ( op_status( front_comp->status ) ){ 
-    case DSA_COMP_BATCH_PAGE_FAULT :
-        printf( "DSA batch op page fault(6) occurred\n" ) ;
-        solve_pf( q_front / batch_siz ) ;
-        do_op( q_front ) ;
-        break ;
-    default:  { 
-        printf( "DSA batch op error code 0x%x, %s\n" , front_comp->status , dsa_comp_status_str( front_comp->status ) ) ; 
-        for( int i = q_front ; i < q_front + batch_siz ; i ++ ){
-            uint8_t status = op_status( comps[i].status ) ;
-            printf( "desc %d, status = 0x%x, %s\n" , i , status , dsa_comp_status_str( status ) ) ;
-            if( status == DSA_COMP_SUCCESS ){
-                // already done, set to no op
-                descs[i].opcode = DSA_OPCODE_NOOP ;
-                descs[i].flags = IDXD_OP_FLAG_CRAV | IDXD_OP_FLAG_RCR ;
-                descs[i].src_addr = descs[i].dst_addr = descs[i].xfer_size = 0 ;
-                comps[i].status = 0 ; 
-            } else if( status == DSA_COMP_PAGE_FAULT_NOBOF ){
-                int wr = comps[i].status & DSA_COMP_STATUS_WRITE ;
-                volatile char *t = (char*) comps[i].fault_addr ;
-                wr ? *t = *t : *t ; 
-                PF_adjust_desc( i ) ;
-            }
+void DSAbatch_task::resolve_error( int batch_idx ) { 
+    int x = op_status( bcomp[batch_idx].status ) ;
+    if( x == 1 || x == 0 ) return ; // success or not finish yet
+    printf( "DSA batch op error code 0x%x, %s\n" , x , dsa_comp_status_str( x ) ) ; fflush( stdout ) ;
+    int batch_base = batch_idx * batch_siz ;
+    for( int i = 0 ; i < batch_siz ; i ++ ){
+        uint8_t status = op_status( comps[batch_base + i].status ) ;
+        printf( "desc %d, status = 0x%x, %s\n" , batch_base + i , status , dsa_comp_status_str( status ) ) ;
+        if( status == DSA_COMP_SUCCESS ){
+            // already done, set to no op
+            descs[i].opcode = DSA_OPCODE_NOOP ;
+            descs[i].flags = DSA_NOOP_FLAG ;
+            descs[i].src_addr = descs[i].dst_addr = descs[i].xfer_size = 0 ;
+            comps[i].status = 0 ; 
+        } else if( status == DSA_COMP_PAGE_FAULT_NOBOF ){
+            int wr = comps[i].status & DSA_COMP_STATUS_WRITE ;
+            volatile char *t = (char*) comps[i].fault_addr ;
+            wr ? *t = *t : *t ; 
+            PF_adjust_desc( batch_base + i ) ;
+        } else {
+            // not implemented yet
         }
-        getchar() ;
-        // re-submit
-        do_op( q_front ) ;
-        }
-    } 
+    }
+    getchar() ;
 }
 
-void DSAbatch_task::do_op( int desc_idx ) { 
-    // printf( "do_op(): fr:%d  submit:%d  ba:%d\n" , q_front , q_submit , q_back ) ; fflush( stdout ) ;
-    int batch_idx = desc_idx / batch_siz ;
+void DSAbatch_task::do_op( int batch_idx ) { 
     bcomp[batch_idx].status = 0 ;
-    bdesc[batch_idx].desc_count = batch_siz ;
-    bdesc[batch_idx].desc_list_addr = (uintptr_t) &descs[desc_idx] ;
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &bdesc[batch_idx] ) ; 
 }
-
-void DSAbatch_task::solve_pf( int batch_idx ){
-    puts( "solve pf" ) ;
-    dsa_hw_desc &thisbdesc = bdesc[batch_idx] ;
-    dsa_completion_record &thisbcomp = bcomp[batch_idx] ;
-    int wr = thisbcomp.status & DSA_COMP_STATUS_WRITE ;
-    volatile char *t = (char *)( thisbcomp.fault_addr ) ;
-    wr ? *t = *t : *t ;  
-    thisbdesc.desc_list_addr += thisbcomp.descs_completed * 64 ;
-    thisbdesc.desc_count -= thisbcomp.descs_completed ;
-    if( thisbdesc.desc_count == 1 ){
-        thisbdesc.desc_count ++ ;
-        thisbdesc.desc_list_addr += 64 ;
-    }
-    thisbcomp.status = 0 ;
-} 
-
-
+ 
 // public
 bool DSAbatch_task::set_wq( DSAworkingqueue *new_wq ){ 
     if( new_wq == NULL ) return false ;
@@ -279,69 +317,102 @@ bool DSAbatch_task::set_wq( DSAworkingqueue *new_wq ){
     free_descs() ; 
     working_queue = new_wq ;
     wq_portal = working_queue->get_portal() ;
-    alloc_descs( batch_capacity ) ; 
+    alloc_descs() ; 
     return true ;
 }
 
-void DSAbatch_task::add_op( dsa_opcode op_type ){
-    // printf( "add_op(): fr:%d  submit:%d  ba:%d\n" , q_front , q_submit , q_back ) ; fflush( stdout ) ;
-    prepare_desc( op_type ) ;   
-    q_back = ( q_back + 1 == desc_capacity ? 0 : q_back + 1 ) ;
-    q_ecnt ++ ;
-    if( add_1_cap( q_back - q_submit ) >= batch_siz ) submit_forward() ; 
+void DSAbatch_task::add_op( dsa_opcode op_type ){ 
+    if( !is_pos_valid() ) {
+        printf( "DSAbatch_task::add_op() : full\n" ) ;
+        return ;
+    }
+    prepare_desc( now_pos() , op_type ) ; 
+    forward_pos() ;
+    if( now_batch_full() ) submit_forward() ; 
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , size_t len ){
-    // printf( "add_op(): fr:%d  submit:%d  ba:%d\n" , q_front , q_submit , q_back ) ; fflush( stdout ) ;
-    prepare_desc( op_type , dest , len ) ;   
-    q_back = ( q_back + 1 == desc_capacity ? 0 : q_back + 1 ) ;
-    q_ecnt ++ ;
-    if( add_1_cap( q_back - q_submit ) >= batch_siz ) submit_forward() ; 
+    if( !is_pos_valid() ) {
+        printf( "DSAbatch_task::add_op() : full\n" ) ;
+        return ;
+    }
+    // printf( "add_op(type %s, dest %p, len %ld) @ %d\n" , dsa_op_str( op_type ) , dest , len , now_pos() ) ;
+    prepare_desc( now_pos() , op_type , dest , len ) ;   
+    forward_pos() ;
+    if( now_batch_full() ) submit_forward() ; 
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , size_t len ){
-    // printf( "add_op(): fr:%d  submit:%d  ba:%d\n" , q_front , q_submit , q_back ) ; fflush( stdout ) ;
-    prepare_desc( op_type , dest , src , len ) ;   
-    q_back = ( q_back + 1 == desc_capacity ? 0 : q_back + 1 ) ;
-    q_ecnt ++ ;
-    if( add_1_cap( q_back - q_submit ) >= batch_siz ) submit_forward() ; 
+    if( !is_pos_valid() ) {
+        printf( "DSAbatch_task::add_op() : full\n" ) ;
+        return ;
+    }
+    // printf( "add_op(type %s, dest %p, src %p, len %ld) @ %d\n" , dsa_op_str( op_type ) , dest , src , len , now_pos() ) ;
+    prepare_desc( now_pos() , op_type , dest , src , len ) ;
+    forward_pos() ;
+    if( now_batch_full() ) submit_forward() ; 
 }
 
 void DSAbatch_task::wait(){
-    while( q_back % batch_siz != 0 ) add_no_op() ;
-    while( q_submit != q_back ) submit_forward() ; 
-    while( q_ecnt ) { collect() ; }
+    if( desc_idx ){
+        while( now_batch_full() == false ) add_no_op() ;
+        submit_forward() ; 
+    }
+    while( buzy_queue.empty() == false ) { collect() ; usleep( 20 ) ; }
 }
 
 bool DSAbatch_task::check(){
-    while( q_back % batch_siz != 0 ) add_no_op() ;
-    while( q_submit != q_back ) submit_forward() ;
+    if( desc_idx ){
+        while( now_batch_full() == false ) add_no_op() ;
+        submit_forward() ; 
+    } 
     collect() ;
     return empty() ;
 }
 
-dsa_completion_record* DSAbatch_task::get_front_comp(){
-    return front_comp ;
-}
-
 bool DSAbatch_task::collect(){ 
-    // printf( "collect: fr:%d  submit:%d  ba:%d  ecnt:%d\n" , q_front , q_submit , q_back , q_ecnt ) ; fflush( stdout ) ; getchar() ;
-    while( q_submit != q_front || q_ecnt == desc_capacity ){
-        int x = op_status( front_comp->status ) ;  
-        if( x == 1 ){ // success
-            q_front += batch_siz , front_comp ++ ;
-            if( q_front == desc_capacity ){
-                q_front = 0 ; 
-                front_comp = &bcomp[0] ;
+    // printf( "collect() : count() = %d( %d + %d )\n" , count() , buzy_queue.count() * batch_siz , desc_idx ) ;
+    // buzy_queue.print() ;
+    // free_queue.print() ; 
+    for( int i = 0 ; i < 1 ; i ++ ) {
+        bool recheck = false ;
+        for( int q_idx = buzy_queue.q_front , watch_cnt = 0 ;                       // init idx
+                q_idx != buzy_queue.q_back && watch_cnt < buzy_queue.queue_cap ;    // at most check all element once
+                q_idx = buzy_queue.next( q_idx ) , watch_cnt ++ ){                  // iterator all element
+            int batch_idx = buzy_queue.queue[q_idx] ;
+            volatile uint8_t &status = bcomp[batch_idx].status ; 
+            if( op_status( status ) > 1 ){ // some error occurred
+                buzy_queue.delay_front_and_pop( q_idx ) ;
+                resolve_error( batch_idx ) ;
+                do_op( batch_idx ) ;
+                buzy_queue.push_back( batch_idx ) ;
             }
-            q_ecnt -= batch_siz ;  
-            continue ;
-        } 
-        if( x == 0 ) { 
-            break ; // not finish yet
+            if( op_status( status ) == 1 ){ // success 
+                free_queue.push_back( batch_idx ) ;
+                if( q_idx == buzy_queue.q_front ) buzy_queue.pop() ; 
+                else buzy_queue.delay_front_and_pop( q_idx ) ;
+            } else if( op_status( status ) == 0 ){ // not finish yet 
+                // printf( "wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) ) ;
+                // for( int i = 0 ; i < batch_siz ; i ++ ){
+                //     uint8_t status = op_status( comps[batch_idx * batch_siz + i].status ) ; 
+                //     if( status == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
+                //     else printf( "W" ) ;
+                // } 
+                // printf( "wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) ) ; 
+                if( op_status( bcomp[batch_idx].status ) == 1 ) recheck = true ;
+                continue ;
+            } 
         }
-        // some error occurred
-        check_front() ; 
+        if( !recheck ) break ;
+        puts( "--------" ) ;
     }
-    return q_ecnt < desc_capacity ;
+    if( !is_pos_valid() && !full() ){
+        batch_idx = free_queue.pop_front() ;
+        batch_base = batch_idx * batch_siz , desc_idx = 0 ;
+    } 
+    // printf( "after collect() : batch_idx = %d , desc_idx = %d\n" , batch_idx , desc_idx ) ;
+    // buzy_queue.print() ;
+    // free_queue.print() ; 
+    // puts( "\n\n" ) ;
+    return is_pos_valid() ;
 }

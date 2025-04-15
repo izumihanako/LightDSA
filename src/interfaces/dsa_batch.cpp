@@ -8,7 +8,7 @@ DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
 }
 
 bool DSAbatch::submit_comp_pattern( void *src , uint64_t pattern , size_t len ) noexcept( true ){
-    if( db_task.full() && !db_task.collect() ) {  
+    if( db_task.full() ) {  
         while( !db_task.collect() ) ;  
     }
     cnt ++ ;
@@ -17,7 +17,7 @@ bool DSAbatch::submit_comp_pattern( void *src , uint64_t pattern , size_t len ) 
 }
 
 bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noexcept ( true ){
-    if( db_task.full() && !db_task.collect() ) {  
+    if( db_task.full() ) {  
         while( !db_task.collect() ) ;  
     } 
     #ifdef BUILD_RELEASE
@@ -59,7 +59,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
 }
 
 bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexcept( true ){ 
-    if( db_task.full() && !db_task.collect() ) { 
+    if( db_task.full() ) { 
         // memcpy( dest , src , len ) ; 
         // return true ; 
         while( !db_task.collect() ) ; 
@@ -94,7 +94,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
 }
 
 bool DSAbatch::submit_flush( void *dest , size_t len ) noexcept( true ){
-    if( db_task.full() && !db_task.collect() ) { 
+    if( db_task.full() ) { 
         while( !db_task.collect() ) ; // this op must use DSA
         // return false ;
     }     
