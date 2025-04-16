@@ -10,6 +10,10 @@ name_mapping = {
     "dsa0/event_category=0x1,event=0x80,filter_eng=0x01/": "cycle: no desc ready to exec",
     "dsa0/event_category=0x1,event=0x100,filter_eng=0x01/": "cycle: B. fetch-queue full", 
     "dsa0/event_category=0x2,event=0x800/": "cycle: ATC idle", 
+    "unc_iio_iommu0.first_lookups": "IOMMU TLB unique lookup",
+    "unc_iio_iommu0.ctxt_cache_lookups": "IOMMU TLB lookup misses",
+    # "unc_iio_iommu0.misses": "IOMMU TLB misses", # same as above
+    "unc_iio_iommu1.num_mem_accesses": "IOMMU memory accesses", 
 }
 
 def run_perf_stat(command):
@@ -23,6 +27,10 @@ def run_perf_stat(command):
         "-e", "dsa0/event_category=0x1,event=0x80,filter_eng=0x01/",
         "-e", "dsa0/event_category=0x1,event=0x100,filter_eng=0x01/",
         "-e", "dsa0/event_category=0x2,event=0x800/", 
+        "-e", "unc_iio_iommu0.first_lookups" ,
+        "-e", "unc_iio_iommu0.ctxt_cache_lookups" ,
+        # "-e", "unc_iio_iommu0.misses" ,
+        "-e", "unc_iio_iommu1.num_mem_accesses" , 
     ] + command.split()
     try:
         result = subprocess.run(

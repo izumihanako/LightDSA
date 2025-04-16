@@ -119,7 +119,7 @@ string stdsiz( size_t siz ) {
 }
 
 constexpr int REPEAT = 20 ;
-constexpr int bsiz = 64 , tdesc = 4096 , MEMCPY_CNT = bsiz ;
+constexpr int bsiz = DEFAULT_BATCH_SIZE , tdesc = 4096 , MEMCPY_CNT = bsiz ;
 constexpr size_t ARRAY_LEN = 1 * GB ;
 char c[ARRAY_LEN]  ; 
 int main(){  

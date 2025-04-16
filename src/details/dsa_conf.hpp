@@ -6,6 +6,13 @@
 constexpr int DEFAULT_BATCH_CAPACITY = 20 ;
 constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
+/*** 每个WQ对应的batch回收探查区间长度 ***/
+constexpr int QUEUE_RECYCLE_LENGTH = 3 ;
+
+/*** 如果平均每次PF间隔小于64KB，并且次数大于RETRY_LIMIT，那就直接fall back到CPU ***/
+constexpr int DSA_RETRY_LIMIT = 4 ;
+constexpr int DSA_PAGE_FAULT_FREQUENCY_LIMIT = 64 * KB ;
+
 /*** 如果使用CONTIGUOUS分配策略，则每个WQ对应的内存池大小为POOL_SIZE ***/
 constexpr int DEFAULT_POOL_SIZE = 4 * MB ; 
 

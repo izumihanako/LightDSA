@@ -49,7 +49,8 @@ struct DSAbatch_task{
     dsa_hw_desc *descs ;
     // comps in batch
     dsa_completion_record *comps ;
-    // volatile uint8_t *front_status ;
+    // retry cnt and original xfersize for descs
+    int* retry_cnts , *ori_xfersize ;
 
     void *wq_portal ;
     DSAworkingqueue *working_queue ;
@@ -118,7 +119,7 @@ public :
     void clear() ;
     
     __always_inline bool empty() { return buzy_queue.empty() && desc_idx == 0 ; }
-
+ 
     __always_inline bool full() { return buzy_queue.count() == batch_capacity ; }
 
     __always_inline int count() { return buzy_queue.count() * batch_siz + desc_idx ; }  

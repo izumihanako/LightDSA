@@ -1,5 +1,6 @@
 #include "dsa_batch.hpp"
 #include "details/dsa_agent.hpp" 
+#include "details/dsa_cpupath.hpp"
 #include <cstring>
  
 DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
@@ -22,16 +23,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     } 
     #ifdef BUILD_RELEASE
         if( len < 0x400 ) { 
-            int idx = 0 ;
-            for( ; idx + 8 <= len ; idx += 8 ) {
-                *(uint64_t*)( (uintptr_t)dest + idx ) = pattern ;
-            } 
-            if (len % 8 != 0) {
-                uint64_t tmp_pattern = pattern;
-                for (size_t i = 0; i < len % 8; ++i) {
-                    *(uint8_t*)((uintptr_t)dest + idx + i) = (tmp_pattern >> (i * 8)) & 0xFF;
-                }
-            }
+            memfill_cpu( dest , pattern , len ) ; 
             return true ;
         }
     #endif
@@ -74,9 +66,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     uintptr_t dest_ = (uintptr_t) dest , src_ = (uintptr_t)src ;
     int align64_diff = 0 ;
     #ifdef DESCS_ADDRESS_ALIGNMENT
-        if( dest_ & 0x3f ){ 
-            // printf( "src %p,  dest %p\n" , src_ , dest_ ) ;
-            // getchar() ;
+        if( dest_ & 0x3f ){  
             align64_diff = 0x40 - ( dest_ & 0x3f ) ;
             align64_diff = len < align64_diff ? len : align64_diff ;
             memcpy( (void*)dest_ , (void*)src_ , align64_diff ) ;
@@ -86,7 +76,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
         } 
     #endif
     cnt ++ ; 
-    db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_ + align64_diff) , (void*)(src_ + align64_diff) , len ) ;
+    db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(FLAG_DEST_READBACK)
         _mm_clflushopt( dest ) ; // persistent in memory
     #endif 
@@ -100,6 +90,7 @@ bool DSAbatch::submit_flush( void *dest , size_t len ) noexcept( true ){
     }     
     uintptr_t dest_ = (uintptr_t) dest ; 
     #ifdef DESCS_ADDRESS_ALIGNMENT 
+        // just flush a bigger range which aligned to cache line
         if( dest_ & 0x3f ){
             len += ( dest_ & 0x3f ) ;
             dest_ &= ( ~0x3f ) ; 
