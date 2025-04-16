@@ -57,12 +57,12 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
         while( !db_task.collect() ) ; 
         // return false ;
     } 
-    #ifdef BUILD_RELEASE
-        if( len < 0x400 ) { 
+    // #ifdef BUILD_RELEASE
+        if( len < 0x200 ) { 
             memcpy( dest , src , len ) ;
             return true ;
         }
-    #endif 
+    // #endif 
     uintptr_t dest_ = (uintptr_t) dest , src_ = (uintptr_t)src ;
     int align64_diff = 0 ;
     #ifdef DESCS_ADDRESS_ALIGNMENT

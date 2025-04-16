@@ -12,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 ;
-constexpr int COPY_LEN = 1024 ; 
+constexpr int COPY_LEN = 512 ; 
 int desc_cnt = 1 , method = 0 , is_random = 0 , wq_cnt = 4 ;
 size_t array_len , stride ;
 
@@ -121,8 +121,8 @@ int main( int argc , char** argv ){
         is_random = atoi( argv[6] ) ;
     } 
     // method = 0 , desc_cnt = 4096 , stride = 512 * KB , array_len = 4096 * MB , is_random = 0 ;
-    printf( "method = %s, wq_cnt %d, wq_cnt = %d, desc_cnt = %d * %s, stride = %s, array_len = %s, %s\n" ,
-            method == 0 ? "DSA_batch" : "DSA_memcpy" , wq_cnt , wq_cnt , desc_cnt , stdsiz(COPY_LEN).c_str() 
+    printf( "method = %s,wq_cnt = %d, desc_cnt = %d * %s, stride = %s, array_len = %s, %s\n" ,
+            method == 0 ? "DSA_batch" : "DSA_memcpy" , wq_cnt , desc_cnt , stdsiz(COPY_LEN).c_str() 
             , stdsiz( stride ).c_str() , stdsiz( array_len ).c_str() , is_random == 0 ? "seq" : "random" ) ;
     fflush( stdout ) ;
 
@@ -131,13 +131,12 @@ int main( int argc , char** argv ){
     return 0 ;
 }
 /**
-./setup_dsa.sh -d dsa0 -g0 -w1 -q0 -s32 -ms -e1 -b0
-./setup_dsa.sh -d dsa0 -g1 -w1 -q1 -s32 -ms -e1 -b0
-./setup_dsa.sh -d dsa0 -g2 -w1 -q2 -s32 -ms -e1 -b0
-./setup_dsa.sh -d dsa0 -g3 -w1 -q3 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g0 -w1 -q0 -s32 -md -e1 -b0
+./setup_dsa.sh -d dsa0 -g1 -w1 -q1 -s32 -md -e1 -b0
+./setup_dsa.sh -d dsa0 -g2 -w1 -q2 -s32 -md -e1 -b0
+./setup_dsa.sh -d dsa0 -g3 -w1 -q3 -s32 -md -e1 -b0
 ./setup_dsa.sh -d dsa0 -b1
 */
 // echo 24 > /sys/bus/dsa/devices/dsa0/group0.*/read_buffers_allowed
 // echo 24 > /sys/bus/dsa/devices/dsa0/group0.*/read_buffers_reserved
 // echo 1 > /sys/bus/dsa/devices/dsa0/group0.*/use_read_buffer_limit
- 

@@ -4,7 +4,7 @@ import sys
 name_mapping = {
     "dsa0/event_category=0x2,event=0x40/": "Translation requests",
     "dsa0/event_category=0x2,event=0x100/": "Translation hits",
-    "dsa0/event_category=0x0,event=0x1C0,filter_wq=0x01/": "cycle: Total",
+    "dsa0/event_category=0x0,event=0x1C0,filter_wq=0x0F/": "cycle: Total",
     "dsa0/event_category=0x0,event=0x0C0,filter_wq=0xFF/": "cycle: desc ready in queue",
     "dsa0/event_category=0x1,event=0x40,filter_eng=0x01/": "cycle: execute pipeline full",
     "dsa0/event_category=0x1,event=0x80,filter_eng=0x01/": "cycle: no desc ready to exec",
@@ -21,7 +21,7 @@ def run_perf_stat(command):
         "perf", "stat" , 
         "-e", "dsa0/event_category=0x2,event=0x40/",
         "-e", "dsa0/event_category=0x2,event=0x100/", 
-        "-e", "dsa0/event_category=0x0,event=0x1C0,filter_wq=0x01/",
+        "-e", "dsa0/event_category=0x0,event=0x1C0,filter_wq=0x0F/",
         "-e", "dsa0/event_category=0x0,event=0x0C0,filter_wq=0xFF/",
         "-e", "dsa0/event_category=0x1,event=0x40,filter_eng=0x01/",
         "-e", "dsa0/event_category=0x1,event=0x80,filter_eng=0x01/",
