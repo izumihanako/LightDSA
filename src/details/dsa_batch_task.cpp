@@ -1,7 +1,5 @@
-#include "dsa_batch_task.hpp"
-#include "dsa_constant.hpp" 
-#include "dsa_cpupath.hpp"
-#include "util.hpp"
+#include "dsa_batch_task.hpp" 
+#include "dsa_cpupath.hpp" 
 
 #include <cstdio>
 #include <cstring>
@@ -91,89 +89,21 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     wq_portal = nullptr ;
     working_queue = nullptr ; 
     free_queue.init( batch_capacity + 1 ) ;
-    buzy_queue.init( batch_capacity + 1 ) ;
+    buzy_queue.init( batch_capacity + 1 ) ; 
+    rdstrb.init( bsiz ) ;
     clear() ;
 }
 
-void DSAbatch_task::prepare_desc( int idx , dsa_opcode op_type ){
+void DSAbatch_task::prepare_desc( int idx , const dsa_rdstrb_entry &entry ){
     dsa_hw_desc *desc =  descs + idx ;
     dsa_completion_record* comp = comps + idx ;
-    desc->opcode = op_type ; 
-    ori_xfersize[idx] = 0 ;
-    switch ( desc->opcode ) {
-    case DSA_OPCODE_NOOP :
-        desc->src_addr = desc->dst_addr = desc->xfer_size = 0 ;
-        desc->flags = DSA_NOOP_FLAG ;
-        break ;   
-    default :
-        printf( "prepare_desc(type %s) Unimplemented\n" , dsa_op_str( op_type ) ) ;
-        exit( 1 ) ;
-    }
+    desc->opcode = entry.opcode ;
+    ori_xfersize[idx] = desc->xfer_size = entry.xfer_size ;
+    desc->src_addr = entry.src_addr ;
+    desc->dst_addr = entry.dst_addr ; 
+    desc->flags    = entry.flags ;
     comp->status = 0 ;
     retry_cnts[idx] = 0 ;
-}
-
-void DSAbatch_task::prepare_desc( int idx , dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){
-    // printf( "prepare_desc(type %s, src(dst) %p, len %u) @ %d\n" , dsa_op_str( op_type ) , src , len , q_back ) ;
-    dsa_hw_desc *desc =  descs + idx ;
-    dsa_completion_record* comp = comps + idx ;
-    desc->opcode = op_type ;
-    ori_xfersize[idx] = desc->xfer_size = len ;
-    switch ( desc->opcode ) {
-    case DSA_OPCODE_TRANSL_FETCH :  // 10
-        desc->region_stride = stride ; // @ bytes 48
-        desc->flags = DSA_TRANSL_FETCH_FLAG ;
-        if( stride ) desc->flags |= ( 1 << 16 ) ;
-        desc->src_addr = (uintptr_t) src ; 
-        break ;
-    case DSA_OPCODE_CFLUSH :        // 32
-        desc->src_addr = 0 ;
-        desc->dst_addr = (uintptr_t) src ;
-        desc->flags = DSA_CFLUSH_FLAG ;
-        break ;
-    default:
-        printf( "prepare_desc(type %s, src %p, len %u, stride %u) Unimplemented\n" , 
-                dsa_op_str( op_type ) , src , len , stride ) ;
-        exit( 1 ) ; 
-    }
-    comp->status = 0 ;
-    retry_cnts[idx] = 0 ; 
-}
-
-void DSAbatch_task::prepare_desc( int idx , dsa_opcode op_type , void *dest , const void* src , uint32_t len ){
-    // printf( "prepare_desc(type %s, dest %p, src %p, len %u) @ %d\n" , dsa_op_str( op_type ) , dest , src , len , q_back ) ;
-    dsa_hw_desc *desc =  descs + idx ;
-    dsa_completion_record* comp = comps + idx ;
-    desc->opcode = op_type ;
-    ori_xfersize[idx] = desc->xfer_size = len ;
-    switch ( desc->opcode ) {
-    case DSA_OPCODE_MEMMOVE : // 3
-        desc->src_addr  = (uintptr_t) src ;       // @ bytes 16
-        desc->dst_addr  = (uintptr_t) dest ;      // @ bytes 24
-        desc->flags     = DSA_MEMMOVE_FLAG ;
-        break ;
-    case DSA_OPCODE_MEMFILL : // 4 
-        desc->pattern_lower = (uint64_t) src ;    // @ bytes 16
-        desc->dst_addr  = (uintptr_t) dest ;      // @ bytes 24 
-        desc->flags     = DSA_MEMFILL_FLAG ;
-        break ;
-    case DSA_OPCODE_COMPARE : // 5
-        desc->src_addr  = (uintptr_t) src ;       // @ bytes 16
-        desc->src2_addr = (uintptr_t) dest ;      // @ bytes 24
-        desc->flags     = DSA_COMPARE_FLAG ;
-        break;   
-    case DSA_OPCODE_COMPVAL : // 6 
-        desc->src_addr  = (uintptr_t) src ;       // @ bytes 16
-        desc->comp_pattern = (uint64_t) dest ;    // @ bytes 24
-        desc->flags     = DSA_COMPVAL_FLAG ;
-        break;   
-    default:
-        printf( "prepare_desc(type %s, dest %p, src %p, len %u) Unimplemented\n" , 
-                dsa_op_str( op_type ) , dest , src , len ) ;
-        exit( 1 ) ; 
-    }
-    comp->status = 0 ;
-    retry_cnts[idx] = 0 ; 
 }
 
 void DSAbatch_task::alloc_descs(){
@@ -248,11 +178,21 @@ void DSAbatch_task::clear(){
 }
 
 void DSAbatch_task::add_no_op(){
-    prepare_desc( now_pos() , DSA_OPCODE_NOOP ) ;
-    forward_pos() ;
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        rdstrb.push_back( dsa_rdstrb_entry( DSA_OPCODE_NOOP ) ) ; 
+    #else 
+        prepare_desc( now_pos() , dsa_rdstrb_entry( DSA_OPCODE_NOOP ) ) ; 
+        forward_pos() ; 
+    #endif  
 }
 
 void DSAbatch_task::submit_forward(){
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        for( int i = 0 ; i < batch_siz ; i ++ ){
+            prepare_desc( now_pos() , rdstrb.pop() ) ;
+            forward_pos() ;
+        }
+    #endif 
     do_op( batch_idx ) ;
     buzy_queue.push_back( batch_idx ) ; 
     batch_idx = free_queue.pop_front() ;
@@ -353,46 +293,73 @@ void DSAbatch_task::add_op( dsa_opcode op_type ){
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
     }
-    prepare_desc( now_pos() , op_type ) ; 
-    forward_pos() ;
-    if( now_batch_full() ) submit_forward() ; 
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        rdstrb.push_back( dsa_rdstrb_entry( op_type ) ) ;
+        if( rdstrb.should_submit() ) submit_forward() ;
+    #else 
+        prepare_desc( now_pos() , dsa_rdstrb_entry( op_type ) ) ; 
+        forward_pos() ;
+        if( now_batch_full() ) submit_forward() ; 
+    #endif 
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , size_t len ){
     if( !is_pos_valid() ) {
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
-    }
-    // printf( "add_op(type %s, dest %p, len %ld) @ %d\n" , dsa_op_str( op_type ) , dest , len , now_pos() ) ;
-    prepare_desc( now_pos() , op_type , dest , len ) ;   
-    forward_pos() ;
-    if( now_batch_full() ) submit_forward() ; 
+    } 
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        rdstrb.push_back( dsa_rdstrb_entry( op_type , dest , len ) ) ;
+        if( rdstrb.should_submit() ) submit_forward() ;
+    #else 
+        prepare_desc( now_pos() , dsa_rdstrb_entry( op_type , dest , len ) ) ;   
+        forward_pos() ;
+        if( now_batch_full() ) submit_forward() ; 
+    #endif 
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , size_t len ){
     if( !is_pos_valid() ) {
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
-    }
-    // printf( "add_op(type %s, dest %p, src %p, len %ld) @ %d\n" , dsa_op_str( op_type ) , dest , src , len , now_pos() ) ;
-    prepare_desc( now_pos() , op_type , dest , src , len ) ;
-    forward_pos() ;
-    if( now_batch_full() ) submit_forward() ; 
+    } 
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        rdstrb.push_back( dsa_rdstrb_entry( op_type , dest , src , len ) ) ;
+        if( rdstrb.should_submit() ) submit_forward() ;
+    #else 
+        prepare_desc( now_pos() , dsa_rdstrb_entry( op_type , dest , src , len ) ) ;
+        forward_pos() ;
+        if( now_batch_full() ) submit_forward() ; 
+    #endif
 }
 
 void DSAbatch_task::wait(){
-    if( desc_idx ){
-        while( now_batch_full() == false ) add_no_op() ;
-        submit_forward() ; 
-    }
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        if( !rdstrb.empty() ){
+            while( rdstrb.should_submit() == false ) add_no_op() ;
+            submit_forward() ;
+        }
+    #else 
+        if( desc_idx ){
+            while( now_batch_full() == false ) add_no_op() ;
+            submit_forward() ; 
+        }
+    #endif 
     while( buzy_queue.empty() == false ) { collect() ; usleep( 20 ) ; }
 }
 
 bool DSAbatch_task::check(){
-    if( desc_idx ){
-        while( now_batch_full() == false ) add_no_op() ;
-        submit_forward() ; 
-    } 
+    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        if( !rdstrb.empty() ){
+            while( rdstrb.should_submit() == false ) add_no_op() ;
+            submit_forward() ;
+        }
+    #else 
+        if( desc_idx ){
+            while( now_batch_full() == false ) add_no_op() ;
+            submit_forward() ; 
+        }
+    #endif 
     collect() ;
     return empty() ;
 }

@@ -4,6 +4,7 @@
 #include "dsa_agent.hpp"
 #include "dsa_util.hpp"
 #include "util.hpp" 
+#include "dsa_batch_redistribute.hpp"
 #include <xmmintrin.h>  
 
 class batch_record_queue{
@@ -51,6 +52,9 @@ struct DSAbatch_task{
     dsa_completion_record *comps ;
     // retry cnt and original xfersize for descs
     int* retry_cnts , *ori_xfersize ;
+    
+    // redistribute
+    DSAtask_redistribute rdstrb ;
 
     void *wq_portal ;
     DSAworkingqueue *working_queue ;
@@ -67,12 +71,8 @@ private :
 
     __always_inline int add_1_cap( int x ) { return x < 0 ? x + desc_capacity : x ; } 
 
-    void prepare_desc( int idx , dsa_opcode op_type ) ;
-
-    void prepare_desc( int idx , dsa_opcode op_type , void *src , uint32_t len , uint32_t stride = 0 ) ;
+    void prepare_desc( int idx , const dsa_rdstrb_entry &entry ) ;
     
-    void prepare_desc( int idx , dsa_opcode op_type , void *dest , const void* src , uint32_t len ) ;
-
     void alloc_descs() ;
 
     void free_descs() ;

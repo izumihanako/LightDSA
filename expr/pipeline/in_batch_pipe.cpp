@@ -12,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 , bsiz = 32 ;
-constexpr int BIG_LEN = 32 * KB , SMALL_LEN = 512 ; 
+constexpr int BIG_LEN = 16 * KB , SMALL_LEN = 512 ; 
 int small_cnt = 1 , big_cnt = 1 , group_cnt = 100 , method = 0 , is_random = 0 , is_divide = 0 ;
 
 struct OffLen{
@@ -146,8 +146,8 @@ int main( int argc , char** argv ){
     vector<OffLen> test_set = genWorkload( small_cnt , big_cnt , group_cnt , is_random ) ;
     printf( "batch_siz = %d -> [ " , bsiz ) ;
     for( int i = 0 ; i < bsiz ; i ++ ){
-        if( test_set[i].len == BIG_LEN ) printf_RGB( 0xcccc00 , "B" ) ;
-        else printf_RGB( 0x00cc00 , "S" ) ;
+        if( test_set[i].len == BIG_LEN ) printf_RGB( 0x00cc00 , "B" ) ;
+        else printf_RGB( 0xcccc00 , "S" ) ;
     }
     printf( " ]\n" ) ; fflush( stdout ) ;
     test_dsa_batch( small_cnt , big_cnt , test_set , method ) ;

@@ -37,5 +37,4 @@ constexpr uint32_t DSA_COMPVAL_FLAG = _FLAG_CRAV_ | _FLAG_RCR_ | _FLAG_BOF_ ;
 constexpr uint32_t DSA_CFLUSH_FLAG = _FLAG_CRAV_ | _FLAG_RCR_ | _FLAG_BOF_ ;
 constexpr uint32_t DSA_TRANSL_FETCH_FLAG = _FLAG_CRAV_ | _FLAG_RCR_ | _FLAG_BOF_ | _FLAG_CC_ ;
 
-
 #endif
