@@ -29,7 +29,9 @@ struct dsa_rdstrb_entry{
 
 class DSAtask_redistribute{
     dsa_rdstrb_entry *nega_entries , *posi_entries ;
-    int nega_cnt , posi_cnt , bsiz , credit , counter ;
+    int8_t *posi_credits , *nega_credits ;
+    int nega_cnt , posi_cnt , bsiz , counter , sum_credit ;
+    double credit , credit_fix ;
 
 public :
     DSAtask_redistribute() ;
