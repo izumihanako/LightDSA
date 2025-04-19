@@ -6,8 +6,10 @@
 constexpr int DEFAULT_BATCH_CAPACITY = 20 ;
 constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
+#define DESCS_QUEUE_RECYCLE_WINDOW_ENABLE /*** use recycle window ***/
+
 /*** 每个WQ对应的batch回收探查区间长度 ***/
-constexpr int QUEUE_RECYCLE_LENGTH = 3 ;
+constexpr int QUEUE_RECYCLE_UNFINISHED_LIMIT = 5 ;
 
 /*** 如果平均每次PF间隔小于64KB，并且次数大于RETRY_LIMIT，那就直接fall back到CPU ***/
 constexpr int DSA_RETRY_LIMIT = 4 ;

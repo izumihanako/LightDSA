@@ -12,8 +12,8 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 ;
-constexpr int bsiz = 64 , BIG_LEN = 16 * KB , SMALL_LEN = 512 ; 
-int small_cnt = 1 , big_cnt = 1 , group_cnt = 100 , method = 0 , is_divide = 0 ;
+constexpr int bsiz = 64 , BIG_LEN = 64 * KB , SMALL_LEN = 512 ; 
+int small_cnt = 1 , big_cnt = 1 , batch_cnt = 100 , method = 0 ;
 
 struct OffLen{
     size_t off_src ;
@@ -79,8 +79,8 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
     free( a ) ; free( b ) ;
     dsa_time *= ns_to_us ; // us
     dsa_speed = tot_siz / ( dsa_time * us_to_s ) / MB ; 
-    small_speed = small_cnt * group_cnt / dsa_time ;
-    big_speed   = big_cnt * group_cnt / dsa_time ;
+    small_speed = small_cnt * batch_cnt / dsa_time ;
+    big_speed   = big_cnt * batch_cnt / dsa_time ;
 
     printf( "Copy %s; %d desc (%s:%s = %d:%d); REPEAT = %d \n" , stdsiz( tot_siz ).c_str() , cnt ,
              stdsiz( SMALL_LEN ).c_str() , stdsiz( BIG_LEN ).c_str() , small_cnt , big_cnt , REPEAT ) ;
@@ -88,59 +88,61 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
     if( method == 1 ) printf( "    ; DSA_memcpy cost %5.2lfus, speed %5.0fMB/s, big %.2fdesc/us, small %.2fdesc/us\n" , dsa_time , dsa_speed , big_speed , small_speed ) ;
 } 
  
-vector<OffLen> genSeparate( int small_cnt , int big_cnt , int group_cnt , int is_divide ) {
-    vector<OffLen> rt ;
+vector<OffLen> genSeparate( int small_cnt , int big_cnt , int batch_cnt ) {
+    vector<OffLen> rt , big , small ;
     size_t offset = 0 ;
-    if( is_divide ){
-        for( int g = 0 ; g < group_cnt ; g ++ ){
-            for( int s = 1 ; s <= small_cnt ; s ++ ) {
-                rt.emplace_back( offset , offset , SMALL_LEN ) ;
-                offset += SMALL_LEN ;
-            }
-        }
-        for( int g = 0 ; g < group_cnt ; g ++ ){
-            for( int b = 1 ; b <= big_cnt ; b ++ ){
-                rt.emplace_back( offset , offset , BIG_LEN ) ;
+    for( int g = 0 ; g < batch_cnt ; g ++ ){
+        for( int b = 1 ; b <= big_cnt && g < batch_cnt ; b ++ , g ++ ){
+            for( int t = 1 ; t < DEFAULT_BATCH_SIZE ; t ++ ){
+                big.emplace_back( offset , offset , BIG_LEN ) ;
                 offset += BIG_LEN ;
             }
         }
-    } else {
-        for( int g = 0 ; g < group_cnt ; g ++ ){
-            for( int s = 1 ; s <= small_cnt ; s ++ ) {
-                rt.emplace_back( offset , offset , SMALL_LEN ) ;
+        for( int s = 1 ; s <= small_cnt && g < batch_cnt ; s ++ , g ++ ){
+            for( int t = 1 ; t < DEFAULT_BATCH_SIZE ; t ++ ){
+                small.emplace_back( offset , offset , SMALL_LEN ) ;
                 offset += SMALL_LEN ;
             }
-            for( int b = 1 ; b <= big_cnt ; b ++ ){
-                rt.emplace_back( offset , offset , BIG_LEN ) ;
-                offset += BIG_LEN ;
-            }
         }
+    }
+    random_shuffle( small.begin() , small.end() ) ;
+    random_shuffle( big.begin() , big.end() ) ;
+    int big_idx = 0 , small_idx = 0 ;
+    for( int g = 0 ; g < batch_cnt ; g ++ ){
+        for( int b = 1 ; b <= big_cnt && g < batch_cnt ; b ++ , g ++ )
+            for( int t = 1 ; t < DEFAULT_BATCH_SIZE ; t ++ )
+                rt.push_back( big[big_idx++] ) ;
+        for( int s = 1 ; s <= small_cnt && g < batch_cnt ; s ++ , g ++ )
+            for( int t = 1 ; t < DEFAULT_BATCH_SIZE ; t ++ )
+                rt.push_back( small[small_idx++] ) ;
     }
     return rt ;
 }
 
 DSAmemcpy ___ ;
 int main( int argc , char** argv ){ 
-    if( argc < 6 ){ 
-        printf("Usage: %s <method> <group_cnt> <small_cnt> <big_cnt> <is_divide>\n", argv[0]) ;
+    if( argc < 5 ){ 
+        printf("Usage: %s <method> <batch_cnt> <small_cnt> <big_cnt>\n", argv[0]) ;
         printf( "method    : 0 is DSA_batch, 1 is DSA_memcpy\n" ) ;
-        printf( "group_cnt : number of groups\n" ) ;
+        printf( "batch_cnt : number of groups\n" ) ;
         printf( "small_cnt : small desc in a group\n" ) ;
         printf( "big_cnt   : big desc in a group\n" ) ;
         printf( "is_divide : divide small/big descs, 0 no, 1 yes\n" ) ;
         return 0 ;
     } else {
         method = atoi( argv[1] ) ; 
-        group_cnt = atoi( argv[2] ) ;
+        batch_cnt = atoi( argv[2] ) ;
         small_cnt = atoi( argv[3] ) ; 
         big_cnt = atoi( argv[4] ) ; 
-        is_divide = atoi( argv[5] ) ;
     } 
-    printf( "method = %s , group_cnt = %d * (small:big = %d:%d), %s\n" ,
-            method == 0 ? "DSA_batch" : "DSA_memcpy" , group_cnt , small_cnt , big_cnt , 
-            is_divide == 0 ? "mixed" : "divided" ) ;
+    #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE )
+        printf( "DSA batch recycle window enabled\n" ) ;
+        printf( "QUEUE_RECYCLE_UNFINISHED_LIMIT = %d\n" , QUEUE_RECYCLE_UNFINISHED_LIMIT ) ;
+    #endif
+    printf( "method = %s , batch_cnt = %d (small:big = %d:%d)\n" ,
+            method == 0 ? "DSA_batch" : "DSA_memcpy" , batch_cnt , small_cnt , big_cnt ) ;
 
-    vector<OffLen> test_set = genSeparate( small_cnt , big_cnt , group_cnt , is_divide ) ;
+    vector<OffLen> test_set = genSeparate( small_cnt , big_cnt , batch_cnt ) ;
     test_dsa_batch( small_cnt , big_cnt , test_set , method ) ;
     return 0 ;
 }

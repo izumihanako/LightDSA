@@ -130,7 +130,6 @@ static const int8_t credit_table[32] = {
 }; 
 constexpr uint64_t REDISTRIBUTE_CREDIT_THRESHOLD = 8 * KB ;  
 void DSAtask_redistribute::push_back( const dsa_rdstrb_entry &entry ){
-    // printf( "xfer = %d\n" , entry.xfer_size ) ;
     if( entry.xfer_size < REDISTRIBUTE_CREDIT_THRESHOLD ) {
         if( entry.xfer_size >= 4 * KB ) nega_credits[nega_cnt] = -1 ;
         else nega_credits[nega_cnt] = -2 ;
@@ -142,7 +141,6 @@ void DSAtask_redistribute::push_back( const dsa_rdstrb_entry &entry ){
         sum_credit += posi_credits[posi_cnt] ;
         posi_entries[posi_cnt++] = entry ;
     }
-    // printf( "sum_credit = %d\n" , sum_credit ) ; fflush( stdout ) ;
 }
 
 dsa_rdstrb_entry DSAtask_redistribute::pop(){
@@ -151,8 +149,6 @@ dsa_rdstrb_entry DSAtask_redistribute::pop(){
         credit = 0 ; 
         credit_fix = - 1.0 * sum_credit / bsiz ;
         sum_credit = 0 ;
-        // getchar() ;
-        // printf( "credit_fix = %.2f: " , credit_fix ) ;
     }
     counter -- ;
     int credit_delta = 0 ;

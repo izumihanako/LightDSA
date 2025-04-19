@@ -368,11 +368,16 @@ bool DSAbatch_task::collect(){
     // printf( "collect() : count() = %d( %d + %d )\n" , count() , buzy_queue.count() * batch_siz , desc_idx ) ;
     // buzy_queue.print() ;
     // free_queue.print() ; 
-    for( int i = 0 ; i < 2 ; i ++ ) {
+    int recycle_pass = 1 , watch_limit = batch_capacity ;
+    #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE )
+        recycle_pass = 1 ;
+        watch_limit = QUEUE_RECYCLE_UNFINISHED_LIMIT ;
+    #endif
+
+    for( int i = 0 ; i < recycle_pass ; i ++ ) {
         bool recheck = false ;
         for( int q_idx = buzy_queue.q_front , watch_cnt = 0 ;                       // init idx
-                q_idx != buzy_queue.q_back && watch_cnt < buzy_queue.queue_cap 
-                && watch_cnt < QUEUE_RECYCLE_LENGTH ;                               // at most check all element once
+                q_idx != buzy_queue.q_back && watch_cnt < watch_limit ;             // at most check watch_limit unfinished descs
                 q_idx = buzy_queue.next( q_idx ) , watch_cnt ++ ){                  // iterator all element
             int batch_idx = buzy_queue.queue[q_idx] ;
             volatile uint8_t &status = bcomp[batch_idx].status ; 
@@ -385,21 +390,24 @@ bool DSAbatch_task::collect(){
             if( op_status( status ) == 1 ){ // success 
                 free_queue.push_back( batch_idx ) ; 
                 buzy_queue.delay_front_and_pop( q_idx ) ;
+                watch_limit ++ ;
             } else if( op_status( status ) == 0 ){ // not finish yet 
                 // printf( "wtf ? op_status = %d : " , op_status( bcomp[batch_idx].status ) ) ;
-                int success_cnt = 0 ;
-                for( int i = batch_idx * batch_siz , lim = i + batch_siz ; i < lim ; i ++ ){ 
-                    success_cnt += ( op_status( comps[i].status ) == DSA_COMP_SUCCESS ) ;
-                    // if( op_status( comps[i].status ) == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
-                    // else printf( "W" ) ;
-                }
-                // printf( " : wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) ); 
-                if( op_status( bcomp[batch_idx].status ) == 1 || success_cnt == batch_siz ){
-                    free_queue.push_back( batch_idx ) ;
-                    buzy_queue.delay_front_and_pop( q_idx ) ;
-                    recheck = true ;
-                }
-                continue ;
+                #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE ) 
+                    // for( int i = batch_idx * batch_siz , lim = i + batch_siz ; i < lim ; i ++ ){ 
+                    //     if( op_status( comps[i].status ) == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
+                    //     else printf( "W" ) ;
+                    // }
+                    // printf( " : wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) ); 
+                    if( op_status( bcomp[batch_idx].status ) == 1 ){
+                        free_queue.push_back( batch_idx ) ;
+                        buzy_queue.delay_front_and_pop( q_idx ) ;
+                        recheck = true ;
+                    }
+                    continue ;
+                #else 
+                    break ;
+                #endif 
             } 
         }
         if( !recheck ) break ;

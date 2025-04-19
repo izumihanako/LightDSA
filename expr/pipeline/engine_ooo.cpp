@@ -12,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 ;
-constexpr int COPY_LEN = 512 ; 
+constexpr int COPY_LEN = 1 * KB ; 
 int desc_cnt = 1 , method = 0 , is_random = 0 , wq_cnt = 4 ;
 size_t array_len , stride ;
 
@@ -70,7 +70,7 @@ void test_dsa_batch( size_t array_len , int cnt , vector<OffLen> test_set , int 
             invld_range( a , array_len ) ;
             invld_range( b , array_len ) ;
             st_time = timeStamp_hires() ;  
-            for( int i = 0 ; i < cnt ; i ++ ){
+            for( int i = 0 ; i < cnt ; i ++ ){ 
                 int id = i % wq_cnt ;
                 memcpys[id].wait() ;
                 memcpys[id].do_async( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
@@ -131,10 +131,10 @@ int main( int argc , char** argv ){
     return 0 ;
 }
 /**
-./setup_dsa.sh -d dsa0 -g0 -w1 -q0 -s32 -md -e1 -b0
-./setup_dsa.sh -d dsa0 -g1 -w1 -q1 -s32 -md -e1 -b0
-./setup_dsa.sh -d dsa0 -g2 -w1 -q2 -s32 -md -e1 -b0
-./setup_dsa.sh -d dsa0 -g3 -w1 -q3 -s32 -md -e1 -b0
+./setup_dsa.sh -d dsa0 -g0 -w1 -q0 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g1 -w1 -q1 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g2 -w1 -q2 -s32 -ms -e1 -b0
+./setup_dsa.sh -d dsa0 -g3 -w1 -q3 -s32 -ms -e1 -b0
 ./setup_dsa.sh -d dsa0 -b1
 */
 // echo 24 > /sys/bus/dsa/devices/dsa0/group0.*/read_buffers_allowed
