@@ -19,7 +19,7 @@ add_executable( coro_demo coro_demo.cpp )
 target_compile_options( coro_demo PRIVATE -Wall -Wextra -O2 )
 target_link_libraries( coro_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} )
 
-# compile allocator_test
-add_executable( allocator_test allocator_test.cpp )
-target_compile_options( allocator_test PRIVATE -Wall -Wextra -O2 -Wno-unused-result )
-target_link_libraries( allocator_test dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} )
+# compile vector_demo
+add_executable( vector_demo vector_demo.cpp )
+target_compile_options( vector_demo PRIVATE -Wall -Wextra -O2 -Wno-unused-result )
+target_link_libraries( vector_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} )

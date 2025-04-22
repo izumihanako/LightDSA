@@ -8,7 +8,7 @@ constexpr int coro = 4 ;
 constexpr int element_per_co = 5000000 ;
 constexpr int group = 8 ;
 constexpr int buffer_size = 2048 ;
-constexpr int databytes = 2040 ;
+constexpr int databytes = 1016 ;
 constexpr int hashbytes = 8 ;
 
 Galois_LFSR lsfr ; 

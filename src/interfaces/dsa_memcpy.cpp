@@ -27,7 +27,7 @@ void DSAmemcpy::do_async( void *dest , const void* src , size_t len ) noexcept( 
             src_ += align64_diff ; 
         } 
     #endif
-    dtask.set_op( DSA_OPCODE_MEMMOVE , (void*)(dest_ + align64_diff) , (void*)(src_ + align64_diff) , len ) ;
+    dtask.set_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     dtask.do_op() ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(FLAG_DEST_READBACK)
         _mm_clflush( src ) ; // persistent in memory
