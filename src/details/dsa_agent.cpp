@@ -13,7 +13,7 @@ DSAworkingqueue::~DSAworkingqueue(){
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
         delete allocator ;
     #endif 
-    munmap( wq_portal , 0x1000 ) ;
+    munmap( wq_portal , 0x1000 ) ; 
 }
 
 

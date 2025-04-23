@@ -23,3 +23,8 @@ target_link_libraries( coro_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LI
 add_executable( vector_demo vector_demo.cpp )
 target_compile_options( vector_demo PRIVATE -Wall -Wextra -O2 -Wno-unused-result )
 target_link_libraries( vector_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} )
+
+# compile mergesort_demo
+add_executable( mergesort_demo mergesort_demo.cpp )
+target_compile_options( mergesort_demo PRIVATE -Wall -Wextra -O2 )
+target_link_libraries( mergesort_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} ) 
