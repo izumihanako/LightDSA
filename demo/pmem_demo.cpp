@@ -163,7 +163,7 @@ int main(){
         while( src_size ){
             size_t now_len = rand() % ( single_len_max - single_len_min + 1 ) + single_len_min ;
             if( now_len > src_size ) now_len = src_size ;
-            if( pm_file_append( handler , src->pmem_addr + src->used_size - src_size , now_len ) < 0 ){
+            if( pm_file_append( handler , src->pmem_addr + src->used_size - src_size , now_len ) == 0 ){
                 printf( "write failed\n" ) ; fflush( stdout ) ; 
                 return 0 ;
             }

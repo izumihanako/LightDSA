@@ -1,7 +1,6 @@
 #include "src/details/dsa_agent.hpp"
 #include "src/async_dsa.hpp"
 
-
 int main(){
     DSAagent &dsa = DSAagent::get_instance() ;
     DSAdevice *device0 = dsa.get_device( 0 ) ;
