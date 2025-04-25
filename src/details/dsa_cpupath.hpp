@@ -5,8 +5,8 @@
 #include <cstddef>
 #include <linux/idxd.h>
 
-void memmove_cpu( void *dest , void* src , size_t len ) ;
-void memfill_cpu( void *dest , uint64_t pattern , size_t len ) ;
+void memmove_cpu( void *dest , const void* src , size_t len , bool flush = false ) ;
+void memfill_cpu( void *dest , uint64_t pattern , size_t len  , bool flush = false ) ;
 int compare_cpu( void *dest , void* src , size_t len ) ;
 int compval_cpu( void *dest , uint64_t pattern , size_t len ) ;
 void flush_cpu( void *dest , size_t len ) ;

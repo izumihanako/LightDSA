@@ -4,11 +4,16 @@
 #include <cstdio>
 #include <x86intrin.h>
 
-void memmove_cpu( void* dest , void* src , size_t len ){
-    memcpy( dest , src , len ) ;
+void memmove_cpu( void* dest , const void* src , size_t len , bool flush ){
+    memmove( dest , src , len ) ;
+    if( flush ){
+        for( size_t i = 0 ; i < len ; i += 8 * 64 )
+            _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ;
+        _mm_sfence() ;
+    }
 }
 
-void memfill_cpu( void* dest , uint64_t pattern , size_t len ){
+void memfill_cpu( void* dest , uint64_t pattern , size_t len , bool flush ){
     uint64_t *ptr = (uint64_t*)dest ;
     size_t i = 0 ;
     for( i = 0 ; i + 4 < len / 8 ; i += 4 ){
@@ -20,6 +25,11 @@ void memfill_cpu( void* dest , uint64_t pattern , size_t len ){
     for( ; i < len / 8 ; i ++ ) ptr[i] = pattern ; 
     for( i = len / 8 * 8 ; i < len ; i ++ ) {
         *(uint8_t*)((uintptr_t)ptr + i) = (pattern >> (i * 8)) & 0xFF;
+    }
+    if( flush ){
+        for( size_t i = 0 ; i < len ; i += 8 * 64 )
+            _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ;
+        _mm_sfence() ;
     }
 }
 
@@ -70,11 +80,11 @@ void do_by_cpu( dsa_hw_desc *desc , dsa_completion_record *comp ){
     case DSA_OPCODE_NOOP :
         break ;
     case DSA_OPCODE_MEMMOVE :
-        memmove_cpu( (void*)desc->dst_addr , (void*)desc->src_addr , desc->xfer_size ) ;
+        memmove_cpu( (void*)desc->dst_addr , (void*)desc->src_addr , desc->xfer_size , ( desc->flags & IDXD_OP_FLAG_CC ) ? 0 : 1 ) ;
         if( comp ) comp->bytes_completed = desc->xfer_size ;
         break ;
     case DSA_OPCODE_MEMFILL :
-        memfill_cpu( (void*)desc->dst_addr , desc->pattern_lower , desc->xfer_size ) ;
+        memfill_cpu( (void*)desc->dst_addr , desc->pattern_lower , desc->xfer_size , ( desc->flags & IDXD_OP_FLAG_CC ) ? 0 : 1 ) ;
         if( comp ) comp->bytes_completed = desc->xfer_size ;
         break ;
     case DSA_OPCODE_COMPARE :{

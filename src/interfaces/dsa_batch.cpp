@@ -23,7 +23,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     } 
     #ifdef BUILD_RELEASE
         if( len < 0x400 ) { 
-            memfill_cpu( dest , pattern , len ) ; 
+            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 1 : 0 ) ; 
             return true ;
         }
     #endif
@@ -47,6 +47,9 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     #endif
     cnt ++ ; 
     db_task.add_op( DSA_OPCODE_MEMFILL , (void*)(dest_ + align64_diff) , (void*)(uintptr_t)pattern , len ) ;
+    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
+        _mm_clflushopt( dest ) ; // persistent in memory
+    #endif
     return true ;
 }
 
@@ -59,7 +62,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     } 
     // #ifdef BUILD_RELEASE
         if( len < 0x200 ) { 
-            memcpy( dest , src , len ) ;
+            memmove_cpu( dest , src , len , _FLAG_CC_ ? 1 : 0 ) ;
             return true ;
         }
     // #endif 
@@ -77,7 +80,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     #endif
     cnt ++ ; 
     db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
-    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(FLAG_DEST_READBACK)
+    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
         _mm_clflushopt( dest ) ; // persistent in memory
     #endif 
     return true ;

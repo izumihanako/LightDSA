@@ -28,3 +28,8 @@ target_link_libraries( vector_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_
 add_executable( mergesort_demo mergesort_demo.cpp )
 target_compile_options( mergesort_demo PRIVATE -Wall -Wextra -O2 )
 target_link_libraries( mergesort_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} ) 
+
+# compile pmem_demo
+add_executable( pmem_demo pmem_demo.cpp )
+target_compile_options( pmem_demo PRIVATE -Wall -Wextra -O2 )
+target_link_libraries( pmem_demo dsa_memcpy ${Boost_LIBRARIES} ${accel_config_LIBRARY} ${PMEM_LIBRARY} )

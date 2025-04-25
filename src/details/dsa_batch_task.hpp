@@ -33,7 +33,7 @@ public:
 };
 
 struct DSAbatch_task{
-// private : 
+private : 
     // main desc
     dsa_hw_desc *bdesc ;
     // main comp
@@ -58,6 +58,10 @@ struct DSAbatch_task{
 
     void *wq_portal ;
     DSAworkingqueue *working_queue ;
+
+public:
+    int do_by_cpu_cnt ;
+    int batch_fail_cnt ;
  
 public : 
     DSAbatch_task( int bsiz , int cap ) ;

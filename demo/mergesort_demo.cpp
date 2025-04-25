@@ -57,7 +57,7 @@ vector<Data> sort_by_ptr( std::vector<Data> &unsorted_data ){
         pre_data[i] = unsorted_data[i] ;
 
     // merge sort
-    for( int seglen = 1 ; seglen + 1 < unsorted_data.size() ; seglen *= 2 ){
+    for( int seglen = 1 ; seglen + 1 < (int)unsorted_data.size() ; seglen *= 2 ){
         // printf( "sorting seglen = %d\n" , seglen ) ; fflush( stdout ) ;
         int now_Data_pos = 0 ; 
         for( int i = 0 , lim = unsorted_data.size() ; i < lim ; i += seglen * 2 ){ 
@@ -109,7 +109,7 @@ vector<Data> sort_by_dsa( std::vector<Data> &unsorted_data ){
     vector<Data> now_data( unsorted_data.size() ) , pre_data( unsorted_data.size() ) ; 
     // init
     long long pos = 0 ;
-    for( uint64_t x = 0 ; x < sum_len ; x += 4096 ){
+    for( uint64_t x = 0 ; x < (uint64_t)sum_len ; x += 4096 ){
         *( (char*)now + x ) = 0 ;
         *( (char*)pre + x ) = 0 ;
     }
@@ -123,7 +123,7 @@ vector<Data> sort_by_dsa( std::vector<Data> &unsorted_data ){
     dsa_batch.wait() ;
 
     // merge sort
-    for( int seglen = 1 ; seglen + 1 < unsorted_data.size() ; seglen *= 2 ){
+    for( int seglen = 1 ; seglen + 1 < (int)unsorted_data.size() ; seglen *= 2 ){
         // printf( "sorting seglen = %d\n" , seglen ) ; fflush( stdout ) ;
         int now_Data_pos = 0 ;
         long long now_str_pos = 0 ;

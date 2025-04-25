@@ -6,3 +6,6 @@ build/
 
 output/
 # Ignore data files
+
+*.rdb
+# Ignore Redis database files

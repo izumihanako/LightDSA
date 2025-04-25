@@ -91,6 +91,9 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     free_queue.init( batch_capacity + 1 ) ;
     buzy_queue.init( batch_capacity + 1 ) ; 
     rdstrb.init( bsiz ) ;
+    // stats 
+    do_by_cpu_cnt = 0 ;
+    batch_fail_cnt = 0 ;
     clear() ;
 }
 
@@ -237,12 +240,13 @@ void DSAbatch_task::PF_adjust_desc( int idx ){
 void DSAbatch_task::resolve_error( int batch_idx ) { 
     int x = op_status( bcomp[batch_idx].status ) ;
     if( x == 1 || x == 0 ) return ; // success or not finish yet
-    printf( "DSA batch op error code 0x%x, %s\n" , x , dsa_comp_status_str( x ) ) ; fflush( stdout ) ;
+    // printf( "DSA batch op error code 0x%x, %s\n" , x , dsa_comp_status_str( x ) ) ; fflush( stdout ) ;
+    batch_fail_cnt ++ ;
     int batch_base = batch_idx * batch_siz ;
     for( int i = 0 ; i < batch_siz ; i ++ ){
         int idx = batch_base + i ;
         uint8_t status = op_status( comps[idx].status ) ;
-        printf( "desc %d, status = 0x%x, %s\n" , idx , status , dsa_comp_status_str( status ) ) ;
+        // printf( "desc %d, status = 0x%x, %s\n" , idx , status , dsa_comp_status_str( status ) ) ;
         if( status == DSA_COMP_SUCCESS ){
             // already done, set to no op
             descs[idx].opcode = DSA_OPCODE_NOOP ;
@@ -257,7 +261,9 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
             retry_cnts[idx] ++ ;
             if( retry_cnts[idx] >= DSA_RETRY_LIMIT &&
                 ori_xfersize[idx] / retry_cnts[idx] < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
+                puts( "????????????????????????" ) ;
                 do_by_cpu( &descs[idx] , &comps[idx] ) ;
+                do_by_cpu_cnt ++ ;
                 descs[idx].opcode = DSA_OPCODE_NOOP ;
                 descs[idx].flags = DSA_NOOP_FLAG ;
                 descs[idx].src_addr = descs[idx].dst_addr = descs[idx].xfer_size = 0 ;
@@ -267,6 +273,7 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
             // not implemented yet
         }
     } 
+    // getchar() ;
 }
 
 void DSAbatch_task::do_op( int batch_idx ) { 

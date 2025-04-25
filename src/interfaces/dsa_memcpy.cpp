@@ -30,7 +30,7 @@ void DSAmemcpy::do_async( void *dest , const void* src , size_t len ) noexcept( 
     dtask.set_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     dtask.do_op() ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(FLAG_DEST_READBACK)
-        _mm_clflush( src ) ; // persistent in memory
+        _mm_clflush( dest ) ; // persistent in memory
     #endif 
     return ;
 }

@@ -1,6 +1,6 @@
 cmake_minimum_required( VERSION 3.16 )
-project( DSA_Memcpy )
-
+project( DSA_Memcpy ) 
+set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 
 ### ------------------------ defines ------------------------ ###
 # defs 
@@ -39,14 +39,19 @@ endif()
 
 # compile options
 set(CMAKE_CXX_STANDARD 14) 
+include_directories(${CMAKE_SOURCE_DIR})
 
 # find Boost lib
 find_package( Boost 1.74.0 REQUIRED context coroutine )
-include_directories( $(Boost_INCLUDE_DIRS) )
+include_directories( ${Boost_INCLUDE_DIRS} )
+
+# find libpmem
+find_package(Pmem REQUIRED)
 
 # find idxd-config lib 
 SET( accel_config_libpath "/usr/lib64" )
 find_library( accel_config_LIBRARY accel-config ${accel_config_libpath} )
+message(STATUS "accel_config_LIBRARY: " ${accel_config_LIBRARY} )
 if ( ${accel_config_LIBRARY} STREQUAL "accel_config_LIBRARY-NOTFOUND" )
     message( FATAL_ERROR 
             "Required accel-config library but not found !\n"
