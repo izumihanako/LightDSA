@@ -9,3 +9,9 @@ output/
 
 *.rdb
 # Ignore Redis database files
+
+*.a 
+*.o 
+*.so
+lib/
+# Ignore object files and static/shared libraries

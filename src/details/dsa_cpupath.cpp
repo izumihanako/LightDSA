@@ -36,7 +36,7 @@ void memfill_cpu( void* dest , uint64_t pattern , size_t len , bool flush ){
 int compare_cpu( void* dest , void* src , size_t len ){
     uint64_t *ptrA = (uint64_t*)dest ;
     uint64_t *ptrB = (uint64_t*)src ;
-    int i = 0 ;
+    size_t i = 0 ;
     for( ; i < len / 8 ; i ++ ){
         if( ptrA[i] != ptrB[i] ){
             for( int j = 0 ; j < 8 ; j ++ ){
@@ -54,18 +54,18 @@ int compare_cpu( void* dest , void* src , size_t len ){
 
 int compval_cpu( void* dest , uint64_t pattern , size_t len ){
     uint64_t *ptr = (uint64_t*)dest ;
-    int i = 0 ;
+    size_t i = 0 ;
     for( ; i < len / 8 ; i ++ ){
         if( ptr[i] != pattern ){
             for( int j = 0 ; j < 8 ; j ++ ){
-                if( *(uint8_t*)((uintptr_t)ptr + i * 8 + j) != (pattern >> (j * 8)) & 0xFF ){
+                if( *(uint8_t*)((uintptr_t)ptr + i * 8 + j) != ( (pattern >> (j * 8)) & 0xFF ) ){
                     return i * 8 + j ;
                 }
             }
         }
     }
     for( i = len / 8 * 8 ; i < len ; i ++ ){
-        if( *(uint8_t*)((uintptr_t)ptr + i) != (pattern >> (i * 8)) & 0xFF ) return i ;
+        if( *(uint8_t*)((uintptr_t)ptr + i) != ( (pattern >> (i * 8)) & 0xFF ) ) return i ;
     }
     return len;
 }
@@ -90,7 +90,7 @@ void do_by_cpu( dsa_hw_desc *desc , dsa_completion_record *comp ){
     case DSA_OPCODE_COMPARE :{
         int res = compare_cpu( (void*)desc->src_addr , (void*)desc->src2_addr , desc->xfer_size ) ;
         if( !comp ) break ;
-        if( res == desc->xfer_size ){
+        if( (uint32_t)res == desc->xfer_size ){
             comp->result = 0 ;
             comp->bytes_completed = 0 ;
         } else {
@@ -102,7 +102,7 @@ void do_by_cpu( dsa_hw_desc *desc , dsa_completion_record *comp ){
     case DSA_OPCODE_COMPVAL :{
         int res = compval_cpu( (void*)desc->src_addr , desc->pattern_lower , desc->xfer_size ) ;
         if( !comp ) break ;
-        if( res == desc->xfer_size ){
+        if( (uint32_t)res == desc->xfer_size ){
             comp->result = 0 ;
             comp->bytes_completed = 0 ;
         } else {
