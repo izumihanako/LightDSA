@@ -51,5 +51,6 @@ void DSAinit_agent( void ){
 void DSAinit_new_agent( void ){
     DSAagent::new_instance() ;
     return ;
+}
 
 }
