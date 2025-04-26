@@ -84,36 +84,39 @@ void DSAagent::init(){
         exit( -1 ) ;
     }
     print_wqs() ;
+
+    printf_RGB( 0x88B806 , "\nDSA configures:\n" ) ;
     #if defined(DESCS_QUEUE_RECYCLE_WINDOW_ENABLE)
-        printf_RGB( 0x00cc33 , "DSA enable recycle window\n" ) ;
+        printf_RGB( 0x00cc33 , "+  Recycle window enable, window len = %d\n" , QUEUE_RECYCLE_UNFINISHED_LIMIT ) ;
     #else 
-        printf_RGB( 0xcc0011 , "DSA disable recycle window\n" ) ;
+        printf_RGB( 0xcc0011 , "-  Recycle window disable\n" ) ;
     #endif
 
     #if defined(DESCS_INBATCH_REDISTRIBUTE_ENABLE)
-        printf_RGB( 0x00cc33 , "DSA enable redistribute descs in batch\n" ) ;  
+        printf_RGB( 0x00cc33 , "+  In-batch pipeline enable\n" ) ;  
     #else 
-        printf_RGB( 0xcc0011 , "DSA disable redistribute descs in batch\n" ) ;
+        printf_RGB( 0xcc0011 , "-  In-batch pipeline disable\n" ) ;
     #endif
 
     #if defined(DESCS_ADDRESS_ALIGNMENT)
-        printf_RGB( 0x00cc33 , "DSA enable descs address alignment, " ) ;
+        printf_RGB( 0x00cc33 , "+  Write address 64Byte alignment enable " ) ;
     #else 
-        printf_RGB( 0xcc0011 , "DSA disable descs address alignment, " ) ; 
+        printf_RGB( 0xcc0011 , "-  Write address 64Byte alignment disable " ) ; 
     #endif 
     if( _FLAG_CC_ ) {
-        printf_RGB( 0x00cc33 , "with cache control\n" ) ;
+        printf_RGB( 0x00cc33 , "+ with cache control\n" ) ;
     } else {
-        printf_RGB( 0xcc0011 , "without cache control\n" ) ;
+        printf_RGB( 0xcc0011 , "- without cache control\n" ) ;
     } 
 
     #if defined(ALLOCATOR_CONTIGUOUS_ENABLE)
-        printf_RGB( 0x00cc33 , "DSA enable contiguous allocation\n" ) ;
+        printf_RGB( 0x00cc33 , "+  Contiguous allocation enable" ) ;
         #if defined(ALLOCATOR_USE_HUGEPAGE)
-            printf_RGB( 0x00cc33 , "DSA enable huge page allocation\n" ) ;
+            printf_RGB( 0x00cc33 , "(enable huge-page)" ) ;
         #endif
+        puts( "" ) ;
     #else
-        printf_RGB( 0xcc0011 , "DSA disable contiguous allocation\n" ) ;
+        printf_RGB( 0xcc0011 , "-  Contiguous allocation disable\n" ) ;
     #endif
 }
 
@@ -122,7 +125,7 @@ void DSAagent::print_wqs(){
     for( const auto &dev : devices ){
         printf_RGB( 0x88B806 , "device : %s\n" , dev->get_dev_name() ) ;
         for( const auto &x : dev->wq_list ){
-            printf_RGB( 0x1450B8 , "- %s, %s, group %d\n" , x->get_name() ,
+            printf_RGB( 0x1450B8 , "·>  %s, %s, group %d\n" , x->get_name() ,
                     accfg_wq_get_mode( x->wq ) == ACCFG_WQ_DEDICATED ? "dedicated" : "shared" ,
                     accfg_wq_get_group_id( x->wq ) ) ;
         }
@@ -130,7 +133,7 @@ void DSAagent::print_wqs(){
         accfg_engine_foreach( dev->device , engine ){
             if( accfg_engine_get_group_id( engine ) == -1 )
                 continue ;
-            printf_RGB( 0xB8B104 , "- %s, group %d\n" , accfg_engine_get_devname( engine ) , 
+            printf_RGB( 0xB8B104 , "·>  %s, group %d\n" , accfg_engine_get_devname( engine ) , 
                     accfg_engine_get_group_id( engine ) ) ;
         }
     } 
