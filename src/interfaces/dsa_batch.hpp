@@ -22,7 +22,8 @@ public :
 
     void wait() ;
 
-    int cnt ;
+    int to_dsa ;
+    int to_cpu ;
 } ;
 
 #endif 

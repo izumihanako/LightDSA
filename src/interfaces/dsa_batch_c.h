@@ -16,6 +16,8 @@ int DSAbatch_submit_memcpy( DSAbatch* dsa, void *dest, const void* src, size_t l
 int DSAbatch_submit_flush( DSAbatch* dsa, void *dest, size_t len ) ;
 int DSAbatch_check( DSAbatch* dsa ) ;
 void DSAbatch_wait( DSAbatch* dsa ) ;
+void DSAbatch_printstats( DSAbatch* dsa ) ;
+void DSAinit( void ) ;
 
 #ifdef __cplusplus
     }

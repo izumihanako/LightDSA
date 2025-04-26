@@ -62,6 +62,8 @@ private :
 public:
     int do_by_cpu_cnt ;
     int batch_fail_cnt ;
+    long long op_cnt ;
+    long long op_bytes ;
  
 public : 
     DSAbatch_task( int bsiz , int cap ) ;
@@ -121,6 +123,8 @@ public :
 
     // clear submit queue
     void clear() ;
+
+    void print_stats() ;
     
     __always_inline bool empty() { return buzy_queue.empty() && desc_idx == 0 ; }
  

@@ -3,7 +3,8 @@
 extern "C" {
  
 DSAmemcpy* DSAmemcpy_create(){
-    return new DSAmemcpy() ;
+    void * mem = aligned_alloc( 64 , sizeof(DSAmemcpy) ) ; 
+    return new (mem) DSAmemcpy() ;
 }
 
 void DSAmemcpy_destroy( DSAmemcpy* dsa ){

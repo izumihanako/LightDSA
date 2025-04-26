@@ -26,14 +26,14 @@ DSAdevice::~DSAdevice(){
     } 
 }
 
-DSAdevice::DSAdevice( accfg_device* devptr ): now_wq_id( 0 ) , wq_cnt( 0 ) , device( devptr ) { 
+DSAdevice::DSAdevice( accfg_device* devptr ): wq_cnt( 0 ) , now_wq_id( 0 ) , device( devptr ) { 
     wq_list.clear() ;
 }
 
 
 /********************************************************************************/
 
-DSAagent::DSAagent(): now_dev_id( 0 ) , dev_cnt( 0 ) {
+DSAagent::DSAagent(): dev_cnt( 0 ) , now_dev_id( 0 ) {
     accfg_new( &ctx ) ;
     init() ;
 }
@@ -83,7 +83,33 @@ void DSAagent::init(){
         printf( "Could not find an available device, please check the DSA configuration.") ;
         exit( -1 ) ;
     }
-    print_wqs() ; 
+    print_wqs() ;
+    #if defined(DESCS_QUEUE_RECYCLE_WINDOW_ENABLE)
+        printf_RGB( 0x00cc33 , "DSA enable recycle window\n" ) ;
+    #else 
+        printf_RGB( 0xcc0011 , "DSA disable recycle window\n" ) ;
+    #endif
+
+    #if defined(DESCS_INBATCH_REDISTRIBUTE_ENABLE)
+        printf_RGB( 0x00cc33 , "DSA enable redistribute descs in batch\n" ) ;
+    #else 
+        printf_RGB( 0xcc0011 , "DSA disable redistribute descs in batch\n" ) ;
+    #endif
+
+    #if defined(DESCS_ADDRESS_ALIGNMENT)
+        printf_RGB( 0x00cc33 , "DSA enable descs address alignment\n" ) ;
+    #else 
+        printf_RGB( 0xcc0011 , "DSA disable descs address alignment\n" ) ;
+    #endif
+
+    #if defined(ALLOCATOR_CONTIGUOUS_ENABLE)
+        printf_RGB( 0x00cc33 , "DSA enable contiguous allocation\n" ) ;
+        #if defined(ALLOCATOR_USE_HUGEPAGE)
+            printf_RGB( 0x00cc33 , "DSA enable huge page allocation\n" ) ;
+        #endif
+    #else
+        printf_RGB( 0xcc0011 , "DSA disable contiguous allocation\n" ) ;
+    #endif
 }
 
 void DSAagent::print_wqs(){

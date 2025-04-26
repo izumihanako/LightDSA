@@ -1,5 +1,6 @@
 #include "dsa_batch.hpp"
 #include "dsa_batch_c.h"
+#include <cstdio>
  
 extern "C" {
 
@@ -33,6 +34,17 @@ int DSAbatch_check( DSAbatch* dsa ){
 
 void DSAbatch_wait( DSAbatch* dsa ){
     dsa->wait() ;
+    return ;
+}
+
+void DSAbatch_printstats( DSAbatch* dsa ){
+    printf( "DSAbatch: to_cpu = %d, to_dsa = %d\n", dsa->to_cpu , dsa->to_dsa ) ;
+    dsa->db_task.print_stats() ; 
+    return ; 
+}
+
+void DSAinit( void ){
+    DSAagent::get_instance() ;
     return ;
 }
 

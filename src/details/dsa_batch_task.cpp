@@ -94,6 +94,7 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     // stats 
     do_by_cpu_cnt = 0 ;
     batch_fail_cnt = 0 ;
+    op_cnt = op_bytes = 0 ;
     clear() ;
 }
 
@@ -178,6 +179,11 @@ void DSAbatch_task::clear(){
     buzy_queue.clear() ; 
     // 0 is already in use
     for( int i = 1 ; i < batch_capacity ; i ++ ) free_queue.push_back( i ) ; 
+}
+
+void DSAbatch_task::print_stats(){
+    printf( "DSAbatch_task: op_cnt = %lld , op_bytes = %lld\n" , op_cnt , op_bytes ) ;
+    printf( "DSAbatch_task: do_by_cpu_cnt = %d , batch_fail_cnt = %d\n" , do_by_cpu_cnt , batch_fail_cnt ) ;
 }
 
 void DSAbatch_task::add_no_op(){
@@ -296,6 +302,7 @@ bool DSAbatch_task::set_wq( DSAworkingqueue *new_wq ){
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type ){ 
+    op_cnt ++ ; 
     if( !is_pos_valid() ) {
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
@@ -311,6 +318,8 @@ void DSAbatch_task::add_op( dsa_opcode op_type ){
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , size_t len ){
+    op_cnt ++ ;
+    op_bytes += len ;
     if( !is_pos_valid() ) {
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
@@ -326,6 +335,8 @@ void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , size_t len ){
 }
 
 void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , size_t len ){
+    op_cnt ++ ;
+    op_bytes += len ;
     if( !is_pos_valid() ) {
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;

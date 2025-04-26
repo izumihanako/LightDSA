@@ -5,14 +5,14 @@
  
 DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
     db_task.set_wq( DSAagent::get_instance().get_wq() ) ;
-    cnt = 0 ; 
+    to_dsa = to_cpu = 0 ; 
 }
 
 bool DSAbatch::submit_comp_pattern( void *src , uint64_t pattern , size_t len ) noexcept( true ){
     if( db_task.full() ) {  
         while( !db_task.collect() ) ;  
     }
-    cnt ++ ;
+    to_dsa ++ ;
     db_task.add_op( DSA_OPCODE_COMPVAL , (void*)(uintptr_t)pattern , src , len ) ;
     return true ;
 }
@@ -23,17 +23,18 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     } 
     #ifdef BUILD_RELEASE
         if( len < 0x400 ) { 
+            to_cpu ++ ;
             memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 1 : 0 ) ; 
             return true ;
         }
     #endif
     uintptr_t dest_ = (uintptr_t) dest ;
-    int align64_diff = 0 ;
     #ifdef DESCS_ADDRESS_ALIGNMENT
+        size_t align64_diff = 0 ;
         if( dest_ & 0x3f ){  
             align64_diff = 0x40 - ( dest_ & 0x3f ) ;
             align64_diff = len < align64_diff ? len : align64_diff ;
-            for( int i = 0 ; i + 8 <= align64_diff ; i += 8 )
+            for( size_t i = 0 ; i + 8 <= align64_diff ; i += 8 )
                 *(uint64_t*)( dest_ + i ) = pattern ; 
             if( align64_diff & 0x7 ){
                 uint64_t tmp = ( align64_diff & 0x7 ) * 8 ;
@@ -45,8 +46,8 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
             dest_ += align64_diff ; 
         }
     #endif
-    cnt ++ ; 
-    db_task.add_op( DSA_OPCODE_MEMFILL , (void*)(dest_ + align64_diff) , (void*)(uintptr_t)pattern , len ) ;
+    to_dsa ++ ; 
+    db_task.add_op( DSA_OPCODE_MEMFILL , (void*)(dest_) , (void*)(uintptr_t)pattern , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
         _mm_clflushopt( dest ) ; // persistent in memory
     #endif
@@ -62,13 +63,14 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     } 
     // #ifdef BUILD_RELEASE
         if( len < 0x200 ) { 
+            to_cpu ++ ;
             memmove_cpu( dest , src , len , _FLAG_CC_ ? 1 : 0 ) ;
             return true ;
         }
     // #endif 
     uintptr_t dest_ = (uintptr_t) dest , src_ = (uintptr_t)src ;
-    int align64_diff = 0 ;
     #ifdef DESCS_ADDRESS_ALIGNMENT
+        size_t align64_diff = 0 ;
         if( dest_ & 0x3f ){  
             align64_diff = 0x40 - ( dest_ & 0x3f ) ;
             align64_diff = len < align64_diff ? len : align64_diff ;
@@ -78,7 +80,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
             src_ += align64_diff ;  
         } 
     #endif
-    cnt ++ ; 
+    to_dsa ++ ; 
     db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
         _mm_clflushopt( dest ) ; // persistent in memory
@@ -102,7 +104,7 @@ bool DSAbatch::submit_flush( void *dest , size_t len ) noexcept( true ){
             len += 0x40 - ( len & 0x3f ) ;
         }
     #endif
-    cnt ++ ;
+    to_dsa ++ ;
     db_task.add_op( DSA_OPCODE_CFLUSH , (void*)(dest_) , len ) ;
     return true ;
 }

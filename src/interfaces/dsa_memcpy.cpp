@@ -15,10 +15,9 @@ void DSAmemcpy::do_async( void *dest , const void* src , size_t len ) noexcept( 
     }
     #endif 
     uintptr_t dest_ = (uintptr_t) dest , src_ = (uintptr_t)src ;
-    int align64_diff = 0 ;
     #ifdef DESCS_ADDRESS_ALIGNMENT
-        if( dest_ & 0x3f ){ 
-            int tmp = 0 ; 
+        size_t align64_diff = 0 ;
+        if( dest_ & 0x3f ){  
             align64_diff = 0x40 - ( dest_ & 0x3f ) ; 
             align64_diff = len < align64_diff ? len : align64_diff ;
             memcpy( (void*)dest_ , (void*)src_ , align64_diff ) ;
