@@ -78,26 +78,6 @@ target_include_directories( dsa_memcpy PUBLIC ${CMAKE_SOURCE_DIR}/src )
 target_compile_options( dsa_memcpy PRIVATE -fPIC -O2 -mclflushopt )
 target_link_libraries( dsa_memcpy PRIVATE ${accel_config_LIBRARY} )
 
-
-# compile C_LIB 
-add_library( C_LIB SHARED ${SRC_LIST} )
-target_include_directories( C_LIB PUBLIC ${CMAKE_SOURCE_DIR}/src )
-target_compile_options( C_LIB PRIVATE -fPIC -O2 -mclflushopt )
-target_compile_definitions( C_LIB PRIVATE -DFOR_C )
-target_link_libraries( C_LIB PRIVATE ${accel_config_LIBRARY} )
-
-# 设置 C_LIB 的属性
-set_target_properties(C_LIB PROPERTIES
-    OUTPUT_NAME "c_dsa_memcpy" # 动态库名称
-    CXX_VISIBILITY_PRESET hidden
-    VISIBILITY_INLINES_HIDDEN 1
-)
-add_custom_target(C_LIB_BUILD
-    DEPENDS C_LIB
-    COMMENT "Building C_LIB (C++ library compatible with C)"
-)
-
-
 # compile demo
 add_subdirectory( demo/ )
 

@@ -35,8 +35,7 @@ target_compile_options( pmem_demo PRIVATE -Wall -Wextra -O2 )
 target_link_libraries( pmem_demo dsa_memcpy ${PMEM_LIBRARY} )
 
 # compile c_demo
-# add_executable( c_demo c_demo.c )
-# set_target_properties( c_demo PROPERTIES LINKER_LANGUAGE C ) 
-# target_link_directories(c_demo PRIVATE ${CMAKE_BINARY_DIR} )
-# target_compile_options( c_demo PRIVATE -Wall -Wextra -O2 )
-# target_link_libraries( c_demo PRIVATE c_dsa_memcpy )
+add_executable( c_demo c_demo.c )
+set_target_properties( c_demo PROPERTIES LINKER_LANGUAGE C ) 
+target_compile_options( c_demo PRIVATE -Wall -Wextra -O2 )
+target_link_libraries( c_demo PRIVATE dsa_memcpy )
