@@ -43,8 +43,8 @@ private :
     int dev_cnt ;
     std::atomic<uint64_t> now_dev_id ; 
     std::vector<DSAdevice*> devices ; 
-    accfg_ctx *ctx ;
-    static DSAagent inst ;
+    accfg_ctx *ctx ; 
+    static DSAagent *inst ;
 
     void init() ;
 
@@ -68,8 +68,16 @@ public :
     DSAdevice* get_device( int dev_id ) const ;
  
     static DSAagent& get_instance(){
-        static DSAagent inst ; // magic static
-        return inst ;
+        if( inst == NULL ){
+            inst = new DSAagent() ;
+        }
+        return *inst ; 
+    }
+
+    // only used when fork a process
+    static DSAagent* new_instance(){
+        inst = new DSAagent() ; 
+        return inst ; 
     }
 
 } ; 

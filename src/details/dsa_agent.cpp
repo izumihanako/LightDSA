@@ -155,3 +155,5 @@ DSAworkingqueue *DSAagent::get_wq( int dev_id , int wq_id ){
 DSAdevice* DSAagent::get_device( int dev_id ) const {
     return devices[dev_id] ;
 }
+
+DSAagent* DSAagent::inst = nullptr ;

@@ -43,9 +43,13 @@ void DSAbatch_printstats( DSAbatch* dsa ){
     return ; 
 }
 
-void DSAinit( void ){
+void DSAinit_agent( void ){
     DSAagent::get_instance() ;
     return ;
 }
+
+void DSAinit_new_agent( void ){
+    DSAagent::new_instance() ;
+    return ;
 
 }
