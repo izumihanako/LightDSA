@@ -91,16 +91,21 @@ void DSAagent::init(){
     #endif
 
     #if defined(DESCS_INBATCH_REDISTRIBUTE_ENABLE)
-        printf_RGB( 0x00cc33 , "DSA enable redistribute descs in batch\n" ) ;
+        printf_RGB( 0x00cc33 , "DSA enable redistribute descs in batch\n" ) ;  
     #else 
         printf_RGB( 0xcc0011 , "DSA disable redistribute descs in batch\n" ) ;
     #endif
 
     #if defined(DESCS_ADDRESS_ALIGNMENT)
-        printf_RGB( 0x00cc33 , "DSA enable descs address alignment\n" ) ;
+        printf_RGB( 0x00cc33 , "DSA enable descs address alignment, " ) ;
     #else 
-        printf_RGB( 0xcc0011 , "DSA disable descs address alignment\n" ) ;
+        printf_RGB( 0xcc0011 , "DSA disable descs address alignment, " ) ; 
     #endif
+    if( _FLAG_CC_ ) {
+        printf_RGB( 0x00cc33 , "with cache control\n" ) ;
+    } else {
+        printf_RGB( 0xcc0011 , "without cache control\n" ) ;
+    } 
 
     #if defined(ALLOCATOR_CONTIGUOUS_ENABLE)
         printf_RGB( 0x00cc33 , "DSA enable contiguous allocation\n" ) ;

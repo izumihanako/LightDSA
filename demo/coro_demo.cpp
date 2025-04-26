@@ -119,7 +119,7 @@ public :
             }
         } 
         int sum_cnt = 0 ;
-        for( int i = 0 ; i < group ; i ++ ) sum_cnt += batch_[i].cnt ;
+        for( int i = 0 ; i < group ; i ++ ) sum_cnt += batch_[i].to_cpu ;
         printf( "worker %d , DSA_memcpy_cnt = %d\n" , worker_id , sum_cnt ) ;
         for( int i = 0 ; i < group ; i ++ ) offload( i ) ;
         for( int i = 0 ; i < group ; i ++ ) delete[] buffer[i] ;
