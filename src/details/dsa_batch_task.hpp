@@ -4,6 +4,7 @@
 #include "dsa_agent.hpp"
 #include "dsa_util.hpp"
 #include "util.hpp" 
+#include "dsa_conf.hpp"
 #include "dsa_batch_redistribute.hpp"
 #include <xmmintrin.h>  
 

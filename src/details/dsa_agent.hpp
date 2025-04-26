@@ -2,6 +2,7 @@
 #define QWQ_DSA_AGENT_HPP
 
 #include "dsa_allocator.hpp"
+#include "dsa_constant.hpp"
 #include <atomic>
 #include <vector>
 

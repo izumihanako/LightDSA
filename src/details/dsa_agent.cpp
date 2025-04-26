@@ -100,7 +100,7 @@ void DSAagent::init(){
         printf_RGB( 0x00cc33 , "DSA enable descs address alignment, " ) ;
     #else 
         printf_RGB( 0xcc0011 , "DSA disable descs address alignment, " ) ; 
-    #endif
+    #endif 
     if( _FLAG_CC_ ) {
         printf_RGB( 0x00cc33 , "with cache control\n" ) ;
     } else {
