@@ -22,7 +22,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
         while( !db_task.collect() ) ;  
     } 
     #ifdef BUILD_RELEASE
-        if( len < 0x400 ) { 
+        if( len < 0x200 ) { 
             to_cpu ++ ;
             memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 1 : 0 ) ; 
             return true ;

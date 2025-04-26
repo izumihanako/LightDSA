@@ -27,7 +27,7 @@ constexpr int DEFAULT_POOL_SIZE = 4 * MB ;
 
 
 #define FLAG_BLOCK_ON_FAULT                 /*** use desc flag BLOCK_ON_FAULT ***/ 
-// #define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
+#define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
 #define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
 
 

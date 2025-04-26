@@ -137,7 +137,7 @@ void pm_file_close(PMFileHandler *handler) {
     }
 }
 
-int single_len_max = 8192 , single_len_min = 512 ;
+int single_len_max = 16384 , single_len_min = 512 ;
 int main(){
     srand( 0 ) ;
     const char *src_path = "/mnt/pmemdir/dump.rdb" ;

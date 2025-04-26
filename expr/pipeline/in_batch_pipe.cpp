@@ -12,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 , bsiz = 32 ;
-constexpr int BIG_LEN = 16 * KB , SMALL_LEN = 1024 ; 
+constexpr int BIG_LEN = 32 * KB , SMALL_LEN = 512 ; 
 int small_cnt = 1 , big_cnt = 1 , group_cnt = 100 , method = 0 , is_random = 0 , is_divide = 0 ;
 
 struct OffLen{
@@ -59,6 +59,7 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
         }
+        xfer.db_task.print_stats() ;
     } else if( method == 1 ){
         DSAmemcpy memcpys[bsiz] ; 
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
@@ -150,6 +151,6 @@ int main( int argc , char** argv ){
         else printf_RGB( 0xcccc00 , "S" ) ;
     }
     printf( " ]\n" ) ; fflush( stdout ) ;
-    test_dsa_batch( small_cnt , big_cnt , test_set , method ) ;
+    test_dsa_batch( small_cnt , big_cnt , test_set , method ) ; 
     return 0 ;
 }
