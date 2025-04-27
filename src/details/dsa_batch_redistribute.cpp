@@ -1,6 +1,7 @@
 #include "dsa_batch_redistribute.hpp"
 #include "dsa_util.hpp"
 #include "util.hpp"
+#include "dsa_cpupath.hpp"
 
 #include <cstdio> 
 #include <cstdlib>
@@ -75,6 +76,7 @@ DSAtask_redistribute::DSAtask_redistribute(){
     nega_credits = posi_credits = nullptr ;
     bsiz = 0 ;
     nega_cnt = posi_cnt = 0 ;
+    cnt_512 = 0 , sum_len = 0 ;
     credit_fix = credit = 0 ;
     sum_credit = 0 ;
     counter = 0 ;
@@ -107,6 +109,7 @@ void DSAtask_redistribute::init( int bsiz_ ){
     nega_cnt = posi_cnt = 0 ;
     credit_fix = credit = 0 ;
     sum_credit = 0 ;
+    cnt_512 = sum_len = 0;
     counter = 0 ;
 }
 
@@ -131,6 +134,7 @@ static const int8_t credit_table[32] = {
 constexpr uint64_t REDISTRIBUTE_CREDIT_THRESHOLD = 8 * KB ;  
 void DSAtask_redistribute::push_back( const dsa_rdstrb_entry &entry ){
     if( entry.xfer_size < REDISTRIBUTE_CREDIT_THRESHOLD ) {
+        cnt_512 += entry.xfer_size < 1024 ? 1 : 0 ;
         if( entry.xfer_size >= 4 * KB ) nega_credits[nega_cnt] = -1 ;
         else nega_credits[nega_cnt] = -2 ;
         sum_credit += nega_credits[nega_cnt] ; 
@@ -141,6 +145,7 @@ void DSAtask_redistribute::push_back( const dsa_rdstrb_entry &entry ){
         sum_credit += posi_credits[posi_cnt] ;
         posi_entries[posi_cnt++] = entry ;
     }
+    sum_len += entry.xfer_size ;
 }
 
 dsa_rdstrb_entry DSAtask_redistribute::pop(){
@@ -173,4 +178,19 @@ dsa_rdstrb_entry DSAtask_redistribute::pop(){
     
     puts( "DSAtask_redistribute::pop() : no more entries" ) ;
     return dsa_rdstrb_entry( DSA_OPCODE_NOOP ) ;
+}
+
+int DSAtask_redistribute::special_rule_for_all_small(){
+    if( posi_cnt >= 2 ) return 0 ;
+    if( posi_cnt == 1 && posi_credits[0] > 1 ) return 0 ; // has a very big one
+    if( sum_len > 26 * KB + 512 ) return 0 ;
+    // 当batch里拷贝的总和小于26.5KB时，直接用CPU做会更快
+    // 26.5KB = 3 * 4K + 29 * 512, 用2K来当big或者用8K来当big也是同样的结论，分界线就位于26.5KB
+    int res = sum_credit ;
+    while( nega_cnt ) do_by_cpu( nega_entries[--nega_cnt] ) ;
+    while( posi_cnt ) do_by_cpu( posi_entries[--posi_cnt] ) ;
+    nega_cnt = posi_cnt = 0 ;
+    cnt_512 = 0 , sum_len = 0 ;
+    sum_credit = 0 ;
+    return res ;
 }

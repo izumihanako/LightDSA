@@ -12,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 , bsiz = 32 ;
-constexpr int BIG_LEN = 32 * KB , SMALL_LEN = 512 ; 
+constexpr int BIG_LEN = 1 * KB , SMALL_LEN = 512 ; 
 int small_cnt = 1 , big_cnt = 1 , group_cnt = 100 , method = 0 , is_random = 0 , is_divide = 0 ;
 
 struct OffLen{
@@ -73,6 +73,13 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
         }
+    } else if( method == 2 ){
+        for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){
+            st_time = timeStamp_hires() ;
+            for( int i = 0 ; i < cnt ; i ++ ) memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+            ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ;
+            dsa_time += ( do_time ) / REPEAT ;
+        }
     }
     free( a ) ; free( b ) ;
     dsa_time *= ns_to_us ; // us
@@ -84,6 +91,7 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
              stdsiz( SMALL_LEN ).c_str() , stdsiz( BIG_LEN ).c_str() , small_cnt , big_cnt , REPEAT ) ;
     if( method == 0 ) printf( "    ; DSA_batch  cost %5.2lfus, speed %5.0fMB/s, big %.2fdesc/us, small %.2fdesc/us\n" , dsa_time , dsa_speed , big_speed , small_speed ) ;
     if( method == 1 ) printf( "    ; DSA_memcpy cost %5.2lfus, speed %5.0fMB/s, big %.2fdesc/us, small %.2fdesc/us\n" , dsa_time , dsa_speed , big_speed , small_speed ) ;
+    if( method == 2 ) printf( "    ; memcpy     cost %5.2lfus, speed %5.0fMB/s, big %.2fdesc/us, small %.2fdesc/us\n" , dsa_time , dsa_speed , big_speed , small_speed ) ;
 } 
  
 vector<OffLen> genWorkload( int small_cnt , int big_cnt , int group_cnt , int is_random ) {
@@ -126,7 +134,7 @@ DSAmemcpy ___ ;
 int main( int argc , char** argv ){ 
     if( argc < 7 ){ 
         printf("Usage: %s <method> <group_cnt> <small_cnt> <big_cnt> <random_addr> <is_divide>\n", argv[0]) ;
-        printf( "method    : 0 is DSA_batch, 1 is DSA_memcpy\n" ) ;
+        printf( "method    : 0 is DSA_batch, 1 is DSA_memcpy, 2 is memcpy\n" ) ;
         printf( "group_cnt : number of groups\n" ) ;
         printf( "small_cnt : small desc in a group\n" ) ;
         printf( "big_cnt   : big desc in a group\n" ) ;

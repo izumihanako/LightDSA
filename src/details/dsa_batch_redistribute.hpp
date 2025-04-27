@@ -31,6 +31,7 @@ class DSAtask_redistribute{
     dsa_rdstrb_entry *nega_entries , *posi_entries ;
     int8_t *posi_credits , *nega_credits ;
     int nega_cnt , posi_cnt , bsiz , counter , sum_credit ;
+    int cnt_512 , sum_len ; // for special rule
     double credit , credit_fix ;
 
 public :
@@ -42,6 +43,7 @@ public :
     __always_inline bool should_submit() { return nega_cnt + posi_cnt == bsiz ; }
     void init( int bsiz_ ) ; 
     void push_back( const dsa_rdstrb_entry &entry ) ;
+    int special_rule_for_all_small() ;
     dsa_rdstrb_entry pop() ;
 } ;
 

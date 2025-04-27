@@ -195,8 +195,14 @@ void DSAbatch_task::add_no_op(){
     #endif  
 }
 
-void DSAbatch_task::submit_forward(){
+void DSAbatch_task::submit_forward(){ 
     #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+        // int tmp ;
+        // if( tmp = rdstrb.special_rule_for_all_small() ){
+        //     op_cnt -= batch_siz ;
+        //     op_bytes -= tmp ;
+        //     return ;
+        // }
         for( int i = 0 ; i < batch_siz ; i ++ ){
             prepare_desc( now_pos() , rdstrb.pop() ) ;
             forward_pos() ;

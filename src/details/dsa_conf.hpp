@@ -6,7 +6,7 @@
 constexpr int DEFAULT_BATCH_CAPACITY = 20 ;
 constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
-#define DESCS_QUEUE_RECYCLE_WINDOW_ENABLE /*** use recycle window ***/
+// #define DESCS_QUEUE_RECYCLE_WINDOW_ENABLE /*** use recycle window ***/
 
 /*** 每个WQ对应的batch回收探查区间长度 ***/
 constexpr int QUEUE_RECYCLE_UNFINISHED_LIMIT = 5 ;
@@ -18,11 +18,11 @@ constexpr int DSA_PAGE_FAULT_FREQUENCY_LIMIT = 64 * KB ;
 /*** 如果使用CONTIGUOUS分配策略，则每个WQ对应的内存池大小为POOL_SIZE ***/
 constexpr int DEFAULT_POOL_SIZE = 4 * MB ; 
 
-#define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
+// #define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
 
-#define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
+// #define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
 
-#define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Contiguous Allocation Strategy ***/
+// #define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Contiguous Allocation Strategy ***/
 #define ALLOCATOR_USE_HUGEPAGE              /*** use HugePage for comps and descs allocation ***/
 
 
