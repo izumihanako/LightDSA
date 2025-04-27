@@ -183,7 +183,7 @@ dsa_rdstrb_entry DSAtask_redistribute::pop(){
 int DSAtask_redistribute::special_rule_for_all_small(){
     if( posi_cnt >= 2 ) return 0 ;
     if( posi_cnt == 1 && posi_credits[0] > 1 ) return 0 ; // has a very big one
-    if( sum_len > 26 * KB + 512 ) return 0 ;
+    if( (size_t) sum_len > 26 * KB + 512 ) return 0 ;
     // 当batch里拷贝的总和小于26.5KB时，直接用CPU做会更快
     // 26.5KB = 3 * 4K + 29 * 512, 用2K来当big或者用8K来当big也是同样的结论，分界线就位于26.5KB
     int res = sum_credit ;

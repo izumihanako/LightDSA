@@ -7,11 +7,7 @@
 
 void memmove_cpu( void* dest , const void* src , size_t len , bool flush ){
     memmove( dest , src , len ) ;
-    if( flush ){
-        for( size_t i = 0 ; i < len ; i += 64 )
-            _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ;
-        // _mm_sfence() ; 
-    }
+    if( flush ) flush_cpu( dest , len ) ;
 }
 
 void memfill_cpu( void* dest , uint64_t pattern , size_t len , bool flush ){
@@ -27,11 +23,7 @@ void memfill_cpu( void* dest , uint64_t pattern , size_t len , bool flush ){
     for( i = len / 8 * 8 ; i < len ; i ++ ) {
         *(uint8_t*)((uintptr_t)ptr + i) = (pattern >> (i * 8)) & 0xFF;
     }
-    if( flush ){
-        for( size_t i = 0 ; i < len ; i += 64 )
-            _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ;
-        // _mm_sfence() ;
-    }
+    if( flush ) flush_cpu( dest , len ) ;
 }
 
 int compare_cpu( void* dest , void* src , size_t len ){
@@ -72,8 +64,11 @@ int compval_cpu( void* dest , uint64_t pattern , size_t len ){
 }
 
 void flush_cpu( void* dest , size_t len ){
-    for(size_t i = 0 ; i < len ; i += 64 )
-        _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ; 
+    const int LINESIZE = 64 ;
+    char* ptr = (char*)dest ;
+    char* endline =  (char*)(((uintptr_t)ptr + len - 1 ) | ( LINESIZE - 1 ) ) ;
+    for( ; ptr <= endline ; ptr += LINESIZE )
+        _mm_clflushopt( ptr ) ;
 }
 
 void do_by_cpu( dsa_hw_desc *desc , dsa_completion_record *comp ){
@@ -136,10 +131,12 @@ void do_by_cpu( const dsa_rdstrb_entry &entry ){
         break ;
     case DSA_OPCODE_COMPARE :{
         int res = compare_cpu( (void*)entry.src_addr , (void*)entry.src2_addr , entry.xfer_size ) ;
+        (void)(res) ; // suppress unused variable warning
         break ;
     } 
     case DSA_OPCODE_COMPVAL :{
         int res = compval_cpu( (void*)entry.src_addr , entry.pattern_lower , entry.xfer_size ) ; 
+        (void)(res) ; // suppress unused variable warning
         break ;
     } 
     case DSA_OPCODE_CFLUSH :
