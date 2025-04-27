@@ -8,9 +8,9 @@
 void memmove_cpu( void* dest , const void* src , size_t len , bool flush ){
     memmove( dest , src , len ) ;
     if( flush ){
-        for( size_t i = 0 ; i < len ; i += 8 * 64 )
+        for( size_t i = 0 ; i < len ; i += 64 )
             _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ;
-        // _mm_sfence() ;
+        // _mm_sfence() ; 
     }
 }
 
@@ -28,7 +28,7 @@ void memfill_cpu( void* dest , uint64_t pattern , size_t len , bool flush ){
         *(uint8_t*)((uintptr_t)ptr + i) = (pattern >> (i * 8)) & 0xFF;
     }
     if( flush ){
-        for( size_t i = 0 ; i < len ; i += 8 * 64 )
+        for( size_t i = 0 ; i < len ; i += 64 )
             _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ;
         // _mm_sfence() ;
     }
