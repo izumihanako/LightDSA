@@ -24,7 +24,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     #ifdef BUILD_RELEASE
         if( len < 0x200 ) { 
             to_cpu ++ ;
-            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 1 : 0 ) ; 
+            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 0 : 1 ) ; 
             return true ;
         }
     #endif
@@ -64,7 +64,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     // #ifdef BUILD_RELEASE
         if( len < 0x200 ) { 
             to_cpu ++ ;
-            memmove_cpu( dest , src , len , _FLAG_CC_ ? 1 : 0 ) ;
+            memmove_cpu( dest , src , len , _FLAG_CC_ ? 0 : 1 ) ;
             return true ;
         }
     // #endif 

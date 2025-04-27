@@ -18,7 +18,7 @@ constexpr int DSA_PAGE_FAULT_FREQUENCY_LIMIT = 64 * KB ;
 /*** 如果使用CONTIGUOUS分配策略，则每个WQ对应的内存池大小为POOL_SIZE ***/
 constexpr int DEFAULT_POOL_SIZE = 4 * MB ; 
 
-// #define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
+#define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
 
 #define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
 
