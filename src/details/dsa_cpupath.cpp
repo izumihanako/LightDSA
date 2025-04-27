@@ -72,7 +72,7 @@ int compval_cpu( void* dest , uint64_t pattern , size_t len ){
 }
 
 void flush_cpu( void* dest , size_t len ){
-    for(size_t i = 0 ; i < len ; i += 8 * 64 )
+    for(size_t i = 0 ; i < len ; i += 64 )
         _mm_clflushopt( (char*)((uintptr_t)dest + i) ) ; 
 }
 
