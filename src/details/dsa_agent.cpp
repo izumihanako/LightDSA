@@ -118,6 +118,13 @@ void DSAagent::init(){
     #else
         printf_RGB( 0xcc0011 , "-  Contiguous allocation disable\n" ) ;
     #endif
+
+    #if defined(PAGE_FAULT_RESOLVE_TOUCH_ENABLE)
+        printf_RGB( 0x00cc33 , "+  Touch pages if frequent PF enable( pf_limit = %d/%d Bytes )\n" , 
+                DSA_RETRY_LIMIT , DSA_PAGE_FAULT_FREQUENCY_LIMIT ) ;
+    #else
+        printf_RGB( 0xcc0011 , "-  Touch pages if frequent PF disable\n" ) ;
+    #endif
 }
 
 void DSAagent::print_wqs(){

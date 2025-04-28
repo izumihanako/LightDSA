@@ -11,7 +11,7 @@ double us_to_s  = 0.001 * 0.001 ;
 double global_memcpy_time = 0 ;
  
 constexpr int REPEAT = 1 ;
-constexpr int bsiz = 64 , tdesc = 64 ; 
+constexpr int bsiz = 32 , tdesc = 32 ; 
 constexpr int ARRAY_LEN = 1073741824 ;
 
 inline void touch_pf_rd( char* x , size_t len ){
@@ -161,6 +161,7 @@ void test_dsa_batch( int repeat , size_t len , int bsiz , int tdesc , bool warmu
     pure_batch_touch_speed = len / ( pure_batch_touch * us_to_s ) / MB ; 
     if( warmup ) return ; 
 
+    xfer.db_task.print_stats() ;
     printf( "           ; DSA_batch  cost %5.2lfus, speed %5.0fMB/s, gains %.2lfus\n" 
             "           ;            |- touc %7.2lfus -- pure speed %5.0fMB/s\n"
             "           ;            |- subm %7.2lfus\n" 
@@ -183,10 +184,10 @@ string stdsiz( size_t siz ) {
 }
 
 int main(){   
-    for( size_t len = (1<<20) , warmup = 0 ; len <= (1<<20) ; len *= 2 ){
+    for( size_t len = (1<<28) , warmup = 0 ; len <= (1<<28) ; len *= 2 ){
         if( !warmup ) printf( "Copy %s ;\n" , stdsiz( len ).c_str() ) ; 
-        test_touch( REPEAT , len , warmup , 1 ) ;
-        test_touch( REPEAT , len , warmup , 0 ) ;
+        // test_touch( REPEAT , len , warmup , 1 ) ;
+        // test_touch( REPEAT , len , warmup , 0 ) ;
         // test_memcpy( REPEAT , len , warmup ) ;
         // test_dsa_single( REPEAT , len , warmup ) ;
         // test_dsa_batch( REPEAT , len , bsiz , tdesc , warmup ) ;

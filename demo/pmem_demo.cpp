@@ -49,7 +49,7 @@ void pmem_custom_drain(){
 PMFileHandler* pm_file_open(const char *path ) {
     PMFileHandler *handler = (PMFileHandler*) malloc(sizeof(PMFileHandler)) ;
     handler->file_path = path ; 
-    handler->extend_size = 128 * MB ; 
+    handler->extend_size = 256 * MB ; 
     struct stat st ;
     if( stat( path , &st ) == -1 ) { 
         printf( "file %s not exist\n" , path ) ; fflush( stdout ) ;
@@ -71,7 +71,7 @@ PMFileHandler* pm_file_open(const char *path ) {
         return NULL ;
     }
     handler->file_size = mapped_len ;
-    printf( "open %s, mapped_len = %lu, file_size = %lu\n" , path , mapped_len , handler->file_size ) ; fflush( stdout ) ;
+    printf( "open %s @ %p, mapped_len = %lu, file_size = %lu\n" , path , handler->pmem_addr , mapped_len , handler->file_size ) ; fflush( stdout ) ;
     return handler; 
 }
 
@@ -85,16 +85,16 @@ int pm_file_extend(PMFileHandler *handler , size_t extend_size = 0 ) {
     // 重新映射
     size_t mapped_len;
     handler->pmem_addr = (char*)pmem_map_file(handler->file_path, new_size, 
-                                PMEM_FILE_CREATE, 0666, &mapped_len, &handler->is_pmem);
+                                PMEM_FILE_CREATE , 0666, &mapped_len, &handler->is_pmem);
     if (handler->pmem_addr == NULL){
         printf( "pmem_file %s extend failed\n" , handler->file_path ) ; fflush( stdout ) ;
         return 0;
     }
-    for( size_t i = handler->file_size ; i < new_size ; i += 4096 ) {
-        handler->pmem_addr[i] = 0 ;
-    }
+    // for( size_t i = handler->file_size ; i < new_size ; i += 4096 ) {
+    //     handler->pmem_addr[i] = 0 ;
+    // }
     handler->file_size = mapped_len ;
-    // printf( "mapped_len = %lu, new_size = %lu\n" , mapped_len , new_size ) ; fflush( stdout ) ;
+    printf( "extend @ %p  mapped_len = %lu, new_size = %lu\n" , handler->pmem_addr , mapped_len , new_size ) ; fflush( stdout ) ;
     return 1;
 }
 
@@ -139,9 +139,10 @@ void pm_file_close(PMFileHandler *handler) {
 
 int single_len_max = 16384 , single_len_min = 512 ;
 int main(){
+    batch.db_task.set_wq( DSAagent::get_instance().get_device( 0 )->get_wq() ) ;
     srand( 0 ) ;
     const char *src_path = "/mnt/pmemdir/dump.rdb" ;
-    const char *path = "/mnt/pmemdir/dump.cp" ;
+    const char *path = "/mnt/pmemdir/dump.cp2" ;
     // const char *path = "dump.cp" ;
     unlink( path ) ;
     // const char *path = "/mnt/pmemdir/testfile" ;
