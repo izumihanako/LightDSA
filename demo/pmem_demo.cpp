@@ -94,7 +94,7 @@ int pm_file_extend(PMFileHandler *handler , size_t extend_size = 0 ) {
         handler->pmem_addr[i] = 0 ;
     }
     handler->file_size = mapped_len ;
-    printf( "mapped_len = %lu, new_size = %lu\n" , mapped_len , new_size ) ; fflush( stdout ) ;
+    // printf( "mapped_len = %lu, new_size = %lu\n" , mapped_len , new_size ) ; fflush( stdout ) ;
     return 1;
 }
 
@@ -155,10 +155,10 @@ int main(){
             printf( "open failed\n" ) ; fflush( stdout ) ;
             return 0 ;
         }
-        volatile char x ;
-        for( size_t i = 0 ; i < src->used_size ; i += 4096 ){
-            x = *(src->pmem_addr + i) ;
-        }  
+        // volatile char x ;
+        // for( size_t i = 0 ; i < src->used_size ; i += 4096 ){
+        //     x = *(src->pmem_addr + i) ;
+        // }  
         size_t src_size = src->used_size ;
         while( src_size ){
             size_t now_len = rand() % ( single_len_max - single_len_min + 1 ) + single_len_min ;
@@ -169,8 +169,7 @@ int main(){
             }
             src_size -= now_len ;
         } 
-        printf( "do_by_cpu_cnt = %d\n" , batch.db_task.do_by_cpu_cnt ) ; fflush( stdout ) ;
-        printf( "batch_fail_cnt = %d\n" , batch.db_task.batch_fail_cnt ) ; fflush( stdout ) ;
+        batch.db_task.print_stats() ; 
         printf( "file_size = %lu, used_size = %lu\n" , handler->file_size , handler->used_size ) ; fflush( stdout ) ; 
         pmem_custom_drain() ;
         pm_file_close(handler) ;

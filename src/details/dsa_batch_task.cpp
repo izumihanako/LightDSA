@@ -92,7 +92,7 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     buzy_queue.init( batch_capacity + 1 ) ; 
     rdstrb.init( bsiz ) ;
     // stats 
-    do_by_cpu_cnt = 0 ;
+    page_fault_resolving = 0 ;
     batch_fail_cnt = 0 ;
     op_cnt = op_bytes = 0 ;
     clear() ;
@@ -183,7 +183,7 @@ void DSAbatch_task::clear(){
 
 void DSAbatch_task::print_stats(){
     printf( "DSAbatch_task: op_cnt = %lld , op_bytes = %lld\n" , op_cnt , op_bytes ) ;
-    printf( "DSAbatch_task: do_by_cpu_cnt = %d , batch_fail_cnt = %d\n" , do_by_cpu_cnt , batch_fail_cnt ) ;
+    printf( "DSAbatch_task: page_fault_resolving = %d , batch_fail_cnt = %d\n" , page_fault_resolving , batch_fail_cnt ) ;
 }
 
 void DSAbatch_task::add_no_op(){
@@ -270,17 +270,21 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
             volatile char *t = (char*) comps[idx].fault_addr ;
             wr ? *t = *t : *t ; 
             PF_adjust_desc( idx ) ;
-            retry_cnts[idx] ++ ;
-            if( retry_cnts[idx] >= DSA_RETRY_LIMIT &&
-                ori_xfersize[idx] / retry_cnts[idx] < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
-                puts( "????????????????????????" ) ;
-                do_by_cpu( &descs[idx] , &comps[idx] ) ;
-                do_by_cpu_cnt ++ ;
-                descs[idx].opcode = DSA_OPCODE_NOOP ;
-                descs[idx].flags = DSA_NOOP_FLAG ;
-                descs[idx].src_addr = descs[idx].dst_addr = descs[idx].xfer_size = 0 ;
-                comps[idx].status = 0 ; 
-            }
+            #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
+                retry_cnts[idx] ++ ;
+                if( retry_cnts[idx] >= DSA_RETRY_LIMIT &&
+                    ori_xfersize[idx] / retry_cnts[idx] < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
+                    page_fault_resolving ++ ;
+                    int len = descs[idx].xfer_size > MB ? MB : descs[idx].xfer_size ;
+                    touch_trigger_pf( (char*) comps[idx].fault_addr , len , wr ? 1 : 0 ) ;
+                    retry_cnts[idx] = 0 ;
+                    // do_by_cpu( &descs[idx] , &comps[idx] ) ; 
+                    // descs[idx].opcode = DSA_OPCODE_NOOP ;
+                    // descs[idx].flags = DSA_NOOP_FLAG ;
+                    // descs[idx].src_addr = descs[idx].dst_addr = descs[idx].xfer_size = 0 ;
+                    // comps[idx].status = 0 ; 
+                }
+            #endif
         } else {
             // not implemented yet
         }

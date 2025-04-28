@@ -4,7 +4,8 @@
 #include <chrono>
 #include <cstdio>
 #include <cstring>
-#include "util.hpp"
+#include "util.hpp" 
+#include <immintrin.h>
 
 // return double timeStamp (s)
 double timeStamp(){
@@ -128,4 +129,18 @@ void printf_RGB( int rgbhex , const char* format , ... ){
     vprintf(format, args);
     va_end(args);
     printf("\033[0m");
+}
+
+void touch_trigger_pf( char* addr_ , size_t len , int wr ){
+    volatile char *addr = addr_ ;
+    char *uppage = (char*) ((uintptr_t)(addr + len - 1 ) | 0xfff ) ;
+    if( wr ){ 
+        for( ; (uintptr_t) addr <= (uintptr_t) uppage ; addr += 4096 ){
+            *addr ^= 0 ; 
+            // _mm_clflushopt( (void*)addr ) ;
+            // __asm__ volatile ("prefetchw (%0)" : : "r" (addr) : "memory");
+        }
+    } else {
+        for( ; (uintptr_t) addr <= (uintptr_t) uppage ; addr += 4096 ) (void)(*addr) ;
+    }
 }

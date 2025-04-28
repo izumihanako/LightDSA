@@ -63,4 +63,7 @@ void printf_RGB(int r, int g, int b, const char* format, ...) ;
 // print c format string with RGB color
 void printf_RGB( int rgbhex , const char* format, ...) ;
 
+// trigger needed page fault for [addr, addr + len)
+void touch_trigger_pf( char* addr_ , size_t len , int wr ) ;
+
 #endif

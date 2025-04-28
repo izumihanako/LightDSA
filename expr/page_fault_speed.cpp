@@ -32,10 +32,10 @@ void test_touch( int repeat , size_t len , bool warmup , bool wr ){
         char* a = (char*)malloc( len ) ;
         double st_time = timeStamp_hires() ;
         if( wr ){
-            touch_pf( a , len ) ;
-            // touch_pf_rd( a , len ) ;
+            touch_trigger_pf( a , len , 1 ) ;
+            // touch_pf( a , len ) ;
         } else {
-            touch_pf_rd( a , len ) ;
+            touch_trigger_pf( a , len , 0 ) ;
             // touch_pf( a , len ) ;
         }
         double ed_time = timeStamp_hires() ;
@@ -183,7 +183,7 @@ string stdsiz( size_t siz ) {
 }
 
 int main(){   
-    for( size_t len = 1024 , warmup = 0 ; len <= ( 1 << 30 ) ; len *= 2 ){
+    for( size_t len = (1<<20) , warmup = 0 ; len <= (1<<20) ; len *= 2 ){
         if( !warmup ) printf( "Copy %s ;\n" , stdsiz( len ).c_str() ) ; 
         test_touch( REPEAT , len , warmup , 1 ) ;
         test_touch( REPEAT , len , warmup , 0 ) ;

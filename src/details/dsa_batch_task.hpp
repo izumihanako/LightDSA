@@ -61,7 +61,7 @@ private :
     DSAworkingqueue *working_queue ;
 
 public:
-    int do_by_cpu_cnt ;
+    int page_fault_resolving ;
     int batch_fail_cnt ;
     long long op_cnt ;
     long long op_bytes ;
