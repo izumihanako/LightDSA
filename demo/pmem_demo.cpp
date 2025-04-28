@@ -5,7 +5,14 @@
 #include <fcntl.h>
 #include <unistd.h>
 #include <sys/stat.h>
+#include <sys/mman.h>
 #include "src/async_dsa.hpp"
+#include <vector>
+using namespace std ;
+struct copy_meta{
+    char* addr ;
+    size_t len ;
+} ;
 
 int use_dsa = 1 ;
 DSAbatch batch ;
@@ -94,7 +101,7 @@ int pm_file_extend(PMFileHandler *handler , size_t extend_size = 0 ) {
     //     handler->pmem_addr[i] = 0 ;
     // }
     handler->file_size = mapped_len ;
-    printf( "extend @ %p  mapped_len = %lu, new_size = %lu\n" , handler->pmem_addr , mapped_len , new_size ) ; fflush( stdout ) ;
+    // printf( "extend @ %p  mapped_len = %lu, new_size = %lu\n" , handler->pmem_addr , mapped_len , new_size ) ; fflush( stdout ) ;
     return 1;
 }
 
@@ -141,39 +148,52 @@ int single_len_max = 16384 , single_len_min = 512 ;
 int main(){
     batch.db_task.set_wq( DSAagent::get_instance().get_device( 0 )->get_wq() ) ;
     srand( 0 ) ;
+    // const char *src_path = "/root/DSA/dsa_redis/src/dump.rdb" ;
     const char *src_path = "/mnt/pmemdir/dump.rdb" ;
-    const char *path = "/mnt/pmemdir/dump.cp2" ;
+    const char *path = "/mnt/pmemdir/dump.cp" ;
     // const char *path = "dump.cp" ;
     unlink( path ) ;
     // const char *path = "/mnt/pmemdir/testfile" ;
     printf( "%s %s" , path , check_if_path_is_pmem(path) ? "is pmem\n" : "not pmem\n" ) ; fflush( stdout ) ;
 
+    PMFileHandler *src = pm_file_open(src_path) ;  
+    // int cnt = 0 ;
+    // volatile char* x = src->pmem_addr , qq = 1 ;
+    // for( size_t i = 0 ; i < src->used_size ; i += 4096 ){
+    //     qq *= *(x+i) ;
+    //     cnt ++ ;
+    // }
+    // printf( "%p, cnt = %d" , x , cnt ) ; fflush( stdout ) ; 
+    // return 0 ; 
     uint64_t startns = timeStamp_hires() ;
-    PMFileHandler *src = pm_file_open(src_path) ;
     if( check_if_path_is_pmem( path ) ) {
         PMFileHandler *handler = pm_file_open(path) ;
         if( handler == NULL ){
             printf( "open failed\n" ) ; fflush( stdout ) ;
             return 0 ;
-        }
-        // volatile char x ;
-        // for( size_t i = 0 ; i < src->used_size ; i += 4096 ){
-        //     x = *(src->pmem_addr + i) ;
-        // }  
+        } 
+        vector< copy_meta > copy_list ;
         size_t src_size = src->used_size ;
         while( src_size ){
             size_t now_len = rand() % ( single_len_max - single_len_min + 1 ) + single_len_min ;
             if( now_len > src_size ) now_len = src_size ;
-            if( pm_file_append( handler , src->pmem_addr + src->used_size - src_size , now_len ) == 0 ){
+            copy_meta meta = {  src->pmem_addr + src->used_size - src_size , now_len } ;
+            copy_list.push_back(meta);
+            src_size -= now_len ;
+        }
+        // random_shuffle( copy_list.begin() , copy_list.end() ) ; 
+        startns = timeStamp_hires() ; 
+        for( auto it : copy_list ){
+            if( pm_file_append( handler , it.addr , it.len ) == 0 ){
                 printf( "write failed\n" ) ; fflush( stdout ) ; 
                 return 0 ;
             }
-            src_size -= now_len ;
-        } 
-        batch.db_task.print_stats() ; 
-        printf( "file_size = %lu, used_size = %lu\n" , handler->file_size , handler->used_size ) ; fflush( stdout ) ; 
+        }         
         pmem_custom_drain() ;
         pm_file_close(handler) ;
+        batch.print_stats() ; 
+        printf( "file_size = %lu, used_size = %lu\n" , handler->file_size , handler->used_size ) ; fflush( stdout ) ; 
+
     } else { 
         int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0666);
         if( fd < 0 ) {

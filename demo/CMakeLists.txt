@@ -1,13 +1,13 @@
+find_library(NUMA_LIBRARY numa REQUIRED)
 
 # compile speedtest_memmove
 add_executable( speedtest_memmove speedtest_memmove.cpp )
 target_compile_options( speedtest_memmove PRIVATE -Wall -Wextra -mcmodel=large -O2 ) 
-target_link_libraries( speedtest_memmove dsa_memcpy ${Boost_LIBRARIES} )
-
+target_link_libraries( speedtest_memmove dsa_memcpy ${Boost_LIBRARIES} ${NUMA_LIBRARY} ) 
 # compile speedtest_memfill
-add_executable( speedtest_memfill speedtest_memmove.cpp )
+add_executable( speedtest_memfill speedtest_memfill.cpp )
 target_compile_options( speedtest_memfill PRIVATE -Wall -Wextra -mcmodel=large -O2 ) 
-target_link_libraries( speedtest_memfill dsa_memcpy ${Boost_LIBRARIES})
+target_link_libraries( speedtest_memfill dsa_memcpy ${Boost_LIBRARIES} )
 
 # compile speedtest_compval
 add_executable( speedtest_compval speedtest_compval.cpp )
@@ -33,6 +33,7 @@ target_link_libraries( mergesort_demo dsa_memcpy )
 add_executable( pmem_demo pmem_demo.cpp )
 target_compile_options( pmem_demo PRIVATE -Wall -Wextra -O2 )
 target_link_libraries( pmem_demo dsa_memcpy ${PMEM_LIBRARY} )
+# target_link_options( pmem_demo PRIVATE -lm )
 
 # compile c_demo
 add_executable( c_demo c_demo.c )

@@ -38,8 +38,7 @@ void DSAbatch_wait( DSAbatch* dsa ){
 }
 
 void DSAbatch_printstats( DSAbatch* dsa ){
-    printf( "DSAbatch: to_cpu = %d, to_dsa = %d\n", dsa->to_cpu , dsa->to_dsa ) ;
-    dsa->db_task.print_stats() ; 
+    dsa->print_stats() ;
     return ; 
 }
 

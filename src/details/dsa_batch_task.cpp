@@ -270,6 +270,7 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
             volatile char *t = (char*) comps[idx].fault_addr ;
             wr ? *t = *t : *t ; 
             PF_adjust_desc( idx ) ;
+            // printf( "wr = %d. " , wr ) ;
             #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
                 retry_cnts[idx] ++ ;
                 if( retry_cnts[idx] >= DSA_RETRY_LIMIT &&

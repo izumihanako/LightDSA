@@ -1,6 +1,7 @@
 #include <boost/coroutine2/coroutine.hpp> 
 #include "src/async_dsa.hpp"
 
+#include <numa.h>
 #include <cstdio>
 #include <cstring>
 #include <cstdlib>
@@ -124,8 +125,11 @@ constexpr size_t ARRAY_LEN = 1 * GB ;
 char c[ARRAY_LEN]  ; 
 int main(){  
     calibrate_yield() ;
-    char *a = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
-    char *b = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
+    char *a_ = (char*)numa_alloc_onnode( ARRAY_LEN , 0 ) , *a = (char*)( (uintptr_t)( a_ + 0x3f ) & ~0x3f ) ;
+    char *b_ = (char*)numa_alloc_onnode( ARRAY_LEN , 1 ) , *b = (char*)( (uintptr_t)( b_ + 0x3f ) & ~0x3f ) ;
+
+    // char *a = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
+    // char *b = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
     // if( ( (uintptr_t)b & 0x1f ) == 0 ) b += 0x10 ;
     // if( ( (uintptr_t)b & 0x3f ) == 0 ) b += 0x20 ;
     printf( "a @ %p,  b @ %p\n" , a , b ) ;

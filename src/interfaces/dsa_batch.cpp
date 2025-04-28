@@ -2,6 +2,7 @@
 #include "details/dsa_agent.hpp" 
 #include "details/dsa_cpupath.hpp"
 #include <cstring>
+#include <cstdio>
  
 DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
     db_task.set_wq( DSAagent::get_instance().get_wq() ) ;
@@ -73,14 +74,15 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
         size_t align64_diff = 0 ;
         if( dest_ & 0x3f ){  
             align64_diff = 0x40 - ( dest_ & 0x3f ) ;
-            align64_diff = len < align64_diff ? len : align64_diff ;
+            align_sum += align64_diff ; 
+            // db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , align64_diff ) ;
             memcpy( (void*)dest_ , (void*)src_ , align64_diff ) ;
             len -= align64_diff ;
             dest_ += align64_diff ;
             src_ += align64_diff ;  
         } 
     #endif
-    to_dsa ++ ; 
+    to_dsa ++ ;  
     db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
         _mm_clflushopt( dest ) ; // persistent in memory
@@ -116,3 +118,8 @@ bool DSAbatch::check() {
 void DSAbatch::wait(){
     db_task.wait() ; 
 } 
+
+void DSAbatch::print_stats(){ 
+    printf( "DSAbatch: to_cpu = %d, to_dsa = %d, align_sum = %lu\n", to_cpu , to_dsa , align_sum ) ;
+    db_task.print_stats() ; 
+}

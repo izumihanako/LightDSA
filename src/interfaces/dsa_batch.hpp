@@ -22,8 +22,11 @@ public :
 
     void wait() ;
 
+    void print_stats() ;
+
     int to_dsa ;
     int to_cpu ;
+    size_t align_sum ;
 } ;
 
 #endif 
