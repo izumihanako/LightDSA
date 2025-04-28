@@ -275,8 +275,13 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
                 if( retry_cnts[idx] >= DSA_RETRY_LIMIT &&
                     ori_xfersize[idx] / retry_cnts[idx] < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
                     page_fault_resolving ++ ;
-                    int len = descs[idx].xfer_size > MB ? MB : descs[idx].xfer_size ;
-                    touch_trigger_pf( (char*) comps[idx].fault_addr , len , wr ? 1 : 0 ) ;
+                    if( wr ){ 
+                        int len = descs[idx].xfer_size > MB ? MB : descs[idx].xfer_size ;
+                        touch_trigger_pf( (char*) comps[idx].fault_addr , len , 1 ) ;
+                    } else { 
+                        touch_trigger_pf( (char*) comps[idx].fault_addr , descs[idx].xfer_size , 0 ) ;
+                    }
+                    
                     retry_cnts[idx] = 0 ;
                     // do_by_cpu( &descs[idx] , &comps[idx] ) ; 
                     // descs[idx].opcode = DSA_OPCODE_NOOP ;
