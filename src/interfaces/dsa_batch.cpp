@@ -69,6 +69,8 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
             return true ;
         }
     // #endif 
+    // *(char*)dest = 0 ;
+    // *(char*)src ; 
     uintptr_t dest_ = (uintptr_t) dest , src_ = (uintptr_t)src ;
     #ifdef DESCS_ADDRESS_ALIGNMENT
         size_t align64_diff = 0 ;
@@ -76,7 +78,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
             align64_diff = 0x40 - ( dest_ & 0x3f ) ;
             align_sum += align64_diff ; 
             // db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , align64_diff ) ;
-            memcpy( (void*)dest_ , (void*)src_ , align64_diff ) ;
+            memcpy( dest , src , align64_diff ) ;
             len -= align64_diff ;
             dest_ += align64_diff ;
             src_ += align64_diff ;  
@@ -85,7 +87,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     to_dsa ++ ;  
     db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
-        _mm_clflushopt( dest ) ; // persistent in memory
+        _mm_clwb( dest ) ; // persistent in memory
     #endif 
     return true ;
 }

@@ -83,6 +83,7 @@ PMFileHandler* pm_file_open(const char *path ) {
 }
 
 // 扩展文件大小
+long long pf_ts = 0 ;
 int pm_file_extend(PMFileHandler *handler , size_t extend_size = 0 ) { 
     size_t new_size = handler->file_size + handler->extend_size ; 
     if( extend_size ) new_size = handler->file_size + extend_size ; 
@@ -97,10 +98,13 @@ int pm_file_extend(PMFileHandler *handler , size_t extend_size = 0 ) {
         printf( "pmem_file %s extend failed\n" , handler->file_path ) ; fflush( stdout ) ;
         return 0;
     }
-    // for( size_t i = handler->file_size ; i < new_size ; i += 4096 ) {
-    //     handler->pmem_addr[i] = 0 ;
-    // }
+    long long startns = timeStamp_hires() ;
+    for( size_t i = handler->file_size ; i < new_size ; i += 40960 ) {
+        handler->pmem_addr[i] = 1 ;
+    }
+    handler->pmem_addr[new_size-1] = 0 ;
     handler->file_size = mapped_len ;
+    pf_ts += timeStamp_hires() - startns ;
     // printf( "extend @ %p  mapped_len = %lu, new_size = %lu\n" , handler->pmem_addr , mapped_len , new_size ) ; fflush( stdout ) ;
     return 1;
 }
@@ -156,15 +160,12 @@ int main(){
     // const char *path = "/mnt/pmemdir/testfile" ;
     printf( "%s %s" , path , check_if_path_is_pmem(path) ? "is pmem\n" : "not pmem\n" ) ; fflush( stdout ) ;
 
-    PMFileHandler *src = pm_file_open(src_path) ;  
-    // int cnt = 0 ;
-    // volatile char* x = src->pmem_addr , qq = 1 ;
-    // for( size_t i = 0 ; i < src->used_size ; i += 4096 ){
-    //     qq *= *(x+i) ;
-    //     cnt ++ ;
-    // }
-    // printf( "%p, cnt = %d" , x , cnt ) ; fflush( stdout ) ; 
-    // return 0 ; 
+    PMFileHandler *src = pm_file_open(src_path) ;
+    volatile char *src_addr = src->pmem_addr ;
+    for( size_t i = 0 ; i < src->file_size ; i += 4096 ) {
+        *(src_addr + i) ;
+    }
+
     uint64_t startns = timeStamp_hires() ;
     if( check_if_path_is_pmem( path ) ) {
         PMFileHandler *handler = pm_file_open(path) ;
@@ -174,10 +175,12 @@ int main(){
         } 
         vector< copy_meta > copy_list ;
         size_t src_size = src->used_size ;
+        // size_t src_size = src->used_size ;
         while( src_size ){
             size_t now_len = rand() % ( single_len_max - single_len_min + 1 ) + single_len_min ;
             if( now_len > src_size ) now_len = src_size ;
-            copy_meta meta = {  src->pmem_addr + src->used_size - src_size , now_len } ;
+            copy_meta meta = { src->pmem_addr + src->used_size - src_size , now_len } ;
+            // copy_meta meta = {  src->pmem_addr + src->used_size - src_size , now_len } ;
             copy_list.push_back(meta);
             src_size -= now_len ;
         }
@@ -190,9 +193,10 @@ int main(){
             }
         }         
         pmem_custom_drain() ;
-        pm_file_close(handler) ;
         batch.print_stats() ; 
         printf( "file_size = %lu, used_size = %lu\n" , handler->file_size , handler->used_size ) ; fflush( stdout ) ; 
+        pm_file_close(handler) ;
+        printf( "pf_ts = %lf\n" , 1.0 * pf_ts / 1e9 ) ; fflush( stdout ) ;
 
     } else { 
         int fd = open(path, O_RDWR | O_CREAT | O_TRUNC, 0666);

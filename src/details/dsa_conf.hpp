@@ -17,7 +17,7 @@ constexpr int DSA_PAGE_FAULT_FREQUENCY_LIMIT = 128 * KB ;
 
 // #define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
 
-// #define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
+#define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
 
 // #define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Contiguous Allocation Strategy ***/
 #define ALLOCATOR_USE_HUGEPAGE              /*** use HugePage for comps and descs allocation ***/

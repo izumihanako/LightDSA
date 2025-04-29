@@ -68,7 +68,7 @@ void flush_cpu( void* dest , size_t len ){
     char* ptr = (char*)dest ;
     char* endline =  (char*)(((uintptr_t)ptr + len - 1 ) | ( LINESIZE - 1 ) ) ;
     for( ; ptr <= endline ; ptr += LINESIZE )
-        _mm_clflushopt( ptr ) ;
+        _mm_clwb( ptr ) ;
 }
 
 void do_by_cpu( dsa_hw_desc *desc , dsa_completion_record *comp ){

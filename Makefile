@@ -1,6 +1,6 @@
 CXX = g++
 # 添加-mclflushopt标志以启用CLFLUSHOPT指令支持
-CXXFLAGS = -std=c++11 -fPIC -Wall -O2 -mclflushopt
+CXXFLAGS = -std=c++11 -fPIC -Wall -O2 -mclflushopt -mclwb
 INCLUDES = -Isrc -Isrc/interfaces -Isrc/details
 LDFLAGS = -laccel-config
 

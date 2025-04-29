@@ -75,7 +75,7 @@ file( GLOB_RECURSE HEADER_LIST "${CMAKE_SOURCE_DIR}/src/*.hpp" )
 # generate .a
 add_library( dsa_memcpy SHARED ${SRC_LIST} )
 target_include_directories( dsa_memcpy PUBLIC ${CMAKE_SOURCE_DIR}/src )
-target_compile_options( dsa_memcpy PRIVATE -fPIC -O2 -mclflushopt )
+target_compile_options( dsa_memcpy PRIVATE -fPIC -O2 -mclflushopt -mclwb )
 target_link_libraries( dsa_memcpy PRIVATE ${accel_config_LIBRARY} )
 
 # compile demo
