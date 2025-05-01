@@ -125,6 +125,13 @@ void DSAagent::init(){
     #else
         printf_RGB( 0xcc0011 , "-  Touch pages if frequent PF disable\n" ) ;
     #endif
+
+    printf_RGB( 0x88B806 , "FLAGS: ") ;
+    if( _FLAG_BOF_ ) printf_RGB( 0x00cc33 , "+BOF " ) ; else printf_RGB( 0xcc0011 , "-BOF " ) ;
+    if( _FLAG_CC_ )  printf_RGB( 0x00cc33 , "+CC " ) ; else printf_RGB( 0xcc0011 , "-CC " ) ;
+    if( _FLAG_DRDBK_ ) printf_RGB( 0x00cc33 , "+DRDBK " ) ; else printf_RGB( 0xcc0011 , "-DRDBK " ) ;
+    puts( "" ) ; 
+    fflush( stdout ) ;
 }
 
 void DSAagent::print_wqs(){

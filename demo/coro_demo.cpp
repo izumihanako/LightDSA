@@ -65,7 +65,7 @@ class shuffle_dsa_worker{
     int worker_id , buffer_cnt[group] ;
     std::atomic<int>* buc_cap , *barr ; 
     Data *buffer[group] ;
-    DSAmemcpy memcpy_ ; 
+    DSAop memcpy_ ; 
     DSAbatch  batch_[group] ;
     DataList* after_dsa ;
     bool useDSA ;
@@ -132,7 +132,7 @@ public :
         void *dest = after_dsa[buc_id].push_get_addr( cnt ) , *src = buffer[buc_id] ;
         size_t len = cnt * sizeof( Data ) ;
         if( useDSA ){
-            memcpy_.do_async( dest , src , len ) ;
+            memcpy_.async_memcpy( dest , src , len ) ;
             while( !memcpy_.check() ){ yield_out() ; }
         } else {
             memcpy( dest , src , len ) ; 
@@ -186,7 +186,7 @@ void shuffle_data_dsa( bool useDSA ) {
 }
 
 int main(){
-    { DSAmemcpy tmp ; }
+    { DSAop tmp ; }
     // explain && defs 
     printf( "Demo of using libboost::coroutine2 to do data shuffling\n" ) ; 
 

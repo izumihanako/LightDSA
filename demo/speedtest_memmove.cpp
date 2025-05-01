@@ -31,7 +31,7 @@ private:
     std::function<void(void)> yield_out ;
     void *dest , *src ;
     size_t len ;
-    DSAmemcpy memcpy_ ;
+    DSAop memcpy_ ;
 
 public: 
     dsa_memmove_worker( std::function<void(void)> yield_func_ , 
@@ -40,7 +40,7 @@ public:
 
     void* run() noexcept(true) {
         yield_out() ;
-        memcpy_.do_sync( dest , src , len ) ; 
+        memcpy_.sync_memcpy( dest , src , len ) ; 
         return dest ; 
     }
 } ;
@@ -125,11 +125,11 @@ constexpr size_t ARRAY_LEN = 1 * GB ;
 char c[ARRAY_LEN]  ; 
 int main(){  
     calibrate_yield() ;
-    char *a_ = (char*)numa_alloc_onnode( ARRAY_LEN , 0 ) , *a = (char*)( (uintptr_t)( a_ + 0x3f ) & ~0x3f ) ;
-    char *b_ = (char*)numa_alloc_onnode( ARRAY_LEN , 1 ) , *b = (char*)( (uintptr_t)( b_ + 0x3f ) & ~0x3f ) ;
+    // char *a_ = (char*)numa_alloc_onnode( ARRAY_LEN , 0 ) , *a = (char*)( (uintptr_t)( a_ + 0x3f ) & ~0x3f ) ;
+    // char *b_ = (char*)numa_alloc_onnode( ARRAY_LEN , 1 ) , *b = (char*)( (uintptr_t)( b_ + 0x3f ) & ~0x3f ) ;
 
-    // char *a = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
-    // char *b = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
+    char *a = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
+    char *b = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
     // if( ( (uintptr_t)b & 0x1f ) == 0 ) b += 0x10 ;
     // if( ( (uintptr_t)b & 0x3f ) == 0 ) b += 0x20 ;
     printf( "a @ %p,  b @ %p\n" , a , b ) ;
@@ -198,13 +198,13 @@ int main(){
 
         double multi_single_do = 0 ;
         double multi_single_time = 0 , multi_single_speed = 0 ;
-        DSAmemcpy memcpys[MEMCPY_CNT] ; 
+        DSAop memcpys[MEMCPY_CNT] ; 
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){
             st_time = timeStamp_hires() ;
             for( int i = 0 ; i < tdesc ; i ++ ){
                 int id = i % MEMCPY_CNT ;
                 memcpys[id].wait() ;
-                memcpys[id].do_async( b + ( 1LL * i * len ) % ARRAY_LEN , a + ( 1LL * i * len ) % ARRAY_LEN , len ) ;
+                memcpys[id].async_memcpy( b + ( 1LL * i * len ) % ARRAY_LEN , a + ( 1LL * i * len ) % ARRAY_LEN , len ) ;
             }
             for( int i = 0 ; i < MEMCPY_CNT ; i ++ ) memcpys[i].wait() ;
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 

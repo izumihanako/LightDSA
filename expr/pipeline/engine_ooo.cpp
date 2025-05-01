@@ -65,7 +65,7 @@ void test_dsa_batch( size_t array_len , int cnt , vector<OffLen> test_set , int 
             dsa_time += ( do_time ) / REPEAT ;
         }
     } else if( method == 1 ){
-        DSAmemcpy memcpys[wq_cnt] ; 
+        DSAop memcpys[wq_cnt] ; 
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
             invld_range( a , array_len ) ;
             invld_range( b , array_len ) ;
@@ -73,7 +73,7 @@ void test_dsa_batch( size_t array_len , int cnt , vector<OffLen> test_set , int 
             for( int i = 0 ; i < cnt ; i ++ ){ 
                 int id = i % wq_cnt ;
                 memcpys[id].wait() ;
-                memcpys[id].do_async( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+                memcpys[id].async_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
             }
             for( int i = 0 ; i < wq_cnt ; i ++ ) memcpys[i].wait() ; 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
@@ -102,7 +102,7 @@ vector<OffLen> genSeparate( uint64_t len , int desc_cnt , uint64_t stride ) {
     return rt;
 }
 
-DSAmemcpy ___ ;
+DSAop ___ ;
 int main( int argc , char** argv ){ 
     if( argc < 7 ){ 
         printf("Usage: %s <method> <wq_cnt> <desc_cnt> <stride> <array_len> <is_random>\n", argv[0]) ;

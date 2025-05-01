@@ -129,7 +129,7 @@ void DSAbatch_task::alloc_descs(){
         comps = ( dsa_completion_record *) aligned_alloc( 32 , desc_capacity * 32 ) ; // sizeof( comp ) = 32 
         bdesc = ( dsa_hw_desc *) aligned_alloc( 64 , batch_capacity * 64 ) ; // sizeof( desc ) = 64 
         bcomp = ( dsa_completion_record *) aligned_alloc( 32 , batch_capacity * 32 ) ; // sizeof( comp ) = 32 
-    #endif
+    #endif 
     retry_cnts = (int*) malloc( sizeof(int) * desc_capacity ) ;
     ori_xfersize = (int*) malloc( sizeof(int) * desc_capacity ) ;
     if( descs == nullptr || comps == nullptr || bdesc == nullptr || 
@@ -182,8 +182,15 @@ void DSAbatch_task::clear(){
 }
 
 void DSAbatch_task::print_stats(){
-    printf( "DSAbatch_task: op_cnt = %lld , op_bytes = %lld\n" , op_cnt , op_bytes ) ;
-    printf( "DSAbatch_task: page_fault_resolving = %d , batch_fail_cnt = %d\n" , page_fault_resolving , batch_fail_cnt ) ;
+    printf( "DSAbatch_task: batch_capacity = %d , batch_siz = %d\n" , batch_capacity , batch_siz ) ;
+    printf( "             : op_cnt = %lld , op_bytes = %lld\n" , op_cnt , op_bytes ) ;
+    printf( "             : page_fault_resolving = %d , batch_fail_cnt = %d\n" , page_fault_resolving , batch_fail_cnt ) ;
+    printf( "             : wq = %s, " , working_queue->get_name() ) ;
+    #if defined( ALLOCATOR_CONTIGUOUS_ENABLE )
+        printf( "allocator used = %.3f MB\n" , 1.0 * working_queue->allocator->get_used_size() / MB ) ;
+    #else
+        printf( "memory_used = %.3f MB\n" , 1.0 * ( desc_capacity * 96 + batch_capacity * 96 ) / MB ) ;
+    #endif  
 }
 
 void DSAbatch_task::add_no_op(){
@@ -202,7 +209,7 @@ void DSAbatch_task::submit_forward(){
         //     op_cnt -= batch_siz ;
         //     op_bytes -= tmp ;
         //     return ;
-        // }
+        // } 
         for( int i = 0 ; i < batch_siz ; i ++ ){
             prepare_desc( now_pos() , rdstrb.pop() ) ;
             forward_pos() ;
@@ -360,7 +367,8 @@ void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , 
     #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
         rdstrb.push_back( dsa_rdstrb_entry( op_type , dest , src , len ) ) ;
         if( rdstrb.should_submit() ) submit_forward() ;
-    #else 
+    #else
+        // printf( "len = %d\n" , len ) ;
         prepare_desc( now_pos() , dsa_rdstrb_entry( op_type , dest , src , len ) ) ;
         forward_pos() ;
         if( now_batch_full() ) submit_forward() ; 
@@ -421,22 +429,26 @@ bool DSAbatch_task::collect(){
                 do_op( batch_idx ) ;
                 buzy_queue.push_back( batch_idx ) ;
             }
-            if( op_status( status ) == 1 ){ // success 
+            if( op_status( status ) == 1 ){ // success  
                 free_queue.push_back( batch_idx ) ; 
                 buzy_queue.delay_front_and_pop( q_idx ) ;
                 watch_limit ++ ;
             } else if( op_status( status ) == 0 ){ // not finish yet 
+                // bool eee = false ; 
                 // printf( "wtf ? op_status = %d : " , op_status( bcomp[batch_idx].status ) ) ;
+                // for( int i = batch_idx * batch_siz , lim = i + batch_siz ; i < lim ; i ++ ){ 
+                //     if( op_status( comps[i].status ) == DSA_COMP_SUCCESS ) { printf_RGB( 0x00ff00 , "S" ) ; eee = true ; }
+                //     else { printf( "W" ) ; }
+                // }
+                // if( eee && op_status( bcomp[batch_idx].status ) == 0 ){
+                //     printf( " : wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) );   
+                //     getchar() ;
+                // } else puts( "" ) ;
                 #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE ) 
-                    // for( int i = batch_idx * batch_siz , lim = i + batch_siz ; i < lim ; i ++ ){ 
-                    //     if( op_status( comps[i].status ) == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
-                    //     else printf( "W" ) ;
-                    // }
-                    // printf( " : wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) ); 
                     if( op_status( bcomp[batch_idx].status ) == 1 ){
                         free_queue.push_back( batch_idx ) ;
                         buzy_queue.delay_front_and_pop( q_idx ) ;
-                        recheck = true ;
+                        recheck = true ; 
                     }
                     continue ;
                 #else 

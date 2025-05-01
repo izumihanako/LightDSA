@@ -18,9 +18,12 @@ public :
 
     void print_space() ;
 
+    __always_inline size_t get_used_size() const { return used_size ; }
+
 private :
     void *memory_pool ;
     size_t pool_size ;
+    size_t used_size ;
 
 private : 
     struct seg_tree_node{

@@ -5,9 +5,11 @@ build/
 # Ignore Visual Studio Code settings
 
 output/
+*.data
 # Ignore data files
 
 *.rdb
+*.tmp
 # Ignore Redis database files
 
 *.a 

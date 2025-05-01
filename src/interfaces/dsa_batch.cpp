@@ -6,15 +6,24 @@
  
 DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
     db_task.set_wq( DSAagent::get_instance().get_wq() ) ;
-    to_dsa = to_cpu = 0 ; 
+    to_dsa = to_cpu = align_sum = 0 ;
 }
 
-bool DSAbatch::submit_comp_pattern( void *src , uint64_t pattern , size_t len ) noexcept( true ){
+bool DSAbatch::submit_comp( const void *dest , const void* src , size_t len ) noexcept( true ){
     if( db_task.full() ) {  
         while( !db_task.collect() ) ;  
     }
     to_dsa ++ ;
-    db_task.add_op( DSA_OPCODE_COMPVAL , (void*)(uintptr_t)pattern , src , len ) ;
+    db_task.add_op( DSA_OPCODE_COMPARE , const_cast<void*>(dest) , src , len ) ;
+    return true ;
+}
+
+bool DSAbatch::submit_comp_pattern( const void *src , uint64_t pattern , size_t len ) noexcept( true ){
+    if( db_task.full() ) {  
+        while( !db_task.collect() ) ;  
+    }
+    to_dsa ++ ;
+    db_task.add_op( DSA_OPCODE_COMPVAL , (void*)(uintptr_t)pattern , const_cast<void*>(src) , len ) ;
     return true ;
 }
 
@@ -22,7 +31,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     if( db_task.full() ) {  
         while( !db_task.collect() ) ;  
     } 
-    #ifdef BUILD_RELEASE
+    #ifdef SHORT_TO_CPU
         if( len < 0x200 ) { 
             to_cpu ++ ;
             memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 0 : 1 ) ; 
@@ -62,13 +71,13 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
         while( !db_task.collect() ) ; 
         // return false ;
     } 
-    // #ifdef BUILD_RELEASE
+    #ifdef SHORT_TO_CPU
         if( len < 0x200 ) { 
             to_cpu ++ ;
             memmove_cpu( dest , src , len , _FLAG_CC_ ? 0 : 1 ) ;
             return true ;
         }
-    // #endif 
+    #endif 
     // *(char*)dest = 0 ;
     // *(char*)src ; 
     uintptr_t dest_ = (uintptr_t) dest , src_ = (uintptr_t)src ;

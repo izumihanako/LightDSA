@@ -11,6 +11,8 @@ private :
     dsa_hw_desc desc __attribute__( (aligned(64)) ) ;
     dsa_completion_record *comp ; 
     bool is_doing_flag ; 
+    int op_cnt , page_fault ;
+    size_t op_bytes ;
 
     void *wq_portal ;
     DSAworkingqueue *working_queue ;
@@ -54,13 +56,19 @@ public :
 
     bool check() ;
 
-    void do_op() noexcept( true ) ;
-
-    uint64_t comp_fault_addr() ;
+    void do_op() noexcept( true ) ; 
 
     volatile uint8_t &comp_status_ref() ;
 
     volatile uint8_t *comp_status_ptr() ;
+
+    __always_inline uint8_t get_comp_status() { return comp->status ; }
+
+    __always_inline bool get_result(){ return comp->result ; }
+
+    __always_inline size_t get_bytes_completed(){ return comp->bytes_completed ; }
+
+    void print_stats() ;
 } ; 
 
 #endif

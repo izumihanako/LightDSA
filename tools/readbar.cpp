@@ -51,8 +51,8 @@ int main(){
 
     void *VERSION = (char*)ptr + 0x00 ;
     printf( "VERSION at addr %p:\n" , VERSION ) ;
-    printbits( VERSION , 32 ) ;
-    puts( "" ) ;
+    printbits( VERSION , 16 ) ;
+    puts( "" ) ; 
 
     void *WQCAP = (char*)ptr + 0x20 ;
     printf( "WQCAP at addr %p:\n" , WQCAP ) ;

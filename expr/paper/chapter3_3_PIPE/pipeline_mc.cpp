@@ -11,8 +11,8 @@ using namespace std ;
 
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
-constexpr int REPEAT = 10 , WIDE_REPEAT = 10 ;
-constexpr int bsiz = 32 , BIG_LEN = 64 * KB , SMALL_LEN = 512 ; 
+constexpr int REPEAT = 10 ;
+constexpr int bsiz = 32 , BIG_LEN = 16 * KB , SMALL_LEN = 512 ; 
 int small_cnt = 1 , big_cnt = 1 , desc_cnt = 100 , method = 0 , mix_len ;
 
 struct OffLen{
@@ -52,40 +52,38 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
 
     DSAbatch xfer( bsiz , 20 ) ; 
     DSAop memcpys[bsiz] ; 
-        char *a = (char*) aligned_alloc( 4096 , tot_siz ) , *b = (char*) aligned_alloc( 4096 , tot_siz ) ;  
-        touch_pf( a , tot_siz ) ; touch_pf( b , tot_siz ) ; 
-        printf( "a @ %p , b @ %p\n" , a , b ) ;
-    for( int wd = 0 ; wd < WIDE_REPEAT ; wd ++ ){ 
-        double dsa_time = 0 , dsa_speed = 0 , desc_speed = 0 ;
-        if( method == 0 ){ 
-            for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){ 
-                xfer.db_task.clear() ; 
-                st_time = timeStamp_hires() ;
-                for( int i = 0 ; i < cnt ; i ++ ) xfer.submit_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ; 
-                xfer.db_task.wait() ;
-                ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
-                dsa_time += ( do_time ) / REPEAT ;
-            }
-        } else if( method == 1 ){
-            for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
-                st_time = timeStamp_hires() ;  
-                for( int i = 0 ; i < cnt ; i ++ ){
-                    int id = i % bsiz ;
-                    memcpys[id].wait() ;
-                    memcpys[id].async_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
-                }
-                for( int i = 0 ; i < bsiz ; i ++ ) memcpys[i].wait() ; 
-                ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
-                dsa_time += ( do_time ) / REPEAT ;
-            }
+    double dsa_time = 0 , dsa_speed = 0 , desc_speed = 0 ;
+    char *a = (char*) aligned_alloc( 4096 , tot_siz ) , *b = (char*) aligned_alloc( 4096 , tot_siz ) ;  
+    touch_pf( a , tot_siz ) ; touch_pf( b , tot_siz ) ; 
+    printf( "a @ %p , b @ %p\n" , a , b ) ;
+    if( method == 0 ){ 
+        for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){ 
+            xfer.db_task.clear() ; 
+            st_time = timeStamp_hires() ;
+            for( int i = 0 ; i < cnt ; i ++ ) xfer.submit_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ; 
+            xfer.db_task.wait() ;
+            ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
+            dsa_time += ( do_time ) / REPEAT ;
         }
-        dsa_time *= ns_to_us ; // us
-        dsa_speed = tot_siz / ( dsa_time * us_to_s ) / MB ; 
-        desc_speed = desc_cnt / dsa_time ;  
-        if( method == 0 ) printf( "    ; DSA_batch  cost %5.2lfus, speed %5.0fMB/s, %.2fdesc/us\n" , dsa_time , dsa_speed , desc_speed ) ; 
-        if( method == 1 ) printf( "    ; DSA_memcpy cost %5.2lfus, speed %5.0fMB/s, %.2fdesc/us\n" , dsa_time , dsa_speed , desc_speed ) ; 
-    
-    }free( a ) ; free( b ) ;
+    } else if( method == 1 ){
+        for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
+            st_time = timeStamp_hires() ;  
+            for( int i = 0 ; i < cnt ; i ++ ){
+                int id = i % bsiz ;
+                memcpys[id].wait() ;
+                memcpys[id].async_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+            }
+            for( int i = 0 ; i < bsiz ; i ++ ) memcpys[i].wait() ; 
+            ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
+            dsa_time += ( do_time ) / REPEAT ;
+        }
+    }
+    dsa_time *= ns_to_us ; // us
+    dsa_speed = tot_siz / ( dsa_time * us_to_s ) / MB ; 
+    desc_speed = desc_cnt / dsa_time ;  
+    if( method == 0 ) printf( "    ; DSA_batch  cost %5.2lfus, speed %5.0fMB/s, %.2fdesc/us\n" , dsa_time , dsa_speed , desc_speed ) ; 
+    if( method == 1 ) printf( "    ; DSA_memcpy cost %5.2lfus, speed %5.0fMB/s, %.2fdesc/us\n" , dsa_time , dsa_speed , desc_speed ) ; 
+    free( a ) ; free( b ) ;
     if( method == 0 ) xfer.print_stats() ;
 } 
  
@@ -124,7 +122,7 @@ int main( int argc , char** argv ){
     if( argc < 6 ){ 
         printf("Usage: %s <method> <desc_cnt> <small_cnt> <big_cnt> <mix_len>\n", argv[0]) ;
         printf( "method    : 0 is DSA_batch, 1 is DSA_memcpy\n" ) ;
-        printf( "desc_cnt  : number of groups\n" ) ;
+        printf( "desc_cnt  : number of descs\n" ) ;
         printf( "small_cnt : small desc in a group\n" ) ;
         printf( "big_cnt   : big desc in a group\n" ) ;
         printf( "mix_len   : smallest segment to mix big/small memcpy\n" ) ;
@@ -140,8 +138,9 @@ int main( int argc , char** argv ){
             return 0 ;
         }
     }  
-    printf( "method = %s , desc_cnt = %d (small:big = %d:%d), mix_len = %d\n" ,
-            method == 0 ? "DSA_batch" : "DSA_memcpy" , desc_cnt , small_cnt , big_cnt , mix_len ) ;  
+    printf( "method = %s , desc_cnt = %d (small(%s):big(%s) = %d:%d), mix_len = %d\n" ,
+            method == 0 ? "DSA_batch" : "DSA_memcpy" , desc_cnt , 
+            stdsiz(SMALL_LEN).c_str(), stdsiz(BIG_LEN).c_str() , small_cnt , big_cnt , mix_len ) ;  
     vector<OffLen> test_set = genSeparate( small_cnt , big_cnt , desc_cnt , mix_len ) ;
      
     printf( "[ " ) ;

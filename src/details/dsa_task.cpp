@@ -11,6 +11,8 @@ void DSAtask::init(){
     working_queue = nullptr ;
     is_doing_flag = false ; 
     comp = nullptr ;
+    op_cnt = page_fault = 0 ;
+    op_bytes = 0 ;
 }
 
 void DSAtask::free_comp(){ 
@@ -170,6 +172,7 @@ bool DSAtask::check(){
         break ;
     case DSA_COMP_PAGE_FAULT_NOBOF :
         printf( "DSA op page fault(3) occurred\n" ) ;
+        page_fault ++ ;
         solve_pf() ; 
         do_op() ;
         break ;
@@ -183,10 +186,16 @@ bool DSAtask::check(){
 void DSAtask::do_op() noexcept( true ) {
     is_doing_flag = true ; 
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &desc ) ; // 提交之后就开始DSA操作了
-} 
-
-uint64_t DSAtask::comp_fault_addr(){ return (comp->fault_addr) ; }
+    op_cnt ++ ;
+    op_bytes += desc.xfer_size ;
+}  
 
 volatile uint8_t &DSAtask::comp_status_ref(){ return (comp->status) ; }
 
 volatile uint8_t *DSAtask::comp_status_ptr(){ return &(comp->status) ; }
+
+void DSAtask::print_stats(){
+    printf( "DSA op stats : %d ops, %lu bytes, %d page faults\n" , op_cnt , op_bytes , page_fault ) ;
+    printf( "             : last opcode %s\n" , dsa_op_str( desc.opcode ) ) ;
+    printf( "             : last status %s\n" , dsa_comp_status_str( comp->status ) ) ;
+}

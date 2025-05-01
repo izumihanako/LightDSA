@@ -16,14 +16,14 @@ void test_DSA( char* a , char* b , int len , bool flush ){
     double st_time , ed_time , do_time , flush_time ;  
     double DSA_do = 0 , DSA_flush = 0 ;
     double DSA_time = 0 , DSA_speed = 0 , DSA_flush_speed = 0 ;
-    DSAmemcpy xfer[DSAmemcpy_cnt] ; 
+    DSAop xfer[DSAmemcpy_cnt] ; 
     DSAbatch qfer[DSA_CNT] ;
     for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){ 
         st_time = timeStamp_hires() ;  
         for( int i = 0 ; i < tdesc ; i ++ ) {
             int id = i % DSAmemcpy_cnt ;
             xfer[id].wait() ;
-            xfer[id].do_async( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ; 
+            xfer[id].async_memcpy( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ; 
         }
         for( int i = 0 ; i < DSAmemcpy_cnt ; i ++ ) xfer[i].wait() ;
         ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ;

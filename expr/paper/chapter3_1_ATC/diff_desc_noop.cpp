@@ -45,7 +45,7 @@ void test_dsa_batch( int cnt ){
     puts( "" ) ;
 }
 
-DSAmemcpy ___ ;
+DSAop ___ ;
 int main( int argc , char *argv[] ){
     if( argc > 1 ){ 
         tdesc = atoll( argv[1] ) ;

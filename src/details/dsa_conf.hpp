@@ -17,23 +17,19 @@ constexpr int DSA_PAGE_FAULT_FREQUENCY_LIMIT = 128 * KB ;
 
 // #define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
 
-#define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
+// #define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
 
 // #define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Contiguous Allocation Strategy ***/
 #define ALLOCATOR_USE_HUGEPAGE              /*** use HugePage for comps and descs allocation ***/
 /*** 如果使用CONTIGUOUS分配策略，则每个WQ对应的内存池大小为POOL_SIZE ***/
-constexpr int DEFAULT_POOL_SIZE = 4 * MB ; 
+constexpr int DEFAULT_POOL_SIZE = 16 * MB ; 
 
 // #define FLAG_BLOCK_ON_FAULT                 /*** use desc flag BLOCK_ON_FAULT ***/ 
 // #define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
-#define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
+// #define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
 
 
-
-
-
-
-
+// #define SHORT_TO_CPU                 /*** use CPU for short descs ***/
 
 /********************************** defs ***********************************/
 

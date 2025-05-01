@@ -110,25 +110,40 @@ int invld_range(void *base, uint64_t len) {
 	return 0;
 }
 
+#define OUTPUT_TO_FILE                  /*** will disable RGB output ***/
 void printf_RGB(int r, int g, int b, const char* format, ...) {
-    printf("\033[38;2;%d;%d;%dm", r, g, b);
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-    printf("\033[0m");
+    #if defined( OUTPUT_TO_FILE )
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args); 
+    #else 
+        printf("\033[38;2;%d;%d;%dm", r, g, b);
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+        printf("\033[0m");
+    #endif
 }
 
 void printf_RGB( int rgbhex , const char* format , ... ){
-    int r = ( rgbhex >> 16 ) & 0xff ;
-    int g = ( rgbhex >> 8 ) & 0xff ;
-    int b = ( rgbhex >> 0 ) & 0xff ;
-    printf("\033[38;2;%d;%d;%dm", r, g, b);
-    va_list args;
-    va_start(args, format);
-    vprintf(format, args);
-    va_end(args);
-    printf("\033[0m");
+    #if defined( OUTPUT_TO_FILE )
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args); 
+    #else 
+        int r = ( rgbhex >> 16 ) & 0xff ;
+        int g = ( rgbhex >> 8 ) & 0xff ;
+        int b = ( rgbhex >> 0 ) & 0xff ;
+        printf("\033[38;2;%d;%d;%dm", r, g, b);
+        va_list args;
+        va_start(args, format);
+        vprintf(format, args);
+        va_end(args);
+        printf("\033[0m");
+    #endif
 }
 
 void touch_trigger_pf( char* addr_ , size_t len , int wr ){

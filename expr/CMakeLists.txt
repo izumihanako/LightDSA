@@ -10,8 +10,8 @@ target_link_libraries( dedicated_remap dsa_memcpy ${accel_config_LIBRARY})
 # compile align
 add_subdirectory( align/ )
 
-# compile cache
-add_subdirectory( cache/ )
-
 # compile pipeline
 add_subdirectory( pipeline/ )
+
+# compile paper
+add_subdirectory( paper/ )

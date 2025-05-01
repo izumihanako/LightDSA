@@ -13,6 +13,7 @@ DSAallocator::DSAallocator( int pool_size_ ) {
     pool_size = pool_size_ ;
     memory_pool = MAP_FAILED ;
     node = nullptr ;
+    used_size = 0 ;
 
     void* _memory_pool = nullptr ;
 
@@ -79,6 +80,7 @@ void* DSAallocator::allocate( size_t size , size_t alignment ){
     _alloc( 1 , 0 , pool_size - 1 , Lpos , Rpos ) ; 
     int leaf_offset = Lpos / 32 ;
     node[leaf_cnt-1+leaf_offset].this_len = size / 32 ;
+    used_size += size ;
     return (char*)memory_pool + Lpos ;
 }
 
@@ -93,6 +95,7 @@ void DSAallocator::deallocate( void* ptr ){
         printf( "Deallocate Failed, pointer out of range\n" ) ;
         return ;
     }
+    used_size -= node[leaf_cnt-1+leaf_offset].this_len * 32;
     int L = leaf_offset * 32 , R = L + node[leaf_cnt-1+leaf_offset].this_len * 32 - 1 ; 
     _dealloc( 1 , 0 , pool_size - 1 , L , R ) ;
 }

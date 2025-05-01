@@ -12,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 , bsiz = 32 ;
-constexpr int BIG_LEN = 256 * KB , SMALL_LEN = 4 * KB ;
+constexpr int BIG_LEN = 32 * KB , SMALL_LEN = 512 ;
 int small_cnt = 1 , big_cnt = 1 , group_cnt = 100 , method = 0 , is_random = 0 , is_divide = 0 ;
 
 struct OffLen{
@@ -59,15 +59,15 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
         }
-        xfer.db_task.print_stats() ;
+        xfer.print_stats() ;
     } else if( method == 1 ){
-        DSAmemcpy memcpys[bsiz] ; 
+        DSAop memcpys[bsiz] ; 
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
             st_time = timeStamp_hires() ;  
             for( int i = 0 ; i < cnt ; i ++ ){
                 int id = i % bsiz ;
                 memcpys[id].wait() ;
-                memcpys[id].do_async( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+                memcpys[id].async_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
             }
             for( int i = 0 ; i < bsiz ; i ++ ) memcpys[i].wait() ; 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
@@ -130,7 +130,7 @@ vector<OffLen> genWorkload( int small_cnt , int big_cnt , int group_cnt , int is
     return res;
 }
 
-DSAmemcpy ___ ;
+DSAop ___ ;
 int main( int argc , char** argv ){ 
     if( argc < 7 ){ 
         printf("Usage: %s <method> <group_cnt> <small_cnt> <big_cnt> <random_addr> <is_divide>\n", argv[0]) ;

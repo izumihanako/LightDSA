@@ -96,7 +96,7 @@ void test_dsa_single( int repeat , size_t len , bool warmup ){
     
     char *a = (char*) malloc( len ) ;
     for( size_t i = 0 ; i < len ; i ++ ) a[i] = 'A' ;
-    DSAmemcpy single_xfer ;
+    DSAop single_xfer ;
     for( int tmp = 0 ; tmp < repeat ; tmp ++ ){
         int cnt = len / len ;
         char *b = (char*)malloc( len ) ;
@@ -105,7 +105,7 @@ void test_dsa_single( int repeat , size_t len , bool warmup ){
             st_time = timeStamp_hires() ; 
             touch_pf( b + i * len , len ) ;
             ed_time = timeStamp_hires() , touch_time += ed_time - st_time , st_time = ed_time ; 
-            single_xfer.do_sync( b + i * len , a + i * len , len ) ;  
+            single_xfer.sync_memcpy( b + i * len , a + i * len , len ) ;  
             ed_time = timeStamp_hires() , do_time += ed_time - st_time , st_time = ed_time ;  
         }
         DSA_do    += do_time / cnt ;  
