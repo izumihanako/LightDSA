@@ -130,7 +130,7 @@ int main(){
 
     char *a = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
     char *b = (char*)aligned_alloc( 64 , ARRAY_LEN ) ;
-    // if( ( (uintptr_t)b & 0x1f ) == 0 ) b += 0x10 ;
+    if( ( (uintptr_t)b & 0x1f ) == 0 ) b += 0x10 ;
     // if( ( (uintptr_t)b & 0x3f ) == 0 ) b += 0x20 ;
     printf( "a @ %p,  b @ %p\n" , a , b ) ;
     for( size_t i = 0 ; i < ARRAY_LEN ; i ++ ) a[i] = i ; 

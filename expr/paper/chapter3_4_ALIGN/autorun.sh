@@ -11,11 +11,11 @@ do
     for (( op = 0 ; op <= 3 ; op ++ )) # 0 is memcpy, 1 is memfill, 2 is compare, 3 is compval
     do
         desc_cnt=50000 
-        method_name=$( ( [ $method -eq 0 ] && echo "batch" ) || ( [ $method -eq 1 ] && echo "sg32" ) || echo "single" )
+        method_name=$( ( [ $method -eq 0 ] && echo "batch" ) || ( [ $method -eq 1 ] && echo "sg64" ) || echo "single" )
         op_name=$( ( [ $op -eq 0 ] && echo "memcpy" ) || ( [ $op -eq 1 ] && echo "memfill" ) || ( [ $op -eq 2 ] && echo "compare" ) || echo "compval" )
         echo "Method: $method_name,  Operation: $op_name"
   
-        output_file="${output_path}/${method_name}_${op_name}.txt"
+        output_file="${output_path}/${method_name}_${op_name}.data"
         touch $output_file  
         echo "Output file: $output_file" 
         command="numactl -C0 --membind=0 $file_path $method $op $desc_cnt >> $output_file"

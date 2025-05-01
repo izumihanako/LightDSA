@@ -171,7 +171,7 @@ bool DSAtask::check(){
     case DSA_COMP_NONE :
         break ;
     case DSA_COMP_PAGE_FAULT_NOBOF :
-        printf( "DSA op page fault(3) occurred\n" ) ;
+        // printf( "DSA op page fault(3) occurred\n" ) ;
         page_fault ++ ;
         solve_pf() ; 
         do_op() ;
@@ -196,6 +196,6 @@ volatile uint8_t *DSAtask::comp_status_ptr(){ return &(comp->status) ; }
 
 void DSAtask::print_stats(){
     printf( "DSA op stats : %d ops, %lu bytes, %d page faults\n" , op_cnt , op_bytes , page_fault ) ;
-    printf( "             : last opcode %s\n" , dsa_op_str( desc.opcode ) ) ;
-    printf( "             : last status %s\n" , dsa_comp_status_str( comp->status ) ) ;
+    // printf( "             : last opcode %s\n" , dsa_op_str( desc.opcode ) ) ;
+    // printf( "             : last status %s\n" , dsa_comp_status_str( comp->status ) ) ;
 }

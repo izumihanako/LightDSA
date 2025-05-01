@@ -52,10 +52,14 @@ void test_dsa_speed( int alignment = 64 ){
     char* _src = (char*) aligned_alloc( 4096 , array_len + MB ) ;
     char* _dest = (char*) aligned_alloc( 4096 , array_len + MB ) ;
     src_arr = _src , dest_arr = _dest ;
-    for( size_t delta = alignment , t = 1 ; delta < 4096 ; delta *= 2 , t ++ ){
-        if( t & 1 ){
+    for( size_t delta = 1 , t = 1 ; delta < 4096 ; delta *= 2 , t ++ ){
+        if( ( t & 1 ) && delta > (size_t)alignment ){
             src_arr += delta ;
             dest_arr += delta ;
+        }
+        if( delta == (size_t)alignment ) {
+            src_arr += alignment ;
+            dest_arr += alignment ;
         }
     } 
 
@@ -83,7 +87,11 @@ void test_dsa_speed( int alignment = 64 ){
         for( auto& it : test_set ) tot_xfersize += it.len ;
 
         double do_time = 0 , do_speed = 0 ;
-        for( int repeat = 0 ; repeat < REPEAT ; repeat ++ ){
+        for( int repeat = 0 , warmup = 0 ; repeat < REPEAT ; repeat ++ ){
+            for( size_t i = 0 ; i < array_len ; i += 4096 ) {
+                src_arr[i] = src_arr[i] ^ 0;
+                dest_arr[i] = dest_arr[i] ^ 0 ;
+            }
             uint64_t start = timeStamp_hires() ;
             if( method == 0 ) { // DSA_batch
                 for( auto& it : test_set ){
@@ -110,6 +118,9 @@ void test_dsa_speed( int alignment = 64 ){
                     else if( op_type == 2 ) dsa_op.sync_compare( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 3 ) dsa_op.sync_comp_pattern( src_arr + it.off_src , pattern_ , it.len ) ;
                 }  
+            }
+            if( warmup == 0 ){
+                warmup ++ ; continue ;
             }
             uint64_t end = timeStamp_hires() ;
             do_time += ( end - start ) / REPEAT ;
@@ -140,6 +151,9 @@ void test_dsa_speed( int alignment = 64 ){
         do_speed = transfer_size / ( do_time * us_to_s ) / MB ; // GB/s
         printf( "transfer_size = %6s | do_time = %5.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
                 stdsiz( transfer_size ).c_str() , do_time , do_speed , REPEAT ) ; fflush( stdout ) ;
+        // if( method == 0 ) dsa_batch.print_stats() ;
+        // else if( method == 1 ) dsa_ops[0].print_stats() ;
+        // else if( method == 2 ) dsa_op.print_stats() ;
     }
     free( _src ) ;
     free( _dest ) ;
@@ -158,7 +172,7 @@ int main( int argc , char** argv ){
         op_type = atoi( argv[2] ) ;
         desc_cnt = atoi( argv[3] ) ; 
     } 
-    for( int alignment = 1 ; alignment <= 256 ; alignment *= 2 ){ 
+    for( int alignment = 8 ; alignment <= 128 ; alignment *= 2 ){ 
         test_dsa_speed( alignment) ;
         puts( "" ) ;
     } 

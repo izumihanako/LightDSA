@@ -5,7 +5,9 @@
 #include <cstring>
 
 DSAop::DSAop(){
-    dtask.set_wq( DSAagent::get_instance().get_wq() ) ;        
+    dtask.set_wq( DSAagent::get_instance().get_wq() ) ;
+    to_dsa = to_cpu = 0 ;
+    align_sum = 0 ;
 } ;
 
 bool DSAop::async_compare( const void *dest , const void* src , size_t len ) noexcept( true ){
