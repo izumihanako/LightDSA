@@ -81,7 +81,8 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     desc_capacity = cap * batch_siz ; 
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ;
-    retry_cnts = ori_xfersize = nullptr ;
+    retry_cnts = avg_fault_len = nullptr ;
+    last_fault_addr = nullptr ;
     wq_portal = nullptr ;
     working_queue = nullptr ; 
     free_queue.init( batch_capacity + 1 ) ;
@@ -98,12 +99,14 @@ void DSAbatch_task::prepare_desc( int idx , const dsa_rdstrb_entry &entry ){
     dsa_hw_desc *desc =  descs + idx ;
     dsa_completion_record* comp = comps + idx ;
     desc->opcode = entry.opcode ;
-    ori_xfersize[idx] = desc->xfer_size = entry.xfer_size ;
+    desc->xfer_size = entry.xfer_size ;
     desc->src_addr = entry.src_addr ;
     desc->dst_addr = entry.dst_addr ; 
     desc->flags    = entry.flags ;
     comp->status = 0 ;
     retry_cnts[idx] = 0 ;
+    avg_fault_len[idx] = 0 ;
+    last_fault_addr[idx] = nullptr ;
 }
 
 void DSAbatch_task::alloc_descs(){
@@ -127,9 +130,11 @@ void DSAbatch_task::alloc_descs(){
         bcomp = ( dsa_completion_record *) aligned_alloc( 32 , batch_capacity * 32 ) ; // sizeof( comp ) = 32 
     #endif  
     retry_cnts = (int*) malloc( sizeof(int) * desc_capacity ) ;
-    ori_xfersize = (int*) malloc( sizeof(int) * desc_capacity ) ;
+    avg_fault_len = (int*) malloc( sizeof(int) * desc_capacity ) ;
+    last_fault_addr = (char**) malloc( sizeof(char*) * desc_capacity ) ;
     if( descs == nullptr || comps == nullptr || bdesc == nullptr || 
-        bcomp == nullptr || retry_cnts == nullptr || ori_xfersize == nullptr ){
+        bcomp == nullptr || retry_cnts == nullptr || avg_fault_len == nullptr || 
+        last_fault_addr == nullptr ){
         printf( "DSAbatch_task::alloc_descs() : memory allocation failed\n" ) ;
         exit( 1 ) ;
     }
@@ -163,10 +168,12 @@ void DSAbatch_task::free_descs(){
         if(bcomp) free( bcomp ) ; 
     #endif
     if( retry_cnts )    free( retry_cnts ) ;
-    if( ori_xfersize )  free( ori_xfersize ) ;  
+    if( avg_fault_len ) free( avg_fault_len ) ;
+    if( last_fault_addr ) free( last_fault_addr ) ;
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ;
-    retry_cnts = ori_xfersize = nullptr ;
+    retry_cnts = avg_fault_len = nullptr ;
+    last_fault_addr = nullptr ;
 }
 
 void DSAbatch_task::clear(){
@@ -289,22 +296,24 @@ int DSAbatch_task::resolve_error( int batch_idx ) {
             // printf( "wr = %d. " , wr ) ;
             #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
                 retry_cnts[idx] ++ ;
-                if( retry_cnts[idx] >= DSA_RETRY_LIMIT &&
-                    ori_xfersize[idx] / retry_cnts[idx] < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
-                    page_fault_resolving ++ ;
-                    if( wr ){ 
-                        int len = descs[idx].xfer_size > MB ? MB : descs[idx].xfer_size ;
-                        touch_trigger_pf( (char*) comps[idx].fault_addr , len , 1 ) ;
-                    } else { 
-                        touch_trigger_pf( (char*) comps[idx].fault_addr , descs[idx].xfer_size , 0 ) ;
+                int &avg_len = avg_fault_len[idx] ;
+                char* this_fault = (char*) comps[idx].fault_addr ;
+                if( last_fault_addr[idx] ){
+                    if( retry_cnts[idx] <= DSA_RETRY_LIMIT ) 
+                        avg_len += (int) ( this_fault - last_fault_addr[idx] ) / DSA_RETRY_LIMIT ;
+                    else {
+                        avg_len = avg_len * 1.0 * ( DSA_RETRY_LIMIT - 1 ) / DSA_RETRY_LIMIT ;
+                        avg_len += (int) ( this_fault - last_fault_addr[idx] ) / DSA_RETRY_LIMIT ;
                     }
+                } 
+                if( retry_cnts[idx] >= DSA_RETRY_LIMIT && avg_len < DSA_PF_AVGLEN_LIMIT ){
+                    page_fault_resolving ++ ;
+                    int len = descs[idx].xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : descs[idx].xfer_size ;
+                    touch_trigger_pf( this_fault , len , wr ) ;
                     retry_cnts[idx] = 0 ;
-                    // do_by_cpu( &descs[idx] , &comps[idx] ) ; 
-                    // descs[idx].opcode = DSA_OPCODE_NOOP ;
-                    // descs[idx].flags = DSA_NOOP_FLAG ;
-                    // descs[idx].src_addr = descs[idx].dst_addr = descs[idx].xfer_size = 0 ;
-                    // comps[idx].status = 0 ; 
+                    avg_len = 0 ; 
                 }
+                last_fault_addr[idx] = this_fault ;
             #endif
         } else if( status == DSA_COMP_NONE ){ // remain the same as before
 

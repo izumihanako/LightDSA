@@ -11,10 +11,10 @@ void DSAtask::init(){
     working_queue = nullptr ;
     is_doing_flag = false ; 
     comp = nullptr ;
-    op_cnt = page_fault = page_fault_resolving = 0 ;
+    op_cnt = page_fault_cnt = page_fault_resolving = 0 ;
     op_bytes = 0 ;
-    retry_cnt = 0 ;
-    ori_xfersize = 0 ;
+    retry_cnt = 0 , avg_fault_len = 0 ;
+    last_fault_addr = nullptr ;
 }
 
 void DSAtask::free_comp(){ 
@@ -164,17 +164,23 @@ void DSAtask::solve_pf(){
     PF_adjust_desc() ;
     #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
         retry_cnt ++ ;
-        if( retry_cnt >= DSA_RETRY_LIMIT &&
-            ori_xfersize / retry_cnt < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
-            page_fault_resolving ++ ;
-            if( wr ){ 
-                int len = desc.xfer_size > MB ? MB : desc.xfer_size ;
-                touch_trigger_pf( (char*) comp->fault_addr , len , 1 ) ;
-            } else { 
-                touch_trigger_pf( (char*) comp->fault_addr , desc.xfer_size , 0 ) ;
+        char* this_fault = (char*) comp->fault_addr ;
+        if( last_fault_addr ){
+            if( retry_cnt <= DSA_RETRY_LIMIT ) 
+                avg_fault_len += (int) ( this_fault - last_fault_addr ) / DSA_RETRY_LIMIT ;
+            else {
+                avg_fault_len = avg_fault_len * 1.0 * ( DSA_RETRY_LIMIT - 1 ) / DSA_RETRY_LIMIT ;
+                avg_fault_len += (int) ( this_fault - last_fault_addr ) / DSA_RETRY_LIMIT ;
             }
-            retry_cnt = 0 ; 
         }
+        if( retry_cnt >= DSA_RETRY_LIMIT && avg_fault_len < DSA_PF_AVGLEN_LIMIT ){
+            page_fault_resolving ++ ;
+            int len = desc.xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : desc.xfer_size ;
+            touch_trigger_pf( this_fault , len , wr ) ; 
+            retry_cnt = 0 ; 
+            avg_fault_len = 0 ;
+        }
+        last_fault_addr = this_fault ;
     #endif
     comp->status = 0 ; // reset comp->status, or if will be triggered repeatedly
 } 
@@ -191,7 +197,7 @@ bool DSAtask::check(){
         break ;
     case DSA_COMP_PAGE_FAULT_NOBOF :
         // printf( "DSA op page fault(3) occurred\n" ) ;
-        page_fault ++ ;
+        page_fault_cnt ++ ;
         solve_pf() ; 
         do_op() ;
         break ;
@@ -204,7 +210,17 @@ bool DSAtask::check(){
 
 void DSAtask::do_op() noexcept( true ) {
     is_doing_flag = true ;
-    retry_cnt = 0 ;
+    retry_cnt = 0 ; 
+    #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE 
+        if( desc.xfer_size > 128 * KB ){
+            if( desc.src_addr )
+                touch_trigger_pf( (char*) desc.src_addr , 128 * KB , 0 ) ;
+            if( desc.dst_addr )
+                touch_trigger_pf( (char*) desc.dst_addr , 128 * KB , 1 ) ; 
+        }
+    #endif
+    last_fault_addr = nullptr ;
+    avg_fault_len = retry_cnt = 0 ;
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &desc ) ; // 提交之后就开始DSA操作了
     op_cnt ++ ;
     op_bytes += desc.xfer_size ;
@@ -215,7 +231,7 @@ volatile uint8_t &DSAtask::comp_status_ref(){ return (comp->status) ; }
 volatile uint8_t *DSAtask::comp_status_ptr(){ return &(comp->status) ; }
 
 void DSAtask::print_stats(){
-    printf( "DSA op stats : %d ops, %lu bytes, %d page faults\n" , op_cnt , op_bytes , page_fault ) ;
+    printf( "DSA op stats : %d ops, %lu bytes, %d page faults\n" , op_cnt , op_bytes , page_fault_cnt ) ;
     // printf( "             : last opcode %s\n" , dsa_op_str( desc.opcode ) ) ;
     // printf( "             : last status %s\n" , dsa_comp_status_str( comp->status ) ) ;
 }

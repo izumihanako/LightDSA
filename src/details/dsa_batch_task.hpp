@@ -51,8 +51,9 @@ private :
     dsa_hw_desc *descs ;
     // comps in batch
     dsa_completion_record *comps ;
-    // retry cnt and original xfersize for descs
-    int* retry_cnts , *ori_xfersize ;
+    // retry cnt and average page fault length for descs
+    int* retry_cnts , *avg_fault_len ;
+    char** last_fault_addr ;
     
     // redistribute
     DSAtask_redistribute rdstrb ;

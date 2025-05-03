@@ -15,9 +15,10 @@ constexpr int DEFAULT_BATCH_SIZE = 32 ;
 // #define DESCS_QUEUE_RECYCLE_WINDOW_ENABLE /*** use recycle window ***/  
 constexpr int QUEUE_RECYCLE_UNFINISHED_LIMIT = 25 ; /*** 每个WQ对应的batch回收探查区间长度 ***/
 
-// #define PAGE_FAULT_RESOLVE_TOUCH_ENABLE  /*** touch pages if frequent PF, touch leading pages before submit ***/
-constexpr int DSA_RETRY_LIMIT = 2 ;         /*** 平均每次PF间隔小于128KB，并且次数大于RETRY_LIMIT，那就开始touch ***/
-constexpr int DSA_PAGE_FAULT_FREQUENCY_LIMIT = 128 * KB ;
+// #define PAGE_FAULT_RESOLVE_TOUCH_ENABLE     /*** touch pages if frequent PF, touch leading pages before submit ***/
+constexpr int DSA_RETRY_LIMIT = 3 ;         /*** 平均每次PF间隔小于AVGLEN_LIMIT，并且次数大于RETRY_LIMIT，那就开始touch ***/
+constexpr int DSA_PF_AVGLEN_LIMIT = 128 * KB ;
+constexpr int DSA_PAGE_FAULT_TOUCH_LEN = 128 * KB ;
 
 // #define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
 
