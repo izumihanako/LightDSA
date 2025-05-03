@@ -9,7 +9,7 @@ DSAbatch::DSAbatch( int bsiz , int cap ):db_task( bsiz , cap ) {
     to_dsa = to_cpu = align_sum = 0 ;
 }
 
-bool DSAbatch::submit_comp( const void *dest , const void* src , size_t len ) noexcept( true ){
+bool DSAbatch::submit_compare( const void *dest , const void* src , size_t len ) noexcept( true ){
     if( db_task.full() ) {  
         while( !db_task.collect() ) ;  
     }

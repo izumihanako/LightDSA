@@ -17,3 +17,8 @@ add_subdirectory( chapter3_3_PIPE/ )
 #   In-Depth Exploration of DSA features
 #     -> Write Address Alignment
 add_subdirectory( chapter3_4_ALIGN/ )
+
+# compile codes for
+#   In-Depth Exploration of DSA features
+#     -> Out-of-Order Execution
+add_subdirectory( chapter3_5_OOO/ )

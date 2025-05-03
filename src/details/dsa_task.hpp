@@ -11,8 +11,9 @@ private :
     dsa_hw_desc desc __attribute__( (aligned(64)) ) ;
     dsa_completion_record *comp ; 
     bool is_doing_flag ; 
-    int op_cnt , page_fault ;
-    size_t op_bytes ;
+    int op_cnt , page_fault , page_fault_resolving ;
+    int retry_cnt ;
+    size_t op_bytes , ori_xfersize ;
 
     void *wq_portal ;
     DSAworkingqueue *working_queue ;

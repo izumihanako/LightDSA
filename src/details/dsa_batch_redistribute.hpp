@@ -41,6 +41,9 @@ public :
 
     __always_inline bool empty() { return nega_cnt + posi_cnt == 0 ; }
     __always_inline bool should_submit() { return nega_cnt + posi_cnt == bsiz ; }
+    __always_inline bool can_submit() { return nega_cnt + posi_cnt >= 2 ; }
+    // returns 1 means pop phase is not ended
+    __always_inline bool pop_phase() { return counter != 0 ;}
     void init( int bsiz_ ) ; 
     void push_back( const dsa_rdstrb_entry &entry ) ;
     int special_rule_for_all_small() ;

@@ -6,6 +6,7 @@
 #include <cstring>
 #include "util.hpp" 
 #include <immintrin.h>
+#include "dsa_conf.hpp"
 
 // return double timeStamp (s)
 double timeStamp(){
@@ -110,7 +111,6 @@ int invld_range(void *base, uint64_t len) {
 	return 0;
 }
 
-#define OUTPUT_TO_FILE                  /*** will disable RGB output ***/
 void printf_RGB(int r, int g, int b, const char* format, ...) {
     #if defined( OUTPUT_TO_FILE )
         va_list args;

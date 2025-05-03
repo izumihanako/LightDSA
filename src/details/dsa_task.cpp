@@ -11,8 +11,10 @@ void DSAtask::init(){
     working_queue = nullptr ;
     is_doing_flag = false ; 
     comp = nullptr ;
-    op_cnt = page_fault = 0 ;
+    op_cnt = page_fault = page_fault_resolving = 0 ;
     op_bytes = 0 ;
+    retry_cnt = 0 ;
+    ori_xfersize = 0 ;
 }
 
 void DSAtask::free_comp(){ 
@@ -39,6 +41,7 @@ DSAtask::~DSAtask(){
 void DSAtask::prepare_desc( dsa_opcode op_type ){
     desc.opcode = op_type ;
     desc.flags = IDXD_OP_FLAG_RCR | IDXD_OP_FLAG_CRAV ;
+    ori_xfersize = 0 ;
     switch ( desc.opcode ) {
     case DSA_OPCODE_NOOP :  // 0
         desc.src_addr = desc.dst_addr = desc.xfer_size = 0 ;
@@ -52,7 +55,8 @@ void DSAtask::prepare_desc( dsa_opcode op_type ){
 
 void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint32_t stride ){ 
     desc.opcode = op_type ;
-    desc.region_size = len ;  // @ bytes 32, also xfer_size  
+    desc.region_size = len ;  // @ bytes 32, also xfer_size
+    ori_xfersize = len ;
     switch ( desc.opcode ) {
     case DSA_OPCODE_TRANSL_FETCH :  // 10
         desc.region_stride = stride ; // @ bytes 48
@@ -78,6 +82,7 @@ void DSAtask::prepare_desc( dsa_opcode op_type , void *src , uint32_t len , uint
 void DSAtask::prepare_desc( dsa_opcode op_type , const void *dest , const void* src , uint32_t len ){ 
     desc.opcode = op_type ;
     desc.xfer_size = len ;  // @ bytes 32  
+    ori_xfersize = len ;
     switch ( desc.opcode ) {
     case DSA_OPCODE_MEMMOVE : // 3
         desc.src_addr  = (uintptr_t) src ;       // @ bytes 16
@@ -157,6 +162,20 @@ void DSAtask::solve_pf(){
     volatile char *t = (char*) comp->fault_addr ;
     wr ? *t = *t : *t ; 
     PF_adjust_desc() ;
+    #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
+        retry_cnt ++ ;
+        if( retry_cnt >= DSA_RETRY_LIMIT &&
+            ori_xfersize / retry_cnt < DSA_PAGE_FAULT_FREQUENCY_LIMIT ){
+            page_fault_resolving ++ ;
+            if( wr ){ 
+                int len = desc.xfer_size > MB ? MB : desc.xfer_size ;
+                touch_trigger_pf( (char*) comp->fault_addr , len , 1 ) ;
+            } else { 
+                touch_trigger_pf( (char*) comp->fault_addr , desc.xfer_size , 0 ) ;
+            }
+            retry_cnt = 0 ; 
+        }
+    #endif
     comp->status = 0 ; // reset comp->status, or if will be triggered repeatedly
 } 
 
@@ -177,14 +196,15 @@ bool DSAtask::check(){
         do_op() ;
         break ;
     default:
-        printf( "DSA op error code 0x%x, %s\n" , status , dsa_comp_status_str( status ) ) ;
+        printf( "DSA op error code 0x%x, %s\n" , op_status( status ), dsa_comp_status_str( op_status( status ) ) ) ;
         exit( -1 ) ;
     }
     return false ;
 }
 
 void DSAtask::do_op() noexcept( true ) {
-    is_doing_flag = true ; 
+    is_doing_flag = true ;
+    retry_cnt = 0 ;
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &desc ) ; // 提交之后就开始DSA操作了
     op_cnt ++ ;
     op_bytes += desc.xfer_size ;

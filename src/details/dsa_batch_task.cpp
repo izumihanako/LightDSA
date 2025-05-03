@@ -76,11 +76,7 @@ DSAbatch_task::~DSAbatch_task(){
 }
 
 // private 
-void DSAbatch_task::init( int bsiz , int cap ) {
-    if( cap < 2 ) {
-        printf( "batch capacity adjusted: %d -> 2\n" , cap ) ;
-        cap = 2 ;
-    }
+void DSAbatch_task::init( int bsiz , int cap ) { 
     batch_siz = bsiz , batch_capacity = cap ;
     desc_capacity = cap * batch_siz ; 
     descs = bdesc = nullptr ;
@@ -111,8 +107,8 @@ void DSAbatch_task::prepare_desc( int idx , const dsa_rdstrb_entry &entry ){
 }
 
 void DSAbatch_task::alloc_descs(){
-    if( batch_capacity < 2 ){
-        printf( "DSA batch capacity needs to be greater than 1") ;
+    if( batch_capacity < 1 ){
+        printf( "DSA batch capacity needs to be greater than 0") ;
         exit( 1 ) ;
     }
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
@@ -129,7 +125,7 @@ void DSAbatch_task::alloc_descs(){
         comps = ( dsa_completion_record *) aligned_alloc( 32 , desc_capacity * 32 ) ; // sizeof( comp ) = 32 
         bdesc = ( dsa_hw_desc *) aligned_alloc( 64 , batch_capacity * 64 ) ; // sizeof( desc ) = 64 
         bcomp = ( dsa_completion_record *) aligned_alloc( 32 , batch_capacity * 32 ) ; // sizeof( comp ) = 32 
-    #endif 
+    #endif  
     retry_cnts = (int*) malloc( sizeof(int) * desc_capacity ) ;
     ori_xfersize = (int*) malloc( sizeof(int) * desc_capacity ) ;
     if( descs == nullptr || comps == nullptr || bdesc == nullptr || 
@@ -167,7 +163,7 @@ void DSAbatch_task::free_descs(){
         if(bcomp) free( bcomp ) ; 
     #endif
     if( retry_cnts )    free( retry_cnts ) ;
-    if( ori_xfersize )  free( ori_xfersize ) ; 
+    if( ori_xfersize )  free( ori_xfersize ) ;  
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ;
     retry_cnts = ori_xfersize = nullptr ;
@@ -215,7 +211,17 @@ void DSAbatch_task::submit_forward(){
             forward_pos() ;
         }
     #endif 
-    do_op( batch_idx ) ;
+    #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE
+        for( int i = batch_base ; i < batch_base + desc_idx ; i ++ ){
+            // ignore small transfers, because touch may be random access which causes overhead
+            if( descs[i].xfer_size <= 128 * KB ) continue ;  
+            if( descs[i].src_addr )
+                touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
+            if( descs[i].dst_addr )
+                touch_trigger_pf( (char*) descs[i].dst_addr , 128 * KB , 1 ) ;
+        }
+    #endif 
+    do_op( batch_idx , desc_idx ) ;
     buzy_queue.push_back( batch_idx ) ; 
     batch_idx = free_queue.pop_front() ;
     if( batch_idx == -1 ) {
@@ -256,17 +262,19 @@ void DSAbatch_task::PF_adjust_desc( int idx ){
     comp->status = 0 ;
 }
 
-void DSAbatch_task::resolve_error( int batch_idx ) { 
+int DSAbatch_task::resolve_error( int batch_idx ) { 
     int x = op_status( bcomp[batch_idx].status ) ;
-    if( x == 1 || x == 0 ) return ; // success or not finish yet
+    if( x == 1 || x == 0 ) return 0 ; // success or not finish yet
     // printf( "DSA batch op error code 0x%x, %s\n" , x , dsa_comp_status_str( x ) ) ; fflush( stdout ) ;
     batch_fail_cnt ++ ;
     int batch_base = batch_idx * batch_siz ;
-    for( int i = 0 ; i < batch_siz ; i ++ ){
+    int desc_count = bdesc[batch_idx].desc_count ;
+    for( int i = 0 ; i < desc_count ; i ++ ){
         int idx = batch_base + i ;
         uint8_t status = op_status( comps[idx].status ) ;
         // printf( "desc %d, status = 0x%x, %s\n" , idx , status , dsa_comp_status_str( status ) ) ;
-        if( status == DSA_COMP_SUCCESS ){
+        if( status == DSA_COMP_SUCCESS ){ 
+            if( descs[idx].opcode == DSA_OPCODE_NOOP ) continue ; // no op
             // already done, set to no op
             descs[idx].opcode = DSA_OPCODE_NOOP ;
             descs[idx].flags = DSA_NOOP_FLAG ;
@@ -277,6 +285,7 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
             volatile char *t = (char*) comps[idx].fault_addr ;
             wr ? *t = *t : *t ; 
             PF_adjust_desc( idx ) ;
+            comps[idx].status = 0 ;
             // printf( "wr = %d. " , wr ) ;
             #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
                 retry_cnts[idx] ++ ;
@@ -289,7 +298,6 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
                     } else { 
                         touch_trigger_pf( (char*) comps[idx].fault_addr , descs[idx].xfer_size , 0 ) ;
                     }
-                    
                     retry_cnts[idx] = 0 ;
                     // do_by_cpu( &descs[idx] , &comps[idx] ) ; 
                     // descs[idx].opcode = DSA_OPCODE_NOOP ;
@@ -298,14 +306,18 @@ void DSAbatch_task::resolve_error( int batch_idx ) {
                     // comps[idx].status = 0 ; 
                 }
             #endif
+        } else if( status == DSA_COMP_NONE ){ // remain the same as before
+
         } else {
             // not implemented yet
         }
     } 
     // getchar() ;
+    return desc_count ;
 }
 
-void DSAbatch_task::do_op( int batch_idx ) { 
+void DSAbatch_task::do_op( int batch_idx , int custom_desc_cnt ) {
+    bdesc[batch_idx].desc_count = custom_desc_cnt ; 
     bcomp[batch_idx].status = 0 ;
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &bdesc[batch_idx] ) ; 
 }
@@ -378,7 +390,7 @@ void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , 
 void DSAbatch_task::wait(){
     #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
         if( !rdstrb.empty() ){
-            while( rdstrb.should_submit() == false ) add_no_op() ;
+            while( rdstrb.can_submit() == false ) add_no_op() ;
             submit_forward() ;
         }
     #else 
@@ -393,7 +405,7 @@ void DSAbatch_task::wait(){
 bool DSAbatch_task::check(){
     #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
         if( !rdstrb.empty() ){
-            while( rdstrb.should_submit() == false ) add_no_op() ;
+            while( rdstrb.can_submit() == false ) add_no_op() ;
             submit_forward() ;
         }
     #else 
@@ -425,8 +437,8 @@ bool DSAbatch_task::collect(){
             volatile uint8_t &status = bcomp[batch_idx].status ; 
             if( op_status( status ) > 1 ){ // some error occurred
                 buzy_queue.delay_front_and_pop( q_idx ) ;
-                resolve_error( batch_idx ) ;
-                do_op( batch_idx ) ;
+                int desc_count = resolve_error( batch_idx ) ;
+                if( desc_count ) do_op( batch_idx , desc_count ) ;
                 buzy_queue.push_back( batch_idx ) ;
             }
             if( op_status( status ) == 1 ){ // success  

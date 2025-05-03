@@ -150,9 +150,9 @@ void DSAtask_redistribute::push_back( const dsa_rdstrb_entry &entry ){
 
 dsa_rdstrb_entry DSAtask_redistribute::pop(){
     if( counter == 0 ){ // new batch
-        counter = bsiz ;
+        counter = nega_cnt + posi_cnt ;
         credit = 0 ; 
-        credit_fix = - 1.0 * sum_credit / bsiz ;
+        credit_fix = - 1.0 * sum_credit / counter ;
         sum_credit = 0 ;
     }
     counter -- ;

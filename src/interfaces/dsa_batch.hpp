@@ -10,7 +10,7 @@ public :
 
     DSAbatch( int bsiz = DEFAULT_BATCH_SIZE , int cap = DEFAULT_BATCH_CAPACITY  ) ;
 
-    bool submit_comp( const void *dest , const void* src , size_t len ) noexcept( true ) ;
+    bool submit_compare( const void *dest , const void* src , size_t len ) noexcept( true ) ;
 
     bool submit_comp_pattern( const void *src , uint64_t pattern , size_t len ) noexcept( true ) ;
 

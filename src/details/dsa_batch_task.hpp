@@ -38,7 +38,7 @@ private :
     // main desc
     dsa_hw_desc *bdesc ;
     // main comp
-    dsa_completion_record *bcomp ; 
+    dsa_completion_record *bcomp ;  
     
     // free queue and buzy queue
     batch_record_queue free_queue , buzy_queue ;
@@ -92,9 +92,9 @@ private :
     
     void PF_adjust_desc( int idx ) ;
 
-    void resolve_error( int batch_idx ) ;
+    int resolve_error( int batch_idx ) ;
 
-    void do_op( int batch_idx )  ; 
+    void do_op( int batch_idx , int custom_desc_cnt ) ; 
 
     __always_inline bool is_pos_valid() { return batch_idx != -1 ; }
 

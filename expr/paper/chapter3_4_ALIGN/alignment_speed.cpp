@@ -97,7 +97,7 @@ void test_dsa_speed( int alignment = 64 ){
                 for( auto& it : test_set ){
                     if( op_type == 0 ) dsa_batch.submit_memcpy( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 1 ) dsa_batch.submit_memfill( dest_arr + it.off_dest , pattern_ , it.len ) ;
-                    else if( op_type == 2 ) dsa_batch.submit_comp( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
+                    else if( op_type == 2 ) dsa_batch.submit_compare( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 3 ) dsa_batch.submit_comp_pattern( src_arr + it.off_src , pattern_ , it.len ) ;
                 }
                 dsa_batch.wait() ;
