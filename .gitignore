@@ -4,8 +4,7 @@ build/
 .vscode/
 # Ignore Visual Studio Code settings
 
-output/
-*.data
+output/ 
 # Ignore data files
 
 *.rdb

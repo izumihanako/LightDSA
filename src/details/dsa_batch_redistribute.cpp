@@ -122,7 +122,7 @@ void DSAtask_redistribute::init( int bsiz_ ){
 //   2KB credit -2
 //  <512 use CPU
 static const int8_t credit_table[32] = {
-    0, 0, 0, 0, 0, 0, 0,-2,-2,  // < 512
+    -4, -4, -4, -4, -4, -4, -4,-2,-2,  // < 512
     -2, -2, -2,                 // 512 ~ 4KB-1
     -1,                         // 4KB ~ 8KB
     1,                          // 8KB ~ 16KB-1

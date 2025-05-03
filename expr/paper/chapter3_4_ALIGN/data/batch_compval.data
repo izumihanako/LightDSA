@@ -1,0 +1,102 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC -DRDBK 
+method = DSA_batch, op = compval, desc_cnt = 50000, array_len = 4GB, alignment = 8 bytes
+src_arr @ 0x7f92698ff558 , dest_arr @ 0x7f91697fd558
+transfer_size =   64 B | do_time =  0.03 us | do_speed =  1891 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.03 us | do_speed =  3748 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.03 us | do_speed =  7513 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.03 us | do_speed = 14766 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.04 us | do_speed = 25056 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.06 us | do_speed = 30646 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.12 us | do_speed = 31919 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.24 us | do_speed = 32776 MB/s | REPEAT = 10
+transfer_size =   16KB | do_time =  0.47 us | do_speed = 33212 MB/s | REPEAT = 10
+transfer_size =   32KB | do_time =  0.93 us | do_speed = 33433 MB/s | REPEAT = 10
+transfer_size =   64KB | do_time =  1.86 us | do_speed = 33527 MB/s | REPEAT = 10
+transfer_size =  128KB | do_time =  3.72 us | do_speed = 33577 MB/s | REPEAT = 10
+transfer_size =  256KB | do_time =  7.44 us | do_speed = 33600 MB/s | REPEAT = 10
+transfer_size =  512KB | do_time = 14.88 us | do_speed = 33613 MB/s | REPEAT = 10
+transfer_size =    1MB | do_time = 29.74 us | do_speed = 33621 MB/s | REPEAT = 10
+
+method = DSA_batch, op = compval, desc_cnt = 50000, array_len = 4GB, alignment = 16 bytes
+src_arr @ 0x7f92698ff550 , dest_arr @ 0x7f91697fd550
+transfer_size =   64 B | do_time =  0.04 us | do_speed =  1695 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.04 us | do_speed =  3338 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.04 us | do_speed =  5853 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.04 us | do_speed = 11019 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.04 us | do_speed = 22371 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.06 us | do_speed = 30591 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.12 us | do_speed = 31915 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.24 us | do_speed = 32772 MB/s | REPEAT = 10
+transfer_size =   16KB | do_time =  0.47 us | do_speed = 33213 MB/s | REPEAT = 10
+transfer_size =   32KB | do_time =  0.93 us | do_speed = 33441 MB/s | REPEAT = 10
+transfer_size =   64KB | do_time =  1.86 us | do_speed = 33530 MB/s | REPEAT = 10
+transfer_size =  128KB | do_time =  3.72 us | do_speed = 33576 MB/s | REPEAT = 10
+transfer_size =  256KB | do_time =  7.44 us | do_speed = 33600 MB/s | REPEAT = 10
+transfer_size =  512KB | do_time = 14.87 us | do_speed = 33614 MB/s | REPEAT = 10
+transfer_size =    1MB | do_time = 29.74 us | do_speed = 33620 MB/s | REPEAT = 10
+
+method = DSA_batch, op = compval, desc_cnt = 50000, array_len = 4GB, alignment = 32 bytes
+src_arr @ 0x7f92698ff560 , dest_arr @ 0x7f91697fd560
+transfer_size =   64 B | do_time =  0.04 us | do_speed =  1690 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.04 us | do_speed =  3363 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.04 us | do_speed =  6684 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.04 us | do_speed = 12808 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.05 us | do_speed = 20724 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.06 us | do_speed = 31025 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.12 us | do_speed = 32096 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.24 us | do_speed = 32894 MB/s | REPEAT = 10
+transfer_size =   16KB | do_time =  0.47 us | do_speed = 33289 MB/s | REPEAT = 10
+transfer_size =   32KB | do_time =  0.93 us | do_speed = 33460 MB/s | REPEAT = 10
+transfer_size =   64KB | do_time =  1.86 us | do_speed = 33547 MB/s | REPEAT = 10
+transfer_size =  128KB | do_time =  3.72 us | do_speed = 33586 MB/s | REPEAT = 10
+transfer_size =  256KB | do_time =  7.44 us | do_speed = 33606 MB/s | REPEAT = 10
+transfer_size =  512KB | do_time = 14.87 us | do_speed = 33616 MB/s | REPEAT = 10
+transfer_size =    1MB | do_time = 29.74 us | do_speed = 33621 MB/s | REPEAT = 10
+
+method = DSA_batch, op = compval, desc_cnt = 50000, array_len = 4GB, alignment = 64 bytes
+src_arr @ 0x7f92698ff540 , dest_arr @ 0x7f91697fd540
+transfer_size =   64 B | do_time =  0.04 us | do_speed =  1636 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.04 us | do_speed =  3263 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.04 us | do_speed =  6697 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.04 us | do_speed = 13728 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.04 us | do_speed = 25266 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.06 us | do_speed = 31040 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.12 us | do_speed = 32148 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.24 us | do_speed = 32893 MB/s | REPEAT = 10
+transfer_size =   16KB | do_time =  0.47 us | do_speed = 33280 MB/s | REPEAT = 10
+transfer_size =   32KB | do_time =  0.93 us | do_speed = 33474 MB/s | REPEAT = 10
+transfer_size =   64KB | do_time =  1.86 us | do_speed = 33546 MB/s | REPEAT = 10
+transfer_size =  128KB | do_time =  3.72 us | do_speed = 33586 MB/s | REPEAT = 10
+transfer_size =  256KB | do_time =  7.44 us | do_speed = 33606 MB/s | REPEAT = 10
+transfer_size =  512KB | do_time = 14.87 us | do_speed = 33616 MB/s | REPEAT = 10
+transfer_size =    1MB | do_time = 29.74 us | do_speed = 33621 MB/s | REPEAT = 10
+
+method = DSA_batch, op = compval, desc_cnt = 50000, array_len = 4GB, alignment = 128 bytes
+src_arr @ 0x7f92698ff580 , dest_arr @ 0x7f91697fd580
+transfer_size =   64 B | do_time =  0.04 us | do_speed =  1641 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.04 us | do_speed =  3282 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.04 us | do_speed =  6745 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.04 us | do_speed = 13748 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.04 us | do_speed = 25309 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.06 us | do_speed = 31049 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.12 us | do_speed = 32153 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.24 us | do_speed = 32904 MB/s | REPEAT = 10
+transfer_size =   16KB | do_time =  0.47 us | do_speed = 33286 MB/s | REPEAT = 10
+transfer_size =   32KB | do_time =  0.93 us | do_speed = 33467 MB/s | REPEAT = 10
+transfer_size =   64KB | do_time =  1.86 us | do_speed = 33548 MB/s | REPEAT = 10
+transfer_size =  128KB | do_time =  3.72 us | do_speed = 33587 MB/s | REPEAT = 10
+transfer_size =  256KB | do_time =  7.44 us | do_speed = 33606 MB/s | REPEAT = 10
+transfer_size =  512KB | do_time = 14.87 us | do_speed = 33616 MB/s | REPEAT = 10
+transfer_size =    1MB | do_time = 29.74 us | do_speed = 33621 MB/s | REPEAT = 10
+

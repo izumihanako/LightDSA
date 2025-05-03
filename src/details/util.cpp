@@ -146,16 +146,17 @@ void printf_RGB( int rgbhex , const char* format , ... ){
     #endif
 }
 
-void touch_trigger_pf( char* addr_ , size_t len , int wr ){
-    volatile char *addr = addr_ ;
+void touch_trigger_pf( char* addr , size_t len , int wr ){ 
     char *uppage = (char*) ((uintptr_t)(addr + len - 1 ) | 0xfff ) ;
     if( wr ){ 
-        for( ; (uintptr_t) addr <= (uintptr_t) uppage ; addr += 4096 ){
-            *addr ^= 0 ; 
+        volatile char *addr_ = (char*)addr ;
+        for( ; (uintptr_t) addr_ <= (uintptr_t) uppage ; addr_ += 4096 ) {
+            *addr_ ^= 0 ; 
             // _mm_clflushopt( (void*)addr ) ;
             // __asm__ volatile ("prefetchw (%0)" : : "r" (addr) : "memory");
         }
     } else {
-        for( ; (uintptr_t) addr <= (uintptr_t) uppage ; addr += 4096 ) (void)(*addr) ;
+        volatile char x ;
+        for( ; (uintptr_t) addr <= (uintptr_t) uppage ; addr += 4096 ) x = (*addr) ;
     }
 }

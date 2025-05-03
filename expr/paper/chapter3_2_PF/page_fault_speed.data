@@ -1,0 +1,291 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable + with cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF +CC -DRDBK 
+method = major PF, op_type = memmove, transfer_size = 32KB, REPEAT = 10
+major page fault
+time: 141.930 seconds, speed: 0.007 GB/s, NO REPEAT
+DSAbatch: to_cpu = 0, to_dsa = 32768, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 32768 , op_bytes = 1073741824
+             : page_fault_resolving = 0 , batch_fail_cnt = 8192
+             : wq = wq0.0, memory_used = 0.242 MB
+
+method = major PF, op_type = memfill, transfer_size = 32KB, REPEAT = 10
+major page fault
+time: 1.148 seconds, speed: 0.871 GB/s, NO REPEAT
+DSAbatch: to_cpu = 0, to_dsa = 65536, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 65536 , op_bytes = 2147483648
+             : page_fault_resolving = 0 , batch_fail_cnt = 16384
+             : wq = wq0.0, memory_used = 0.242 MB
+
+method = major PF, op_type = compare, transfer_size = 32KB, REPEAT = 10
+major page fault
+time: 140.820 seconds, speed: 0.007 GB/s, NO REPEAT
+DSAbatch: to_cpu = 0, to_dsa = 98304, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 98304 , op_bytes = 3221225472
+             : page_fault_resolving = 0 , batch_fail_cnt = 24576
+             : wq = wq0.0, memory_used = 0.242 MB
+
+method = major PF, op_type = compval, transfer_size = 32KB, REPEAT = 10
+major page fault
+time: 141.341 seconds, speed: 0.007 GB/s, NO REPEAT
+DSAbatch: to_cpu = 0, to_dsa = 131072, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 131072 , op_bytes = 4294967296
+             : page_fault_resolving = 0 , batch_fail_cnt = 32768
+             : wq = wq0.0, memory_used = 0.242 MB
+
+method = minor PF, op_type = memmove, transfer_size = 32KB, REPEAT = 10
+minor page fault
+time: 1.085 seconds, speed: 0.921 GB/s
+time: 1.080 seconds, speed: 0.926 GB/s
+time: 1.079 seconds, speed: 0.927 GB/s
+time: 1.080 seconds, speed: 0.926 GB/s
+time: 1.079 seconds, speed: 0.927 GB/s
+time: 1.084 seconds, speed: 0.923 GB/s
+time: 1.083 seconds, speed: 0.923 GB/s
+time: 1.080 seconds, speed: 0.926 GB/s
+time: 1.082 seconds, speed: 0.924 GB/s
+time: 1.077 seconds, speed: 0.928 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 458752, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 458752 , op_bytes = 15032385536
+             : page_fault_resolving = 0 , batch_fail_cnt = 114688
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with minor page fault
+average time: 1.081 seconds, average speed: 0.925 GB/s, REPEAT = 10
+
+method = minor PF, op_type = memfill, transfer_size = 32KB, REPEAT = 10
+minor page fault
+time: 1.073 seconds, speed: 0.932 GB/s
+time: 1.074 seconds, speed: 0.931 GB/s
+time: 1.078 seconds, speed: 0.928 GB/s
+time: 1.078 seconds, speed: 0.928 GB/s
+time: 1.074 seconds, speed: 0.931 GB/s
+time: 1.076 seconds, speed: 0.930 GB/s
+time: 1.076 seconds, speed: 0.930 GB/s
+time: 1.078 seconds, speed: 0.928 GB/s
+time: 1.080 seconds, speed: 0.926 GB/s
+time: 1.078 seconds, speed: 0.927 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 786432, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 786432 , op_bytes = 25769803776
+             : page_fault_resolving = 0 , batch_fail_cnt = 196608
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with minor page fault
+average time: 1.076 seconds, average speed: 0.929 GB/s, REPEAT = 10
+
+method = minor PF, op_type = compare, transfer_size = 32KB, REPEAT = 10
+minor page fault
+time: 0.189 seconds, speed: 5.298 GB/s
+time: 0.188 seconds, speed: 5.309 GB/s
+time: 0.187 seconds, speed: 5.355 GB/s
+time: 0.187 seconds, speed: 5.351 GB/s
+time: 0.187 seconds, speed: 5.358 GB/s
+time: 0.187 seconds, speed: 5.360 GB/s
+time: 0.187 seconds, speed: 5.350 GB/s
+time: 0.186 seconds, speed: 5.368 GB/s
+time: 0.187 seconds, speed: 5.357 GB/s
+time: 0.187 seconds, speed: 5.358 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 1114112, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 1114112 , op_bytes = 36507222016
+             : page_fault_resolving = 0 , batch_fail_cnt = 278528
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with minor page fault
+average time: 0.187 seconds, average speed: 5.346 GB/s, REPEAT = 10
+
+method = minor PF, op_type = compval, transfer_size = 32KB, REPEAT = 10
+minor page fault
+time: 0.186 seconds, speed: 5.377 GB/s
+time: 0.185 seconds, speed: 5.391 GB/s
+time: 0.186 seconds, speed: 5.382 GB/s
+time: 0.186 seconds, speed: 5.377 GB/s
+time: 0.186 seconds, speed: 5.382 GB/s
+time: 0.186 seconds, speed: 5.389 GB/s
+time: 0.186 seconds, speed: 5.388 GB/s
+time: 0.186 seconds, speed: 5.383 GB/s
+time: 0.186 seconds, speed: 5.380 GB/s
+time: 0.186 seconds, speed: 5.379 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 1441792, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 1441792 , op_bytes = 47244640256
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with minor page fault
+average time: 0.186 seconds, average speed: 5.383 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = memmove, transfer_size = 32KB, REPEAT = 10
+with ATS miss
+time: 0.034 seconds, speed: 29.143 GB/s
+time: 0.034 seconds, speed: 29.145 GB/s
+time: 0.034 seconds, speed: 29.113 GB/s
+time: 0.034 seconds, speed: 29.125 GB/s
+time: 0.034 seconds, speed: 29.144 GB/s
+time: 0.034 seconds, speed: 29.145 GB/s
+time: 0.034 seconds, speed: 29.144 GB/s
+time: 0.034 seconds, speed: 29.108 GB/s
+time: 0.034 seconds, speed: 29.095 GB/s
+time: 0.034 seconds, speed: 29.094 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 1769472, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 1769472 , op_bytes = 57982058496
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with ATS miss
+average time: 0.034 seconds, average speed: 29.126 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = memfill, transfer_size = 32KB, REPEAT = 10
+with ATS miss
+time: 0.034 seconds, speed: 29.425 GB/s
+time: 0.034 seconds, speed: 29.427 GB/s
+time: 0.034 seconds, speed: 29.396 GB/s
+time: 0.034 seconds, speed: 29.434 GB/s
+time: 0.034 seconds, speed: 29.426 GB/s
+time: 0.034 seconds, speed: 29.424 GB/s
+time: 0.034 seconds, speed: 29.430 GB/s
+time: 0.034 seconds, speed: 29.429 GB/s
+time: 0.034 seconds, speed: 29.428 GB/s
+time: 0.034 seconds, speed: 29.439 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 2097152, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 2097152 , op_bytes = 68719476736
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with ATS miss
+average time: 0.034 seconds, average speed: 29.426 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = compare, transfer_size = 32KB, REPEAT = 10
+with ATS miss
+time: 0.068 seconds, speed: 14.731 GB/s
+time: 0.068 seconds, speed: 14.733 GB/s
+time: 0.068 seconds, speed: 14.743 GB/s
+time: 0.068 seconds, speed: 14.739 GB/s
+time: 0.068 seconds, speed: 14.733 GB/s
+time: 0.068 seconds, speed: 14.736 GB/s
+time: 0.068 seconds, speed: 14.740 GB/s
+time: 0.068 seconds, speed: 14.742 GB/s
+time: 0.068 seconds, speed: 14.741 GB/s
+time: 0.068 seconds, speed: 14.730 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 2424832, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 2424832 , op_bytes = 79456894976
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with ATS miss
+average time: 0.068 seconds, average speed: 14.737 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = compval, transfer_size = 32KB, REPEAT = 10
+with ATS miss
+time: 0.034 seconds, speed: 29.404 GB/s
+time: 0.034 seconds, speed: 29.404 GB/s
+time: 0.034 seconds, speed: 29.403 GB/s
+time: 0.034 seconds, speed: 29.378 GB/s
+time: 0.034 seconds, speed: 29.403 GB/s
+time: 0.034 seconds, speed: 29.405 GB/s
+time: 0.034 seconds, speed: 29.403 GB/s
+time: 0.034 seconds, speed: 29.402 GB/s
+time: 0.034 seconds, speed: 29.381 GB/s
+time: 0.034 seconds, speed: 29.405 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 2752512, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 2752512 , op_bytes = 90194313216
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove with ATS miss
+average time: 0.034 seconds, average speed: 29.399 GB/s, REPEAT = 10
+
+method = no PF, op_type = memmove, transfer_size = 32KB, REPEAT = 10
+without page fault
+time: 0.035 seconds, speed: 28.919 GB/s
+time: 0.034 seconds, speed: 29.401 GB/s
+time: 0.034 seconds, speed: 29.421 GB/s
+time: 0.034 seconds, speed: 29.407 GB/s
+time: 0.034 seconds, speed: 29.404 GB/s
+time: 0.034 seconds, speed: 29.402 GB/s
+time: 0.034 seconds, speed: 29.422 GB/s
+time: 0.034 seconds, speed: 29.402 GB/s
+time: 0.034 seconds, speed: 29.412 GB/s
+time: 0.034 seconds, speed: 29.400 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 3080192, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 3080192 , op_bytes = 100931731456
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove without page fault
+average time: 0.034 seconds, average speed: 29.359 GB/s, REPEAT = 10
+
+method = no PF, op_type = memfill, transfer_size = 32KB, REPEAT = 10
+without page fault
+time: 0.034 seconds, speed: 29.431 GB/s
+time: 0.034 seconds, speed: 29.430 GB/s
+time: 0.034 seconds, speed: 29.429 GB/s
+time: 0.034 seconds, speed: 29.428 GB/s
+time: 0.034 seconds, speed: 29.427 GB/s
+time: 0.034 seconds, speed: 29.441 GB/s
+time: 0.034 seconds, speed: 29.426 GB/s
+time: 0.034 seconds, speed: 29.435 GB/s
+time: 0.034 seconds, speed: 29.432 GB/s
+time: 0.034 seconds, speed: 29.426 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 3407872, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 3407872 , op_bytes = 111669149696
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove without page fault
+average time: 0.034 seconds, average speed: 29.430 GB/s, REPEAT = 10
+
+method = no PF, op_type = compare, transfer_size = 32KB, REPEAT = 10
+without page fault
+time: 0.067 seconds, speed: 14.859 GB/s
+time: 0.067 seconds, speed: 14.858 GB/s
+time: 0.067 seconds, speed: 14.848 GB/s
+time: 0.067 seconds, speed: 14.850 GB/s
+time: 0.067 seconds, speed: 14.856 GB/s
+time: 0.067 seconds, speed: 14.850 GB/s
+time: 0.067 seconds, speed: 14.847 GB/s
+time: 0.067 seconds, speed: 14.856 GB/s
+time: 0.067 seconds, speed: 14.854 GB/s
+time: 0.067 seconds, speed: 14.853 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 3735552, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 3735552 , op_bytes = 122406567936
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove without page fault
+average time: 0.067 seconds, average speed: 14.853 GB/s, REPEAT = 10
+
+method = no PF, op_type = compval, transfer_size = 32KB, REPEAT = 10
+without page fault
+time: 0.034 seconds, speed: 29.627 GB/s
+time: 0.034 seconds, speed: 29.614 GB/s
+time: 0.034 seconds, speed: 29.652 GB/s
+time: 0.034 seconds, speed: 29.615 GB/s
+time: 0.034 seconds, speed: 29.648 GB/s
+time: 0.034 seconds, speed: 29.624 GB/s
+time: 0.034 seconds, speed: 29.648 GB/s
+time: 0.034 seconds, speed: 29.616 GB/s
+time: 0.034 seconds, speed: 29.623 GB/s
+time: 0.034 seconds, speed: 29.615 GB/s
+DSAbatch: to_cpu = 0, to_dsa = 4063232, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 4063232 , op_bytes = 133143986176
+             : page_fault_resolving = 0 , batch_fail_cnt = 360448
+             : wq = wq0.0, memory_used = 0.242 MB
+memmove without page fault
+average time: 0.034 seconds, average speed: 29.628 GB/s, REPEAT = 10
+

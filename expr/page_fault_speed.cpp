@@ -186,8 +186,8 @@ string stdsiz( size_t siz ) {
 int main(){   
     for( size_t len = (1<<28) , warmup = 0 ; len <= (1<<28) ; len *= 2 ){
         if( !warmup ) printf( "Copy %s ;\n" , stdsiz( len ).c_str() ) ; 
-        // test_touch( REPEAT , len , warmup , 1 ) ;
-        // test_touch( REPEAT , len , warmup , 0 ) ;
+        test_touch( REPEAT , len , warmup , 1 ) ;
+        test_touch( REPEAT , len , warmup , 0 ) ;
         // test_memcpy( REPEAT , len , warmup ) ;
         // test_dsa_single( REPEAT , len , warmup ) ;
         // test_dsa_batch( REPEAT , len , bsiz , tdesc , warmup ) ;
