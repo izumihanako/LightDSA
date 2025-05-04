@@ -139,7 +139,7 @@ void test_out_of_order( int method , vector<OffLen> testset , int op_type ){
         //     else printf( "W" ) ;
         // } puts( "" ) ;
         // printf( "last finished: %d\n" , cnt_finished ) ; 
-        if( warmup <= 10 ){ warmup ++ ; continue ; }
+        if( warmup <= 10 ){ warmup ++ ; repeat -- ; continue ;}
         ooo_comp_avg_idx += 1.0 * cnt_finished / REPEAT ; 
     } 
     printf( "Average out-of-order completed batch: %.1f\n" , ooo_comp_avg_idx ) ; fflush( stdout ) ;

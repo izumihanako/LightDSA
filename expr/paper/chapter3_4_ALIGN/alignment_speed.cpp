@@ -70,8 +70,8 @@ void test_dsa_speed( int alignment = 64 ){
             op_type == 0 ? "memcpy" : op_type == 1 ? "memfill" : op_type == 2 ? "compare" : "compval" ,
             desc_cnt , stdsiz( array_len ).c_str() , alignment , src_arr , dest_arr ) ;
 
-    DSAbatch dsa_batch ;
-    DSAop    dsa_op , dsa_ops[32] ;
+    DSAbatch dsa_batch( 32 , 20 ) ;
+    DSAop    dsa_op , dsa_ops[128] ;
     for( size_t transfer_size = 64 ; transfer_size <= 1 * MB ; transfer_size *= 2 ){
         if( op_type == 0 ){
             for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = i ; 
@@ -101,16 +101,16 @@ void test_dsa_speed( int alignment = 64 ){
                     else if( op_type == 3 ) dsa_batch.submit_comp_pattern( src_arr + it.off_src , pattern_ , it.len ) ;
                 }
                 dsa_batch.wait() ;
-            } else if( method == 1 ){ // memcpy * 32
+            } else if( method == 1 ){ // memcpy * 128
                 for( int id = 0 , lim = test_set.size() ; id < lim ; id ++ ){
-                    int dsa_id = id % 32 ;
+                    int dsa_id = id % 128 ;
                     dsa_ops[dsa_id].wait() ;
                     if( op_type == 0 ) dsa_ops[dsa_id].async_memcpy( dest_arr + test_set[id].off_dest , src_arr + test_set[id].off_src , test_set[id].len ) ;
                     else if( op_type == 1 ) dsa_ops[dsa_id].async_memfill( dest_arr + test_set[id].off_dest , pattern_ , test_set[id].len ) ;
                     else if( op_type == 2 ) dsa_ops[dsa_id].async_compare( dest_arr + test_set[id].off_dest , src_arr + test_set[id].off_src , test_set[id].len ) ;
                     else if( op_type == 3 ) dsa_ops[dsa_id].async_comp_pattern( src_arr + test_set[id].off_src , pattern_ , test_set[id].len ) ;
                 }
-                for( int dsa_id = 0 ; dsa_id < 32 ; dsa_id ++ ) dsa_ops[dsa_id].wait() ;  
+                for( int dsa_id = 0 ; dsa_id < 128 ; dsa_id ++ ) dsa_ops[dsa_id].wait() ;  
             } else if( method == 2 ){
                 for( auto& it : test_set ){
                     if( op_type == 0 ) dsa_op.sync_memcpy( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
@@ -119,8 +119,8 @@ void test_dsa_speed( int alignment = 64 ){
                     else if( op_type == 3 ) dsa_op.sync_comp_pattern( src_arr + it.off_src , pattern_ , it.len ) ;
                 }  
             }
-            if( warmup == 0 ){
-                warmup ++ ; continue ;
+            if( warmup <= 2 ){
+                warmup ++ ; repeat -- ; continue ;
             }
             uint64_t end = timeStamp_hires() ;
             do_time += ( end - start ) / REPEAT ;

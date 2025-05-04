@@ -1,4 +1,9 @@
 # compile codes for
+#   Intel Data Streaming Accelerator
+#     -> Operations and Performance
+add_subdirectory( chapter2_3_DSAperf/ )
+
+# compile codes for
 #   In-Depth Exploration of DSA features
 #     -> Address Translation Mechanisms
 add_subdirectory( chapter3_1_ATC/ )

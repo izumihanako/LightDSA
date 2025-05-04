@@ -80,8 +80,7 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     batch_siz = bsiz , batch_capacity = cap ;
     desc_capacity = cap * batch_siz ; 
     descs = bdesc = nullptr ;
-    comps = bcomp = nullptr ;
-    retry_cnts = avg_fault_len = nullptr ;
+    comps = bcomp = nullptr ; 
     last_fault_addr = nullptr ;
     wq_portal = nullptr ;
     working_queue = nullptr ; 
@@ -103,9 +102,7 @@ void DSAbatch_task::prepare_desc( int idx , const dsa_rdstrb_entry &entry ){
     desc->src_addr = entry.src_addr ;
     desc->dst_addr = entry.dst_addr ; 
     desc->flags    = entry.flags ;
-    comp->status = 0 ;
-    retry_cnts[idx] = 0 ;
-    avg_fault_len[idx] = 0 ;
+    comp->status = 0 ; 
     last_fault_addr[idx] = nullptr ;
 }
 
@@ -128,13 +125,10 @@ void DSAbatch_task::alloc_descs(){
         comps = ( dsa_completion_record *) aligned_alloc( 32 , desc_capacity * 32 ) ; // sizeof( comp ) = 32 
         bdesc = ( dsa_hw_desc *) aligned_alloc( 64 , batch_capacity * 64 ) ; // sizeof( desc ) = 64 
         bcomp = ( dsa_completion_record *) aligned_alloc( 32 , batch_capacity * 32 ) ; // sizeof( comp ) = 32 
-    #endif  
-    retry_cnts = (int*) malloc( sizeof(int) * desc_capacity ) ;
-    avg_fault_len = (int*) malloc( sizeof(int) * desc_capacity ) ;
+    #endif
     last_fault_addr = (char**) malloc( sizeof(char*) * desc_capacity ) ;
     if( descs == nullptr || comps == nullptr || bdesc == nullptr || 
-        bcomp == nullptr || retry_cnts == nullptr || avg_fault_len == nullptr || 
-        last_fault_addr == nullptr ){
+        bcomp == nullptr || last_fault_addr == nullptr ){
         printf( "DSAbatch_task::alloc_descs() : memory allocation failed\n" ) ;
         exit( 1 ) ;
     }
@@ -167,12 +161,9 @@ void DSAbatch_task::free_descs(){
         if(bdesc) free( bdesc ) ; 
         if(bcomp) free( bcomp ) ; 
     #endif
-    if( retry_cnts )    free( retry_cnts ) ;
-    if( avg_fault_len ) free( avg_fault_len ) ;
     if( last_fault_addr ) free( last_fault_addr ) ;
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ;
-    retry_cnts = avg_fault_len = nullptr ;
     last_fault_addr = nullptr ;
 }
 
@@ -221,11 +212,25 @@ void DSAbatch_task::submit_forward(){
     #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE
         for( int i = batch_base ; i < batch_base + desc_idx ; i ++ ){
             // ignore small transfers, because touch may be random access which causes overhead
-            if( descs[i].xfer_size <= 128 * KB ) continue ;  
-            if( descs[i].src_addr )
-                touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
-            if( descs[i].dst_addr )
-                touch_trigger_pf( (char*) descs[i].dst_addr , 128 * KB , 1 ) ;
+            if( descs[i].xfer_size <= 128 * KB ) continue ;
+            switch ( descs[i].opcode ) { 
+                case DSA_OPCODE_MEMMOVE : // 3
+                    touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
+                    touch_trigger_pf( (char*) descs[i].dst_addr , 128 * KB , 1 ) ; 
+                    break; 
+                case DSA_OPCODE_MEMFILL : // 4
+                    touch_trigger_pf( (char*) descs[i].dst_addr , 128 * KB , 1 ) ; 
+                    break;
+                case DSA_OPCODE_COMPARE : // 5
+                    touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
+                    touch_trigger_pf( (char*) descs[i].src2_addr , 128 * KB , 0 ) ;
+                    break;
+                case DSA_OPCODE_COMPVAL : // 6
+                    touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
+                    break;
+                default:
+                    break;
+            } 
         }
     #endif 
     do_op( batch_idx , desc_idx ) ;
@@ -295,23 +300,11 @@ int DSAbatch_task::resolve_error( int batch_idx ) {
             comps[idx].status = 0 ;
             // printf( "wr = %d. " , wr ) ;
             #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
-                retry_cnts[idx] ++ ;
-                int &avg_len = avg_fault_len[idx] ;
                 char* this_fault = (char*) comps[idx].fault_addr ;
-                if( last_fault_addr[idx] ){
-                    if( retry_cnts[idx] <= DSA_RETRY_LIMIT ) 
-                        avg_len += (int) ( this_fault - last_fault_addr[idx] ) / DSA_RETRY_LIMIT ;
-                    else {
-                        avg_len = avg_len * 1.0 * ( DSA_RETRY_LIMIT - 1 ) / DSA_RETRY_LIMIT ;
-                        avg_len += (int) ( this_fault - last_fault_addr[idx] ) / DSA_RETRY_LIMIT ;
-                    }
-                } 
-                if( retry_cnts[idx] >= DSA_RETRY_LIMIT && avg_len < DSA_PF_AVGLEN_LIMIT ){
+                if( last_fault_addr[idx] && this_fault - last_fault_addr[idx] < DSA_PF_LEN_LIMIT ){ 
                     page_fault_resolving ++ ;
                     int len = descs[idx].xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : descs[idx].xfer_size ;
                     touch_trigger_pf( this_fault , len , wr ) ;
-                    retry_cnts[idx] = 0 ;
-                    avg_len = 0 ; 
                 }
                 last_fault_addr[idx] = this_fault ;
             #endif

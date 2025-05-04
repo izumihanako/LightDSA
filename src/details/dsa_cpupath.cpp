@@ -26,6 +26,7 @@ void memfill_cpu( void* dest , uint64_t pattern , size_t len , bool flush ){
     if( flush ) flush_cpu( dest , len ) ;
 }
 
+// return the matched length
 int compare_cpu( void* dest , void* src , size_t len ){
     uint64_t *ptrA = (uint64_t*)dest ;
     uint64_t *ptrB = (uint64_t*)src ;
@@ -45,6 +46,7 @@ int compare_cpu( void* dest , void* src , size_t len ){
     return len;
 }
 
+// return the matched length
 int compval_cpu( void* dest , uint64_t pattern , size_t len ){
     uint64_t *ptr = (uint64_t*)dest ;
     size_t i = 0 ;

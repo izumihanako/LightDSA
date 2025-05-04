@@ -9,103 +9,103 @@ device : dsa0
 DSA configures:
 -  Recycle window disable
 -  In-batch pipeline disable
--  Write address 64Byte alignment disable + with cache control
+-  Write address 64Byte alignment disable - without cache control
 -  Contiguous allocation disable
 -  Touch pages if frequent PF disable
-FLAGS: -BOF +CC -DRDBK 
+FLAGS: -BOF -CC -DRDBK 
 method = no tap, op_type = memcpy, transfer_size = 32KB, REPEAT = 10 
 no tap
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
-             : page_fault_resolving = 0 , batch_fail_cnt = 81920
+             : op_cnt = 393216 , op_bytes = 12884901888
+             : page_fault_resolving = 0 , batch_fail_cnt = 98304
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 1.077 seconds, average speed: 0.929 GB/s
+average time: 1.070 seconds, average speed: 0.934 GB/s
 method = no tap, op_type = memfill, transfer_size = 32KB, REPEAT = 10 
 no tap
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
-             : page_fault_resolving = 0 , batch_fail_cnt = 81920
+             : op_cnt = 393216 , op_bytes = 12884901888
+             : page_fault_resolving = 0 , batch_fail_cnt = 98304
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 1.077 seconds, average speed: 0.928 GB/s
+average time: 1.047 seconds, average speed: 0.955 GB/s
 method = no tap, op_type = compare, transfer_size = 32KB, REPEAT = 10 
 no tap
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
-             : page_fault_resolving = 0 , batch_fail_cnt = 81920
+             : op_cnt = 393216 , op_bytes = 12884901888
+             : page_fault_resolving = 0 , batch_fail_cnt = 98304
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.186 seconds, average speed: 5.362 GB/s
+average time: 0.187 seconds, average speed: 5.346 GB/s
 method = no tap, op_type = compval, transfer_size = 32KB, REPEAT = 10 
 no tap
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
-             : page_fault_resolving = 0 , batch_fail_cnt = 81920
+             : op_cnt = 393216 , op_bytes = 12884901888
+             : page_fault_resolving = 0 , batch_fail_cnt = 98304
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.186 seconds, average speed: 5.389 GB/s
+average time: 0.186 seconds, average speed: 5.376 GB/s
 method = tap all, op_type = memcpy, transfer_size = 32KB, REPEAT = 10 
 tap all
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.351 seconds, average speed: 2.849 GB/s
+average time: 0.352 seconds, average speed: 2.839 GB/s
 method = tap all, op_type = memfill, transfer_size = 32KB, REPEAT = 10 
 tap all
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.356 seconds, average speed: 2.808 GB/s
+average time: 0.354 seconds, average speed: 2.826 GB/s
 method = tap all, op_type = compare, transfer_size = 32KB, REPEAT = 10 
 tap all
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.215 seconds, average speed: 4.643 GB/s
+average time: 0.214 seconds, average speed: 4.663 GB/s
 method = tap all, op_type = compval, transfer_size = 32KB, REPEAT = 10 
 tap all
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.204 seconds, average speed: 4.899 GB/s
+average time: 0.203 seconds, average speed: 4.919 GB/s
 method = tap needed, op_type = memcpy, transfer_size = 32KB, REPEAT = 10 
 tap needed
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.315 seconds, average speed: 3.174 GB/s
+average time: 0.317 seconds, average speed: 3.156 GB/s
 method = tap needed, op_type = memfill, transfer_size = 32KB, REPEAT = 10 
 tap needed
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.322 seconds, average speed: 3.107 GB/s
+average time: 0.316 seconds, average speed: 3.162 GB/s
 method = tap needed, op_type = compare, transfer_size = 32KB, REPEAT = 10 
 tap needed
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.148 seconds, average speed: 6.759 GB/s
+average time: 0.148 seconds, average speed: 6.750 GB/s
 method = tap needed, op_type = compval, transfer_size = 32KB, REPEAT = 10 
 tap needed
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
 average time: 0.147 seconds, average speed: 6.783 GB/s
@@ -116,7 +116,7 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.315 seconds, average speed: 3.170 GB/s
+average time: 0.317 seconds, average speed: 3.152 GB/s
 method = tap only, no copy, op_type = memfill, transfer_size = 32KB, REPEAT = 10 
 tap only, no copy
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -124,7 +124,7 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.321 seconds, average speed: 3.120 GB/s
+average time: 0.319 seconds, average speed: 3.132 GB/s
 method = tap only, no copy, op_type = compare, transfer_size = 32KB, REPEAT = 10 
 tap only, no copy
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -132,7 +132,7 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.150 seconds, average speed: 6.674 GB/s
+average time: 0.150 seconds, average speed: 6.689 GB/s
 method = tap only, no copy, op_type = compval, transfer_size = 32KB, REPEAT = 10 
 tap only, no copy
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -140,39 +140,39 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.149 seconds, average speed: 6.727 GB/s
+average time: 0.150 seconds, average speed: 6.649 GB/s
 method = tap needed with large page, op_type = memcpy, transfer_size = 32KB, REPEAT = 10 
 tap needed with large page
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.100 seconds, average speed: 10.044 GB/s
+average time: 0.098 seconds, average speed: 10.236 GB/s
 method = tap needed with large page, op_type = memfill, transfer_size = 32KB, REPEAT = 10 
 tap needed with large page
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.098 seconds, average speed: 10.233 GB/s
+average time: 0.096 seconds, average speed: 10.372 GB/s
 method = tap needed with large page, op_type = compare, transfer_size = 32KB, REPEAT = 10 
 tap needed with large page
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.099 seconds, average speed: 10.052 GB/s
+average time: 0.099 seconds, average speed: 10.109 GB/s
 method = tap needed with large page, op_type = compval, transfer_size = 32KB, REPEAT = 10 
 tap needed with large page
-DSAbatch: to_cpu = 0, to_dsa = 327680, align_sum = 0
+DSAbatch: to_cpu = 0, to_dsa = 393216, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 327680 , op_bytes = 10737418240
+             : op_cnt = 393216 , op_bytes = 12884901888
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.120 seconds, average speed: 8.349 GB/s
+average time: 0.119 seconds, average speed: 8.399 GB/s
 method = tap only with large page, op_type = memcpy, transfer_size = 32KB, REPEAT = 10 
 tap only with large page
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -180,7 +180,7 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.101 seconds, average speed: 9.939 GB/s
+average time: 0.100 seconds, average speed: 9.986 GB/s
 method = tap only with large page, op_type = memfill, transfer_size = 32KB, REPEAT = 10 
 tap only with large page
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -188,7 +188,7 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.099 seconds, average speed: 10.053 GB/s
+average time: 0.099 seconds, average speed: 10.100 GB/s
 method = tap only with large page, op_type = compare, transfer_size = 32KB, REPEAT = 10 
 tap only with large page
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -196,7 +196,7 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.100 seconds, average speed: 9.959 GB/s
+average time: 0.100 seconds, average speed: 10.009 GB/s
 method = tap only with large page, op_type = compval, transfer_size = 32KB, REPEAT = 10 
 tap only with large page
 DSAbatch: to_cpu = 0, to_dsa = 0, align_sum = 0
@@ -204,4 +204,4 @@ DSAbatch_task: batch_capacity = 80 , batch_siz = 32
              : op_cnt = 0 , op_bytes = 0
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-average time: 0.099 seconds, average speed: 10.081 GB/s
+average time: 0.099 seconds, average speed: 10.106 GB/s

@@ -12,8 +12,7 @@ void DSAtask::init(){
     is_doing_flag = false ; 
     comp = nullptr ;
     op_cnt = page_fault_cnt = page_fault_resolving = 0 ;
-    op_bytes = 0 ;
-    retry_cnt = 0 , avg_fault_len = 0 ;
+    op_bytes = 0 ; 
     last_fault_addr = nullptr ;
 }
 
@@ -162,23 +161,12 @@ void DSAtask::solve_pf(){
     volatile char *t = (char*) comp->fault_addr ;
     wr ? *t = *t : *t ; 
     PF_adjust_desc() ;
-    #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
-        retry_cnt ++ ;
+    #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE ) 
         char* this_fault = (char*) comp->fault_addr ;
-        if( last_fault_addr ){
-            if( retry_cnt <= DSA_RETRY_LIMIT ) 
-                avg_fault_len += (int) ( this_fault - last_fault_addr ) / DSA_RETRY_LIMIT ;
-            else {
-                avg_fault_len = avg_fault_len * 1.0 * ( DSA_RETRY_LIMIT - 1 ) / DSA_RETRY_LIMIT ;
-                avg_fault_len += (int) ( this_fault - last_fault_addr ) / DSA_RETRY_LIMIT ;
-            }
-        }
-        if( retry_cnt >= DSA_RETRY_LIMIT && avg_fault_len < DSA_PF_AVGLEN_LIMIT ){
+        if( last_fault_addr && this_fault - last_fault_addr < DSA_PF_LEN_LIMIT ){ 
             page_fault_resolving ++ ;
             int len = desc.xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : desc.xfer_size ;
-            touch_trigger_pf( this_fault , len , wr ) ; 
-            retry_cnt = 0 ; 
-            avg_fault_len = 0 ;
+            touch_trigger_pf( this_fault , len , wr ) ;
         }
         last_fault_addr = this_fault ;
     #endif
@@ -209,18 +197,30 @@ bool DSAtask::check(){
 }
 
 void DSAtask::do_op() noexcept( true ) {
-    is_doing_flag = true ;
-    retry_cnt = 0 ; 
+    is_doing_flag = true ; 
     #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE 
         if( desc.xfer_size > 128 * KB ){
-            if( desc.src_addr )
-                touch_trigger_pf( (char*) desc.src_addr , 128 * KB , 0 ) ;
-            if( desc.dst_addr )
-                touch_trigger_pf( (char*) desc.dst_addr , 128 * KB , 1 ) ; 
+            switch ( desc.opcode ) { 
+                case DSA_OPCODE_MEMMOVE : // 3
+                    touch_trigger_pf( (char*) desc.src_addr , 128 * KB , 0 ) ;
+                    touch_trigger_pf( (char*) desc.dst_addr , 128 * KB , 1 ) ; 
+                    break; 
+                case DSA_OPCODE_MEMFILL : // 4
+                    touch_trigger_pf( (char*) desc.dst_addr , 128 * KB , 1 ) ; 
+                    break;
+                case DSA_OPCODE_COMPARE : // 5
+                    touch_trigger_pf( (char*) desc.src_addr , 128 * KB , 0 ) ;
+                    touch_trigger_pf( (char*) desc.src2_addr , 128 * KB , 0 ) ;
+                    break;
+                case DSA_OPCODE_COMPVAL : // 6
+                    touch_trigger_pf( (char*) desc.src_addr , 128 * KB , 0 ) ;
+                    break;
+                default:
+                    break;
+            } 
         }
     #endif
     last_fault_addr = nullptr ;
-    avg_fault_len = retry_cnt = 0 ;
     submit_desc( wq_portal , ACCFG_WQ_SHARED , &desc ) ; // 提交之后就开始DSA操作了
     op_cnt ++ ;
     op_bytes += desc.xfer_size ;

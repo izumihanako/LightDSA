@@ -163,6 +163,7 @@ void do_copy( int method , int op_type ){
             avg_speed += speed / REPEAT ;
         } else {
             warmup ++ ;
+            i -- ;
         }
         if( method >= 4 ){
             munmap( src_arr , array_len ) ;

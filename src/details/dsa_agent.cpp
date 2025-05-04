@@ -120,8 +120,8 @@ void DSAagent::init(){
     #endif
 
     #if defined(PAGE_FAULT_RESOLVE_TOUCH_ENABLE)
-        printf_RGB( 0x00cc33 , "+  Touch pages if frequent PF enable( pf_limit = %d/%d Bytes )\n" , 
-                DSA_RETRY_LIMIT , DSA_PF_AVGLEN_LIMIT ) ;
+        printf_RGB( 0x00cc33 , "+  Touch pages if frequent PF enable( pf_limit = %d Bytes )\n" , 
+                DSA_PF_LEN_LIMIT ) ;
     #else
         printf_RGB( 0xcc0011 , "-  Touch pages if frequent PF disable\n" ) ;
     #endif
