@@ -31,7 +31,7 @@ bool DSAop::async_memfill( void *dest , uint64_t pattern , size_t len ) noexcept
     #ifdef SHORT_TO_CPU
         if( len < 0x200 ) { 
             to_cpu ++ ;
-            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 0 : 1 ) ; 
+            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 0 : IS_CPU_FLUSH ) ; 
             return true ;
         }
     #endif 
@@ -56,7 +56,7 @@ bool DSAop::async_memfill( void *dest , uint64_t pattern , size_t len ) noexcept
     to_dsa ++ ; 
     dtask.set_op( DSA_OPCODE_MEMFILL , (void*)(dest_) , (void*)(uintptr_t)pattern , len ) ;
     dtask.do_op() ;
-    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
+    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(MUST_PERSIST_WRITE)
         _mm_clwb( dest ) ; // persistent in memory
     #endif
     return true ;
@@ -67,7 +67,7 @@ bool DSAop::async_memcpy( void *dest , const void* src , size_t len ) noexcept( 
     #if defined(SHORT_TO_CPU)
         if( len < 0x200 ) { 
             to_cpu ++ ;
-            memmove_cpu( dest , src , len , _FLAG_CC_ ? 0 : 1 ) ;
+            memmove_cpu( dest , src , len , _FLAG_CC_ ? 0 : IS_CPU_FLUSH ) ;
             return true ;
         }
     #endif 
@@ -88,7 +88,7 @@ bool DSAop::async_memcpy( void *dest , const void* src , size_t len ) noexcept( 
     to_dsa ++ ;  
     dtask.set_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     dtask.do_op() ;
-    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
+    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(MUST_PERSIST_WRITE)
         _mm_clwb( dest ) ; // persistent in memory
     #endif 
     return true ;

@@ -34,7 +34,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     #ifdef SHORT_TO_CPU
         if( len < 0x200 ) { 
             to_cpu ++ ;
-            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 0 : 1 ) ; 
+            memfill_cpu( dest , pattern , len , _FLAG_CC_ ? 0 : IS_CPU_FLUSH ) ; 
             return true ;
         }
     #endif
@@ -58,8 +58,8 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     #endif
     to_dsa ++ ; 
     db_task.add_op( DSA_OPCODE_MEMFILL , (void*)(dest_) , (void*)(uintptr_t)pattern , len ) ;
-    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
-        // _mm_clwb( dest ) ; // persistent in memory
+    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(MUST_PERSIST_WRITE)
+        _mm_clwb( dest ) ; // persistent in memory
     #endif
     return true ;
 }
@@ -74,7 +74,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     #ifdef SHORT_TO_CPU
         if( len < 0x200 ) { 
             to_cpu ++ ;
-            memmove_cpu( dest , src , len , _FLAG_CC_ ? 0 : 1 ) ;
+            memmove_cpu( dest , src , len , _FLAG_CC_ ? 0 : IS_CPU_FLUSH ) ;
             return true ;
         }
     #endif 
@@ -95,8 +95,8 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     #endif
     to_dsa ++ ;  
     db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
-    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
-        // _mm_clwb( dest ) ; // persistent in memory
+    #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL) and defined(MUST_PERSIST_WRITE)
+        _mm_clwb( dest ) ; // persistent in memory
     #endif 
     return true ;
 }

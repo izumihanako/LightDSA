@@ -28,6 +28,7 @@ constexpr int DSA_PAGE_FAULT_TOUCH_LEN = ( 128 * KB ) ;
 constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** 每个WQ对应的内存池大小为POOL_SIZE ***/
 
 // #define SHORT_TO_CPU                        /*** use CPU for short descs ***/
+// #define MUST_PERSIST_WRITE                  /*** ensure every CPU write is write back ***/
 #define OUTPUT_TO_FILE                      /*** will disable RGB output ***/
 
 
@@ -63,6 +64,12 @@ constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** 每个WQ对应的内存池大�
     constexpr uint32_t _FLAG_DRDBK_ = IDXD_OP_FLAG_DRDBK ;
 #else
     constexpr uint32_t _FLAG_DRDBK_ = 0 ;
+#endif
+
+#ifdef MUST_PERSIST_WRITE
+    constexpr uint32_t IS_CPU_FLUSH = 1 ;
+#else
+    constexpr uint32_t IS_CPU_FLUSH = 0 ;
 #endif
 
 constexpr uint32_t _FLAG_CRAV_ = IDXD_OP_FLAG_CRAV ; // Request Completion Record 
