@@ -5,9 +5,10 @@
 
 class DSAop{
 private :
+    DSAtask dtask ;
     int to_dsa , to_cpu ;
     size_t align_sum ;
-    DSAtask dtask ;
+    char paddings[ 64 - (sizeof(DSAtask)+sizeof(int)*2+sizeof(size_t))%64 ] ;
 
 public :
     DSAop() ;

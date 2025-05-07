@@ -60,4 +60,6 @@ static __always_inline void* next_portal( void* portal ){
     return (void*)next_cache_line( (uintptr_t)portal ) ; 
 }
 
+void print_desc( dsa_hw_desc &desc ) ;
+
 #endif 

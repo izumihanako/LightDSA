@@ -1,5 +1,3 @@
-find_library(NUMA_LIBRARY numa REQUIRED)
-
 # compile speedtest_memmove
 add_executable( speedtest_memmove speedtest_memmove.cpp )
 target_compile_options( speedtest_memmove PRIVATE -Wall -Wextra -mcmodel=large -O2 ) 
@@ -18,11 +16,6 @@ target_link_libraries( speedtest_compval dsa_memcpy ${Boost_LIBRARIES} )
 add_executable( coro_demo coro_demo.cpp )
 target_compile_options( coro_demo PRIVATE -Wall -Wextra -O2 )
 target_link_libraries( coro_demo dsa_memcpy ${Boost_LIBRARIES} )
-
-# compile vector_demo
-add_executable( vector_demo vector_demo.cpp )
-target_compile_options( vector_demo PRIVATE -Wall -Wextra -O2 -Wno-unused-result )
-target_link_libraries( vector_demo dsa_memcpy )
 
 # compile mergesort_demo
 add_executable( mergesort_demo mergesort_demo.cpp )

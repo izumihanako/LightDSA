@@ -81,7 +81,8 @@ void DSAbatch_task::init( int bsiz , int cap ) {
     desc_capacity = cap * batch_siz ; 
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ; 
-    last_fault_addr = nullptr ;
+    last_fault_addr_wr = nullptr ;
+    last_fault_addr_rd = nullptr ;
     wq_portal = nullptr ;
     working_queue = nullptr ; 
     free_queue.init( batch_capacity + 1 ) ;
@@ -103,7 +104,8 @@ void DSAbatch_task::prepare_desc( int idx , const dsa_rdstrb_entry &entry ){
     desc->dst_addr = entry.dst_addr ; 
     desc->flags    = entry.flags ;
     comp->status = 0 ; 
-    last_fault_addr[idx] = nullptr ;
+    last_fault_addr_rd[idx] = entry.addr_src ? (char*)(uintptr_t)entry.src_addr : nullptr ;
+    last_fault_addr_wr[idx] = entry.addr_dst ? (char*)(uintptr_t)entry.dst_addr : nullptr ;
 }
 
 void DSAbatch_task::alloc_descs(){
@@ -126,9 +128,10 @@ void DSAbatch_task::alloc_descs(){
         bdesc = ( dsa_hw_desc *) aligned_alloc( 64 , batch_capacity * 64 ) ; // sizeof( desc ) = 64 
         bcomp = ( dsa_completion_record *) aligned_alloc( 32 , batch_capacity * 32 ) ; // sizeof( comp ) = 32 
     #endif
-    last_fault_addr = (char**) malloc( sizeof(char*) * desc_capacity ) ;
+    last_fault_addr_rd = (char**) malloc( sizeof(char*) * desc_capacity ) ;
+    last_fault_addr_wr = (char**) malloc( sizeof(char*) * desc_capacity ) ;
     if( descs == nullptr || comps == nullptr || bdesc == nullptr || 
-        bcomp == nullptr || last_fault_addr == nullptr ){
+        bcomp == nullptr || last_fault_addr_rd == nullptr || last_fault_addr_wr == nullptr ){
         printf( "DSAbatch_task::alloc_descs() : memory allocation failed\n" ) ;
         exit( 1 ) ;
     }
@@ -161,10 +164,11 @@ void DSAbatch_task::free_descs(){
         if(bdesc) free( bdesc ) ; 
         if(bcomp) free( bcomp ) ; 
     #endif
-    if( last_fault_addr ) free( last_fault_addr ) ;
+    if( last_fault_addr_rd ) free( last_fault_addr_rd ) ;
+    if( last_fault_addr_wr ) free( last_fault_addr_wr ) ;
     descs = bdesc = nullptr ;
     comps = bcomp = nullptr ;
-    last_fault_addr = nullptr ;
+    last_fault_addr_rd = last_fault_addr_wr = nullptr ;
 }
 
 void DSAbatch_task::clear(){
@@ -204,29 +208,30 @@ void DSAbatch_task::submit_forward(){
         //     op_bytes -= tmp ;
         //     return ;
         // } 
-        for( int i = 0 ; i < batch_siz ; i ++ ){
+        do{
             prepare_desc( now_pos() , rdstrb.pop() ) ;
             forward_pos() ;
-        }
+        } while ( rdstrb.pop_phase() ) ;
     #endif 
     #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE
         for( int i = batch_base ; i < batch_base + desc_idx ; i ++ ){
             // ignore small transfers, because touch may be random access which causes overhead
-            if( descs[i].xfer_size <= 128 * KB ) continue ;
+            if( descs[i].xfer_size < DSA_PAGE_FAULT_TOUCH_LEN - 4 * KB ) continue ;
+            size_t trigger_len = descs[i].xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : descs[i].xfer_size ;
             switch ( descs[i].opcode ) { 
                 case DSA_OPCODE_MEMMOVE : // 3
-                    touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
-                    touch_trigger_pf( (char*) descs[i].dst_addr , 128 * KB , 1 ) ; 
+                    touch_trigger_pf( (char*) descs[i].src_addr , trigger_len , 0 ) ;
+                    touch_trigger_pf( (char*) descs[i].dst_addr , trigger_len , 1 ) ; 
                     break; 
                 case DSA_OPCODE_MEMFILL : // 4
-                    touch_trigger_pf( (char*) descs[i].dst_addr , 128 * KB , 1 ) ; 
+                    touch_trigger_pf( (char*) descs[i].dst_addr , trigger_len , 1 ) ; 
                     break;
                 case DSA_OPCODE_COMPARE : // 5
-                    touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
-                    touch_trigger_pf( (char*) descs[i].src2_addr , 128 * KB , 0 ) ;
+                    touch_trigger_pf( (char*) descs[i].src_addr , trigger_len , 0 ) ;
+                    touch_trigger_pf( (char*) descs[i].src2_addr , trigger_len , 0 ) ;
                     break;
                 case DSA_OPCODE_COMPVAL : // 6
-                    touch_trigger_pf( (char*) descs[i].src_addr , 128 * KB , 0 ) ;
+                    touch_trigger_pf( (char*) descs[i].src_addr , trigger_len , 0 ) ;
                     break;
                 default:
                     break;
@@ -301,16 +306,27 @@ int DSAbatch_task::resolve_error( int batch_idx ) {
             // printf( "wr = %d. " , wr ) ;
             #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
                 char* this_fault = (char*) comps[idx].fault_addr ;
-                if( last_fault_addr[idx] && this_fault - last_fault_addr[idx] < DSA_PF_LEN_LIMIT ){ 
-                    page_fault_resolving ++ ;
-                    int len = descs[idx].xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : descs[idx].xfer_size ;
-                    touch_trigger_pf( this_fault , len , wr ) ;
+                if( wr ){
+                    if( last_fault_addr_wr[idx] && this_fault - last_fault_addr_wr[idx] < DSA_PF_LEN_LIMIT ){ 
+                        page_fault_resolving ++ ;
+                        int len = descs[idx].xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : descs[idx].xfer_size ;
+                        touch_trigger_pf( this_fault , len , wr ) ;
+                    }
+                    last_fault_addr_wr[idx] = this_fault ;
+                } else { 
+                    if( last_fault_addr_rd[idx] && this_fault - last_fault_addr_rd[idx] < DSA_PF_LEN_LIMIT ){ 
+                        page_fault_resolving ++ ;
+                        int len = descs[idx].xfer_size > DSA_PAGE_FAULT_TOUCH_LEN ? DSA_PAGE_FAULT_TOUCH_LEN : descs[idx].xfer_size ;
+                        touch_trigger_pf( this_fault , len , wr ) ;
+                    }
+                    last_fault_addr_rd[idx] = this_fault ;
                 }
-                last_fault_addr[idx] = this_fault ;
             #endif
         } else if( status == DSA_COMP_NONE ){ // remain the same as before
 
         } else {
+            printf( "Error: desc %d, status = 0x%x, %s\n" , idx , status , dsa_comp_status_str( status ) ) ;
+            print_desc( descs[idx] ) ;
             // not implemented yet
         }
     } 
@@ -401,7 +417,7 @@ void DSAbatch_task::wait(){
             submit_forward() ; 
         }
     #endif 
-    while( buzy_queue.empty() == false ) { collect() ; usleep( 20 ) ; }
+    while( buzy_queue.empty() == false ) { collect() ; usleep( 1 ) ; }
 }
 
 bool DSAbatch_task::check(){

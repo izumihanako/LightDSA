@@ -21,6 +21,7 @@ struct dsa_rdstrb_entry{
 		uint64_t	comp_pattern;
         uint64_t    region_stride ;
 	};
+    bool addr_src , addr_dst ;
     dsa_rdstrb_entry( dsa_opcode ) ; 
     dsa_rdstrb_entry( dsa_opcode , void* src , uint64_t len , uint64_t stride = 0 ) ;
     dsa_rdstrb_entry( dsa_opcode , void* , const void* , uint64_t ) ;

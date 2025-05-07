@@ -31,7 +31,7 @@ string stdsiz( size_t siz ) {
 }
 
 __always_inline void tap_write( char* addr ){ *addr = 0 ; }  
-__always_inline void tap_read ( char* addr ){ volatile int x = (*addr) ; (void)(&x) ; }
+__always_inline void tap_read ( char* addr ){ volatile int x = (*addr) ; (void)(x) ; }
 
 vector<copy_meta> genCopies( char* src_arr , char* dest_arr , size_t array_len , size_t transfer_size ){
     vector<copy_meta> res ; 
@@ -181,8 +181,10 @@ void do_copy( int method , int op_type ){
 
 DSAop __ ;
 int main(){  
-    for( int me = 0 ; me <= 5 ; me ++ ){
-        for( int op = 0 ; op <= 3 ; op ++ ){ 
+    // for( int me = 0 ; me <= 5 ; me ++ ){
+    //     for( int op = 0 ; op <= 3 ; op ++ ){ 
+    for( int me = 0 ; me <= 0 ; me ++ ){
+        for( int op = 1 ; op <= 1 ; op ++ ){ 
             method = me , op_type = op ;
             printf( "method = %s, op_type = %s, transfer_size = %s, REPEAT = %d \n" , 
                 ( method == 0 ? "no tap" : ( method == 1 ? "tap all" : ( method == 2 ? "tap needed" : 

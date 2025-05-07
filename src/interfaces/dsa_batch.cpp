@@ -59,7 +59,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     to_dsa ++ ; 
     db_task.add_op( DSA_OPCODE_MEMFILL , (void*)(dest_) , (void*)(uintptr_t)pattern , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
-        _mm_clflushopt( dest ) ; // persistent in memory
+        // _mm_clwb( dest ) ; // persistent in memory
     #endif
     return true ;
 }
@@ -96,7 +96,7 @@ bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexce
     to_dsa ++ ;  
     db_task.add_op( DSA_OPCODE_MEMMOVE , (void*)(dest_) , (void*)(src_) , len ) ;
     #if defined(DESCS_ADDRESS_ALIGNMENT) and !defined(FLAG_CACHE_CONTROL)
-        _mm_clwb( dest ) ; // persistent in memory
+        // _mm_clwb( dest ) ; // persistent in memory
     #endif 
     return true ;
 }

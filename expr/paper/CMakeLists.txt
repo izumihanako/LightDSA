@@ -1,4 +1,8 @@
 # compile codes for
+#   Motivation 
+add_subdirectory( chapter1_Motivation/ )
+
+# compile codes for
 #   Intel Data Streaming Accelerator
 #     -> Operations and Performance
 add_subdirectory( chapter2_3_DSAperf/ )
@@ -27,3 +31,18 @@ add_subdirectory( chapter3_4_ALIGN/ )
 #   In-Depth Exploration of DSA features
 #     -> Out-of-Order Execution
 add_subdirectory( chapter3_5_OOO/ )
+
+# compile codes for
+#   Evaluation 
+#     -> microbench -> vector
+add_subdirectory( chapter5_1_vector/ )
+
+# compile codes for
+#   Evaluation 
+#     -> microbench -> page migration
+add_subdirectory( chapter5_1_pagemig/ )
+
+# compile codes for
+#   Evaluation 
+#     -> microbench -> shuffle
+add_subdirectory( chapter5_1_shuffle/ )

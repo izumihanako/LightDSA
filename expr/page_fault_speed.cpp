@@ -183,7 +183,7 @@ string stdsiz( size_t siz ) {
     return string( rt ) ;
 }
 
-int main(){   
+int main(){ 
     for( size_t len = (1<<28) , warmup = 0 ; len <= (1<<28) ; len *= 2 ){
         if( !warmup ) printf( "Copy %s ;\n" , stdsiz( len ).c_str() ) ; 
         test_touch( REPEAT , len , warmup , 1 ) ;

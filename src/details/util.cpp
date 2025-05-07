@@ -147,16 +147,22 @@ void printf_RGB( int rgbhex , const char* format , ... ){
 }
 
 void touch_trigger_pf( char* addr , size_t len , int wr ){ 
-    char *uppage = (char*) ((uintptr_t)(addr + len - 1 ) | 0xfff ) ;
-    if( wr ){ 
-        volatile char *addr_ = (char*)addr ;
-        for( ; (uintptr_t) addr_ <= (uintptr_t) uppage ; addr_ += 4096 ) {
-            *addr_ ^= 0 ; 
+    if( wr ){
+        // we can only assign 0 to those addresses which will be written
+        // otherwise, it is not correct
+        char *limit = (char*) ((uintptr_t)(addr + len - 1 ) ) ;
+        for( ; (uintptr_t) addr <= (uintptr_t) limit ; addr += 4096 ) {
+            *addr = 0 ; 
             // _mm_clflushopt( (void*)addr ) ;
             // __asm__ volatile ("prefetchw (%0)" : : "r" (addr) : "memory");
         }
+        *limit = 0 ;
     } else {
+        // we can only access those addresses which will be read
+        // otherwise, it may segment fault
+        char *limit = (char*) ((uintptr_t)(addr + len - 1 ) ) ; 
         volatile char x ;
-        for( ; (uintptr_t) addr <= (uintptr_t) uppage ; addr += 4096 ) x = (*addr) ;
+        for( ; (uintptr_t) addr <= (uintptr_t) limit ; addr += 4096 ) x = (*addr) ;
+        x = (*limit) ;
     }
 }

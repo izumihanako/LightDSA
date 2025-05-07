@@ -3,11 +3,13 @@
 extern "C" {
  
 DSAop* DSAop_create() {
-    return new DSAop() ;
+    DSAop *dsa = (DSAop*) aligned_alloc( 64 , sizeof( DSAop ) ) ;
+    return new( dsa )DSAop() ;
 }
 
 void DSAop_destroy( DSAop* dsa ) {
-    delete dsa ;
+    dsa->~DSAop();
+    free(dsa);
 }
 
 int DSAop_async_memcpy( DSAop* dsa, void *dest, const void* src, size_t len ) {

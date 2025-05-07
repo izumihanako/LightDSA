@@ -12,6 +12,7 @@ dsa_rdstrb_entry::dsa_rdstrb_entry( dsa_opcode op ){
     switch ( op ) {
     case DSA_OPCODE_NOOP :
         src_addr = dst_addr = 0 ;
+        addr_src = addr_dst = false ;
         flags = DSA_NOOP_FLAG ;
         break ;   
     default :
@@ -27,12 +28,14 @@ dsa_rdstrb_entry::dsa_rdstrb_entry( dsa_opcode op , void* src , uint64_t len , u
     case DSA_OPCODE_TRANSL_FETCH:
         region_stride = stride ;
         src_addr = (uint64_t)src ;
+        addr_src = true , addr_dst = false ;
         flags = DSA_TRANSL_FETCH_FLAG ;
         if( stride ) flags |= ( 1 << 16 ) ;
         break; 
     case DSA_OPCODE_CFLUSH :
         src_addr = 0 ;
         dst_addr = (uint64_t)src ;
+        addr_src = false , addr_dst = true ;
         flags = DSA_CFLUSH_FLAG ;
         break; 
     default :
@@ -48,21 +51,25 @@ dsa_rdstrb_entry::dsa_rdstrb_entry( dsa_opcode op , void* dest , const void* src
     case DSA_OPCODE_MEMMOVE :
         src_addr = (uint64_t)src ;
         dst_addr = (uint64_t)dest ;
+        addr_src = true , addr_dst = true ;
         flags = DSA_MEMMOVE_FLAG ;
         break;
     case DSA_OPCODE_MEMFILL :
         pattern_lower = (uint64_t)src ;
         dst_addr = (uint64_t)dest ;
+        addr_src = false , addr_dst = true ;
         flags = DSA_MEMFILL_FLAG ;
         break ;
     case DSA_OPCODE_COMPARE :
         src_addr = (uint64_t)src ;
         src2_addr = (uint64_t)dest ;
+        addr_src = true , addr_dst = true ;
         flags = DSA_COMPARE_FLAG ;
         break;
     case DSA_OPCODE_COMPVAL :
         src_addr = (uint64_t)src ;
         comp_pattern = (uint64_t)dest ;
+        addr_src = true , addr_dst = false ;
         flags = DSA_COMPVAL_FLAG ;
         break;
     default :

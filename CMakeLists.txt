@@ -41,6 +41,9 @@ set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 set(CMAKE_CXX_STANDARD 14) 
 include_directories(${CMAKE_SOURCE_DIR})
 
+# find NUMA lib
+find_library(NUMA_LIBRARY numa REQUIRED)
+
 # find Boost lib
 find_package( Boost 1.74.0 REQUIRED context coroutine )
 include_directories( ${Boost_INCLUDE_DIRS} )

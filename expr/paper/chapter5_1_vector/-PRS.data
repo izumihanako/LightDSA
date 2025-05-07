@@ -1,0 +1,51 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC +DRDBK -SHORT_TO_CPU 
+vector test : put_ratio = 1.000%, vector size = 998267, REPEAT = 10
+std_vector     : cost time = 0.411s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 0.396s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 0.397s, operation_cnt = 100000000
+vector test : put_ratio = 5.000%, vector size = 4996335, REPEAT = 10
+std_vector     : cost time = 0.564s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 0.654s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 0.591s, operation_cnt = 100000000
+vector test : put_ratio = 10.000%, vector size = 9998125, REPEAT = 10
+std_vector     : cost time = 0.669s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 0.926s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 0.749s, operation_cnt = 100000000
+vector test : put_ratio = 25.000%, vector size = 24994367, REPEAT = 10
+std_vector     : cost time = 1.010s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 1.602s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 1.189s, operation_cnt = 100000000
+vector test : put_ratio = 50.000%, vector size = 49999110, REPEAT = 10
+std_vector     : cost time = 1.450s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 2.388s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 1.875s, operation_cnt = 100000000
+vector test : put_ratio = 75.000%, vector size = 74999665, REPEAT = 10
+std_vector     : cost time = 1.505s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 3.359s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 2.305s, operation_cnt = 100000000
+vector test : put_ratio = 95.000%, vector size = 95001409, REPEAT = 10
+std_vector     : cost time = 1.259s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 2.830s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 2.048s, operation_cnt = 100000000
+vector test : put_ratio = 99.000%, vector size = 99002198, REPEAT = 10
+std_vector     : cost time = 1.045s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 2.702s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 1.818s, operation_cnt = 100000000
+vector test : put_ratio = 100.000%, vector size = 100000001, REPEAT = 10
+std_vector     : cost time = 0.925s, operation_cnt = 100000000
+nve_dsa_vector : cost time = 2.515s, operation_cnt = 100000000
+my_dsa_vector  : cost time = 1.691s, operation_cnt = 100000000

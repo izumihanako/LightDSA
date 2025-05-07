@@ -1,3 +1,4 @@
+#include <cstdio>
 #include <sys/mman.h>
 #include <sys/fcntl.h>
 #include "dsa_util.hpp" 
@@ -125,4 +126,31 @@ int find_avail_wq_portal( void *& wq_portal , int wq_type ){
     accfg_unref( ctx ) ;
     if( wq_portal == NULL ) return -1 ;
     return 0 ;
+}
+
+void print_desc( dsa_hw_desc &desc ){
+    switch ( desc.opcode ) {
+    case DSA_OPCODE_NOOP :
+        printf( "op = NOOP, comp_addr = %p\n" , (void*)desc.completion_addr ) ;
+        break;
+    case DSA_OPCODE_MEMMOVE :
+        printf( "op = MEMMOVE, comp_addr = %p\n" , (void*)desc.completion_addr ) ;
+        printf( "src = %p , dest = %p , len = %d\n" , (void*)desc.src_addr , (void*)desc.dst_addr , desc.xfer_size ) ;
+        break;
+    case DSA_OPCODE_MEMFILL :
+        printf( "op = MEMFILL, comp_addr = %p\n" , (void*)desc.completion_addr ) ;
+        printf( "pattern = %lx , dest = %p , len = %d\n" , desc.pattern_lower , (void*)desc.dst_addr , desc.xfer_size ) ;
+        break;
+    case DSA_OPCODE_COMPARE :
+        printf( "op = COMPARE, comp_addr = %p\n" , (void*)desc.completion_addr ) ;
+        printf( "src = %p , dest = %p , len = %d\n" , (void*)desc.src_addr , (void*)desc.src2_addr , desc.xfer_size ) ;
+        break;
+    case DSA_OPCODE_COMPVAL :
+        printf( "op = COMPVAL, comp_addr = %p\n" , (void*)desc.completion_addr ) ;
+        printf( "src = %p , pattern = %lx , len = %d\n" , (void*)desc.src_addr , desc.comp_pattern , desc.xfer_size ) ;
+        break;
+    default:
+        printf( "op = %s, comp_addr = %p\n" , dsa_op_str( desc.opcode ) , (void*)desc.completion_addr ) ;
+        break;
+    } 
 }
