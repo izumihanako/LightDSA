@@ -135,6 +135,7 @@ void DSAagent::init(){
     #else
         printf_RGB( 0xcc0011 , "-SHORT_TO_CPU " ) ;
     #endif
+    if( IS_CPU_FLUSH ) printf_RGB( 0x00cc33 , "+CPU_FLUSH " ) ; else printf_RGB( 0xcc0011 , "-CPU_FLUSH " ) ;
     puts( "" ) ; 
     fflush( stdout ) ;
 }
