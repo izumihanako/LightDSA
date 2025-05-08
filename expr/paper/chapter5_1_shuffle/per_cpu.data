@@ -1,0 +1,39 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC +DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+method = CPU, bytes_min = 128, bytes_max = 256
+prepare_data() : 16 threads, 100000 strings, time = 0.570s, bytes = 344781781 , speed = 0.6GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.066s, bytes = 344781781 , speed = 0.3GB/s per CPU 
+method = CPU, bytes_min = 256, bytes_max = 512
+prepare_data() : 16 threads, 100000 strings, time = 0.717s, bytes = 652054869 , speed = 0.8GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.067s, bytes = 652054869 , speed = 0.6GB/s per CPU 
+method = CPU, bytes_min = 512, bytes_max = 1024
+prepare_data() : 16 threads, 100000 strings, time = 0.785s, bytes = 1266672213 , speed = 1.5GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.070s, bytes = 1266672213 , speed = 1.0GB/s per CPU 
+method = CPU, bytes_min = 1024, bytes_max = 2048
+prepare_data() : 16 threads, 100000 strings, time = 0.865s, bytes = 2494921813 , speed = 2.7GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.080s, bytes = 2494921813 , speed = 1.8GB/s per CPU 
+method = CPU, bytes_min = 2048, bytes_max = 4096
+prepare_data() : 16 threads, 100000 strings, time = 1.059s, bytes = 4953497685 , speed = 4.4GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.097s, bytes = 4953497685 , speed = 3.0GB/s per CPU 
+method = CPU, bytes_min = 4096, bytes_max = 8192
+prepare_data() : 16 threads, 100000 strings, time = 1.203s, bytes = 9869465685 , speed = 7.6GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.150s, bytes = 9869465685 , speed = 3.8GB/s per CPU 
+method = CPU, bytes_min = 8192, bytes_max = 16384
+prepare_data() : 16 threads, 100000 strings, time = 1.748s, bytes = 19697240149 , speed = 10.5GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.269s, bytes = 19697240149 , speed = 4.3GB/s per CPU 
+method = CPU, bytes_min = 16384, bytes_max = 32768
+prepare_data() : 16 threads, 100000 strings, time = 2.279s, bytes = 39362046037 , speed = 16.1GB/s
+shuffle_data() : 16 threads, 100000 strings, REPEAT = 5, time = 0.499s, bytes = 39362046037 , speed = 4.6GB/s per CPU

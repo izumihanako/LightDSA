@@ -52,8 +52,8 @@ private :
     // comps in batch
     dsa_completion_record *comps ;
     // last page fault address for descs
-    char** last_fault_addr_rd ;
-    char** last_fault_addr_wr ;
+    char** last_fault_addr_src ;
+    char** last_fault_addr_dst ;
     
     // redistribute
     DSAtask_redistribute rdstrb ;
