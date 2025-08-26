@@ -53,7 +53,7 @@ vector<OffLen> genTestset( size_t first_size , size_t array_len ){
 uint64_t pattern_ = 0x0f0f0f0f0f0f0f0f ;
 char char_patt = pattern_ & 0xff ;
 void test_out_of_order( vector<OffLen> testset ){ 
-    printf( "test_set.size() = %d\n" , testset.size() ) ;
+    printf( "test_set.size() = %ld\n" , testset.size() ) ;
     dest_arr = (char*) aligned_alloc( 4096 , array_len ) ;  
     for( size_t i = 0 ; i < array_len ; i ++ ) dest_arr[i] = 0 ;
     for( size_t i = testset[0].off_dest ; i < testset[0].off_dest + testset[0].len ; i ++ ) dest_arr[i] = 2 ;

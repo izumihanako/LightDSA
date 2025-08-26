@@ -106,10 +106,10 @@ vector<OffLen> genSeparate( int small_cnt , int big_cnt , int desc_cnt , int mix
     random_shuffle( big.begin() , big.end() ) ;
     int big_idx = 0 , small_idx = 0 ;
     for( int i = 0 ; i < desc_cnt ; ){
-        for( int j = 0 ; j < mix_big && big_idx < big.size() && i < desc_cnt ; j ++ , i ++ ){
+        for( int j = 0 ; j < mix_big && big_idx < (int)big.size() && i < desc_cnt ; j ++ , i ++ ){
             rt.push_back( big[big_idx++] ) ;  
         }
-        for( int j = 0 ; j < mix_small && small_idx < small.size() && i < desc_cnt ; j ++ , i ++ ){  
+        for( int j = 0 ; j < mix_small && small_idx < (int)small.size() && i < desc_cnt ; j ++ , i ++ ){  
             rt.push_back( small[small_idx++] ) ; 
         }
     }
@@ -143,7 +143,7 @@ int main( int argc , char** argv ){
     printf( "[ " ) ;
     int tail_special = 0 ;
     for( int i = test_set.size() - 1 ; i >= 0 ; i -- ){
-        if( test_set[i].len == ( mix_small < mix_big ? SMALL_LEN : BIG_LEN ) ) tail_special ++ ;
+        if( test_set[i].len == (size_t)( mix_small < mix_big ? SMALL_LEN : BIG_LEN ) ) tail_special ++ ;
         else break ;
     }
     for( int i = 0 , cnt = 0 , type = 0 , switc = 0 ; (size_t)i < test_set.size() && switc < 8 ; i ++ ){ 

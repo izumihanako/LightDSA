@@ -1,0 +1,35 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC -DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+method = batch32, op = compval, array_len = 4GB, access_type = random
+transfer_size =  128 B | do_time =  0.05 us | do_speed =  2475 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.05 us | do_speed =  5137 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.04 us | do_speed = 11258 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.04 us | do_speed = 27669 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.07 us | do_speed = 29023 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.13 us | do_speed = 29742 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.26 us | do_speed = 29992 MB/s | REPEAT = 10
+DSAbatch: to_cpu = 0, to_dsa = 732430336, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 732430336 , op_bytes = 330712481792
+             : page_fault_resolving = 0 , batch_fail_cnt = 0
+             : wq = wq0.0, memory_used = 0.242 MB
+CPU: transfer_size =  128 B | do_time =  0.06 us | do_speed =  1943 MB/s | REPEAT = 10
+CPU: transfer_size =  256 B | do_time =  0.10 us | do_speed =  2390 MB/s | REPEAT = 10
+CPU: transfer_size =  512 B | do_time =  0.20 us | do_speed =  2502 MB/s | REPEAT = 10
+CPU: transfer_size =    1KB | do_time =  0.36 us | do_speed =  2751 MB/s | REPEAT = 10
+CPU: transfer_size =    2KB | do_time =  0.40 us | do_speed =  4839 MB/s | REPEAT = 10
+CPU: transfer_size =    4KB | do_time =  0.58 us | do_speed =  6699 MB/s | REPEAT = 10
+CPU: transfer_size =    8KB | do_time =  1.03 us | do_speed =  7553 MB/s | REPEAT = 10

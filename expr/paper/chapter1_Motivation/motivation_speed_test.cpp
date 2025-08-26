@@ -74,7 +74,7 @@ void test_dsa_speed( int access_type , int method , int aligned ){
 
     for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = i , dest_arr[i] = i % 256 ;  
 
-    for( size_t transfer_size = 128 ; transfer_size <= 128 * KB ; transfer_size *= 2 ){ 
+    for( size_t transfer_size = 256 ; transfer_size <= 128 * KB ; transfer_size *= 2 ){ 
         double do_time = 0 , do_speed = 0 ;
         for( int repeat = 0 , warmup = 0 ; repeat < REPEAT ; repeat ++ ){
             vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
@@ -109,7 +109,7 @@ void test_dsa_speed( int access_type , int method , int aligned ){
         } 
         do_time = do_time * ns_to_us / desc_cnt ; // us 
         do_speed = transfer_size / ( do_time * us_to_s ) / MB ;
-        printf( "desc_cnt = %5d , transfer_size = %7s | avg_time = %8.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
+        printf( "desc_cnt = %5d | transfer_size = %7s | avg_time = %8.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
                 desc_cnt , stdsiz( transfer_size ).c_str() , do_time / REPEAT , do_speed , REPEAT ) ; fflush( stdout ) ;  
     }
     if( method == 1 ) dsa_batch.print_stats() ;
@@ -118,15 +118,20 @@ void test_dsa_speed( int access_type , int method , int aligned ){
 } 
  
 DSAop ___ ;
-int main(){
+int main( int argc , char** argv ){
     srand( 19260817 ) ; 
-    for( int access_type = 1 ; access_type <= 1 ; access_type ++ ){
-        for( int method = 0 ; method <= 1 ; method ++ ){ 
-            for( int aligned = 0 ; aligned <= 0 ; aligned ++ ){
-                test_dsa_speed( access_type , method , aligned ) ;
-                puts( "" ) ; 
-            }
+    int access_type = 0 , method = 0 ;
+    if( argc > 2 ) {
+        access_type = atoi( argv[1] ) ;
+        method = atoi( argv[2] ) ; 
+        for( int aligned = 0 ; aligned <= 0 ; aligned ++ ){
+            test_dsa_speed( access_type , method , aligned ) ;
+            puts( "" ) ; 
         } 
+    } else {
+        printf( "Usage: %s <access_type> <method>\n" , argv[0] ) ;
+        printf( "access_type : 0 is sequential, 1 is random\n" ) ;
+        printf( "method      : 0 is CPU memcpy, 1 is DSA_batch\n" ) ;
     }
     return 0 ;
 }

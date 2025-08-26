@@ -34,7 +34,7 @@ string stdsiz( size_t siz ) {
     return string( rt ) ;
 }
 
-vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t transfer_size ){
+vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t transfer_size , int access_type ){
     vector<OffLen> rt ;
     size_t offset = 0 ;
     for( int i = 0 ; i < desc_cnt ; i ++ ){
@@ -42,20 +42,20 @@ vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t transfer_siz
         rt.push_back( OffLen( offset , offset , transfer_size ) );
         offset += transfer_size ;
     }
-    // random_shuffle( rt.begin() , rt.end() ) ;
+    if( access_type == 1 ) random_shuffle( rt.begin() , rt.end() ) ;
     return rt ;
 }
 
 uint64_t pattern_ = 0x0f0f0f0f0f0f0f0f ;
 char char_patt = pattern_ & 0xff ;
-void test_dsa_speed( int op_type ){ 
+void test_dsa_speed( int op_type , int access_type ){ 
     char* _src = (char*) aligned_alloc( 4096 , array_len ) ;
     char* _dest = (char*) aligned_alloc( 4096 , array_len ) ;
     src_arr = _src ; dest_arr = _dest ; 
 
-    printf( "method = batch32, op = %s, array_len = %s\n" ,
+    printf( "method = batch32, op = %s, array_len = %s, access_type = %s\n" ,
             op_type == 0 ? "memcpy" : op_type == 1 ? "memfill" : op_type == 2 ? "compare" : "compval" ,
-            stdsiz( array_len ).c_str() ) ; fflush( stdout ) ;
+            stdsiz( array_len ).c_str() , access_type == 0 ? "sequential" : "random" ) ; fflush( stdout ) ;
 
     if( op_type == 0 ){
         for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = i , dest_arr[i] = 0 ; 
@@ -68,9 +68,9 @@ void test_dsa_speed( int op_type ){
     }
 
     DSAbatch dsa_batch( 32 , 80 ) ; 
-    for( size_t transfer_size = 64 ; transfer_size <= 1 * MB ; transfer_size *= 2 ){
+    for( size_t transfer_size = 128 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){
         size_t desc_cnt = array_len / transfer_size ;
-        vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size ) ;
+        vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
         size_t tot_xfersize = 0 ;
         for( auto& it : test_set ) tot_xfersize += it.len ;
 
@@ -119,9 +119,9 @@ void test_dsa_speed( int op_type ){
     dsa_batch.print_stats() ;
 
     // test speed for single core CPU 
-    for( size_t transfer_size = 64 ; transfer_size <= 1 * MB ; transfer_size *= 2 ){ 
+    for( size_t transfer_size = 128 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){ 
         size_t desc_cnt = array_len / transfer_size ;
-        vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size ) ;
+        vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
         double do_time = 0 , do_speed = 0 ;
         for( int repeat = 0 , warmup = 0 ; repeat < REPEAT ; repeat ++ ){
             for( size_t i = 0 ; i < array_len ; i += 4096 ) {
@@ -156,10 +156,21 @@ void test_dsa_speed( int op_type ){
 } 
  
 DSAop ___ ;
-int main(){
-    for( int op = 0 ; op <= 3 ; op ++ ){
-        test_dsa_speed( op ) ;
-        puts( "" ) ;
+int main( int argc , char** argv ){
+    int op = 0 , access_type = 0 ;
+    if( argc >= 3 ){
+        op = atoi( argv[1] ) ;
+        access_type = atoi( argv[2] ) ;
+        if( op >= 0 && op <= 3 ) test_dsa_speed( op , access_type ) ; 
+        else {
+            puts( "Invalid op type" ) ;
+            return -1 ;
+        }
+    }
+    else {
+        puts( "Usage: ./DSA_speed <op> <access_type>" ) ;
+        puts( "  op : 0 is memmove , 1 is memfill , 2 is compare , 3 is compval" ) ;
+        puts( "  access_type : 0 is sequential , 1 is random" ) ; 
     }
     return 0 ;
 }
