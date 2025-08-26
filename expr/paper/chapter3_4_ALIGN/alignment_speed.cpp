@@ -95,7 +95,7 @@ void test_dsa_speed( int alignment = 64 ){
             uint64_t start = timeStamp_hires() ;
             if( method == 0 ) { // DSA_batch
                 for( auto& it : test_set ){
-                    if( op_type == 0 ) dsa_batch.submit_memcpy( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
+                    if( op_type == 0 ) dsa_batch.submit_memmove( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 1 ) dsa_batch.submit_memfill( dest_arr + it.off_dest , pattern_ , it.len ) ;
                     else if( op_type == 2 ) dsa_batch.submit_compare( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 3 ) dsa_batch.submit_comp_pattern( src_arr + it.off_src , pattern_ , it.len ) ;
@@ -105,7 +105,7 @@ void test_dsa_speed( int alignment = 64 ){
                 for( int id = 0 , lim = test_set.size() ; id < lim ; id ++ ){
                     int dsa_id = id % 128 ;
                     dsa_ops[dsa_id].wait() ;
-                    if( op_type == 0 ) dsa_ops[dsa_id].async_memcpy( dest_arr + test_set[id].off_dest , src_arr + test_set[id].off_src , test_set[id].len ) ;
+                    if( op_type == 0 ) dsa_ops[dsa_id].async_memmove( dest_arr + test_set[id].off_dest , src_arr + test_set[id].off_src , test_set[id].len ) ;
                     else if( op_type == 1 ) dsa_ops[dsa_id].async_memfill( dest_arr + test_set[id].off_dest , pattern_ , test_set[id].len ) ;
                     else if( op_type == 2 ) dsa_ops[dsa_id].async_compare( dest_arr + test_set[id].off_dest , src_arr + test_set[id].off_src , test_set[id].len ) ;
                     else if( op_type == 3 ) dsa_ops[dsa_id].async_comp_pattern( src_arr + test_set[id].off_src , pattern_ , test_set[id].len ) ;

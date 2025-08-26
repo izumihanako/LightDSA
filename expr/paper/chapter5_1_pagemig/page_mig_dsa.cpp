@@ -109,7 +109,7 @@ void check_correct( vector<Migration_task> &tasks ){
 vector<Migration_task> tasks ;
 void test_migration( size_t migration_cnt , double Huge_ratio , int method ){ 
     uint64_t tot_siz = 0 ;
-    DSAbatch dsa_batch( 32 , 80 ) ;
+    DSAbatch dsa_batch( 32 , method == 1 ? 20 : 80 ) ;
     double tot_time = 0 ;
     genMigration( migration_cnt , Huge_ratio , tasks ) ;
     for( int repeat = 0 , warmup = 0 ; repeat < REPEAT ; repeat ++ ){ 
@@ -131,7 +131,7 @@ void test_migration( size_t migration_cnt , double Huge_ratio , int method ){
         } else if( method == 1 ){ // naive DSA
             st_time = timeStamp_hires() ;
             for( size_t i = 0 ; i < tasks.size() ; i ++ ){
-                dsa_batch.submit_memcpy( tasks[i].dest , tasks[i].src , tasks[i].len ) ;
+                dsa_batch.submit_memmove( tasks[i].dest , tasks[i].src , tasks[i].len ) ;
             }
             dsa_batch.wait() ;
             ed_time = timeStamp_hires() ;
@@ -152,15 +152,15 @@ void test_migration( size_t migration_cnt , double Huge_ratio , int method ){
                     small_submit ++ ;
                     if( small_submit % 16 == 0 && tasks_splits.size() > now_split_id ){
                         Migration_task &task = tasks_splits[now_split_id] ;
-                        dsa_batch.submit_memcpy( task.dest , task.src , task.len ) ;
+                        dsa_batch.submit_memmove( task.dest , task.src , task.len ) ;
                         now_split_id ++ ;
                     }
-                    dsa_batch.submit_memcpy( tasks[i].dest , tasks[i].src , tasks[i].len ) ;
+                    dsa_batch.submit_memmove( tasks[i].dest , tasks[i].src , tasks[i].len ) ;
                 }
             }
             while( tasks_splits.size() > now_split_id ){
                 Migration_task &task = tasks_splits[now_split_id] ;
-                dsa_batch.submit_memcpy( task.dest , task.src , task.len ) ;
+                dsa_batch.submit_memmove( task.dest , task.src , task.len ) ;
                 now_split_id ++ ;
             }
             dsa_batch.wait() ;
@@ -190,7 +190,7 @@ int main(){
     // printf( "tmp1[0] = %d , tmp2[0] = %d\n" , *tmp1 , *tmp2 ) ;
     size_t migration_cnt = 100000 ; 
     for( double ratio = 0.00001 ; ratio <= 0.004 ; ratio *= 2 ){
-        for( int me = 2 ; me <= 2 ; me ++ ){
+        for( int me = 1 ; me <= 1 ; me ++ ){
             test_migration( migration_cnt , ratio , me ) ;
         }
     } 

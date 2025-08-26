@@ -11,7 +11,7 @@
 typedef struct DSAop DSAop;
 DSAop* DSAop_create() ;
 void DSAop_destroy( DSAop* dsa ) ;
-int  DSAop_async_memcpy( DSAop* dsa, void *dest, const void* src, size_t len ) ;
+int  DSAop_async_memmove( DSAop* dsa, void *dest, const void* src, size_t len ) ;
 int  DSAop_async_memfill( DSAop* dsa, void *dest, uint64_t pattern, size_t len ) ;
 int  DSAop_async_flush( DSAop* dsa, void *dest, size_t len ) ;
 int  DSAop_async_comp_pattern( DSAop* dsa, const void *src, uint64_t pattern, size_t len ) ;

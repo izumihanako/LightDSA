@@ -18,7 +18,7 @@ int main(){
         a[i] = i ;
     }
     for( int i = 0 ; i < 0x1000 ; i ++ ){
-        DSAbatch_submit_memcpy( dsa , a + i * 0x1000 , b + i * 0x1000 , 0x1000 ) ;
+        DSAbatch_submit_memmove( dsa , a + i * 0x1000 , b + i * 0x1000 , 0x1000 ) ;
     }
     DSAbatch_wait( dsa ) ;
     // check if correct

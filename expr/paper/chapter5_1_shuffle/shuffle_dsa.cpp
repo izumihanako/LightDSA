@@ -140,7 +140,7 @@ void shuffle_data_thread( int tid ){
         after_shuffle[aim][aim_i].hashv = hashv ; 
         *(after_shuffle[aim][aim_i].bytes + len - 1 ) = 1 ;
         if( method == 0 ) memcpy( after_shuffle[aim][aim_i].bytes , before_shuffle[tid][i].bytes , len ) ; 
-        else batch[tid].submit_memcpy( after_shuffle[aim][aim_i].bytes , before_shuffle[tid][i].bytes , len ) ;
+        else batch[tid].submit_memmove( after_shuffle[aim][aim_i].bytes , before_shuffle[tid][i].bytes , len ) ;
     } 
     batch[tid].wait() ;
     // batch[tid].print_stats() ;

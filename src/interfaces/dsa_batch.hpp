@@ -16,7 +16,7 @@ public :
 
     bool submit_memfill( void *dest , uint64_t pattern , size_t len ) noexcept( true ) ;
 
-    bool submit_memcpy( void *dest , const void* src , size_t len ) noexcept( true ) ;
+    bool submit_memmove( void *dest , const void* src , size_t len ) noexcept( true ) ;
 
     bool submit_flush( void *dest , size_t len ) noexcept( true ) ;
      

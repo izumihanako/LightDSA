@@ -119,7 +119,7 @@ size_t pm_file_append(PMFileHandler *handler, const void *data, size_t len) {
         }
     } 
     if( use_dsa ){
-        batch.submit_memcpy( handler->pmem_addr + handler->used_size , data , len ) ;
+        batch.submit_memmove( handler->pmem_addr + handler->used_size , data , len ) ;
     } else {
         memcpy( handler->pmem_addr + handler->used_size , data , len ) ;
         pmem_flush(handler->pmem_addr + handler->used_size , len ) ;
@@ -153,7 +153,7 @@ int main(){
     batch.db_task.set_wq( DSAagent::get_instance().get_device( 0 )->get_wq() ) ;
     srand( 0 ) ;
     // const char *src_path = "/root/DSA/dsa_redis/src/dump.rdb" ;
-    const char *src_path = "/mnt/pmemdir/dump.rdb" ;
+    const char *src_path = "/mnt/pmemdir/redis1.rdb" ;
     const char *path = "/mnt/pmemdir/dump.cp" ;
     // const char *path = "dump.cp" ;
     unlink( path ) ;

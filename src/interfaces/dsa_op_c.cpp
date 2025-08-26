@@ -12,8 +12,8 @@ void DSAop_destroy( DSAop* dsa ) {
     free(dsa);
 }
 
-int DSAop_async_memcpy( DSAop* dsa, void *dest, const void* src, size_t len ) {
-    return dsa->async_memcpy( dest , src , len ) ;
+int DSAop_async_memmove( DSAop* dsa, void *dest, const void* src, size_t len ) {
+    return dsa->async_memmove( dest , src , len ) ;
 }
 
 int DSAop_async_memfill( DSAop* dsa, void *dest, uint64_t pattern, size_t len ) {

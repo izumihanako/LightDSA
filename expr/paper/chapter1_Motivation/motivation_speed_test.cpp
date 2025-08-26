@@ -13,7 +13,8 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 ;  
-size_t array_len = 4 * GB , range_lower = 128 , range_upper = 16 * KB ;
+size_t array_len = 4 * GB ;
+int desc_cnt = 100000 ;
 char* src_arr = nullptr , *dest_arr = nullptr ;
 
 struct OffLen{
@@ -34,19 +35,17 @@ string stdsiz( size_t siz ) {
     return string( rt ) ;
 }
 
-vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t range_L , size_t range_R , int access_type ){
+vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t transfer_size , int access_type ){
     vector<OffLen> rt ;
-    size_t offset = rand() % array_len ; // random start point to avoid CPU cache
+    size_t offset = ( rand() % array_len ) & (~0xfff) ; // random start point to avoid CPU cache
     for( int i = 0 ; i < desc_cnt ; i ++ ){
-        size_t len = range_L + ( rand() % ( range_R - range_L + 1 ) ) ;
+        size_t len = transfer_size ;
         if( offset + len > array_len ) offset = 0 ;
         if( access_type == 0 ){ // seq 
             rt.push_back( OffLen( offset , offset , len ) ) ;
         } else { // random 
-            size_t src_off = rand() % ( array_len - len ) ;
+            size_t src_off = ( rand() % ( array_len - len ) ) & (~0xfff) ;
             size_t dest_off = offset ;
-            // size_t dest_off = rand() % ( array_len - len ) ;
-            // size_t src_off = rand() % ( array_len - len ) ; //offset ;
             rt.push_back( OffLen( src_off , dest_off , len ) ) ;
         }
         offset += len ;
@@ -57,24 +56,28 @@ vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t range_L , si
 DSAbatch dsa_batch( 32 , 80 ) ; 
 uint64_t pattern_ = 0x0f0f0f0f0f0f0f0f ;
 char char_patt = pattern_ & 0xff ;
-void test_dsa_speed( int access_type , int method ){ 
+void test_dsa_speed( int access_type , int method , int aligned ){
     char* _src = (char*) aligned_alloc( 4096 , array_len ) ;
     char* _dest = (char*) aligned_alloc( 4096 , array_len ) ;
-    src_arr = _src ; dest_arr = _dest ; 
+    if( aligned ){
+        src_arr = _src ;
+        dest_arr = _dest ; 
+    } else {
+        src_arr = _src + 0x555 ;
+        dest_arr = _dest + 0x555 ;
+    }
  
-    printf( "method = %s , op = memcpy, array_len = %s, access_type = %s, range in [%s, %s]\n" ,
+    printf( "method = %s , op = memcpy, array_len = %s, access_type = %s, aligned = %d\n" ,
             method == 0 ? "CPU" : "DSA" , stdsiz( array_len ).c_str() ,
-            access_type == 0 ? "sequential" : "random" ,
-            stdsiz( range_lower ).c_str() , stdsiz( range_upper ).c_str() ) ;
+            access_type == 0 ? "sequential" : "random" , aligned ) ;
     fflush( stdout ) ;
 
     for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = i , dest_arr[i] = i % 256 ;  
 
-    for( int desc_cnt = 250 ; desc_cnt <= 131072 ; desc_cnt *= 2 ){
-        size_t tot_xfersize = 0 ; 
+    for( size_t transfer_size = 128 ; transfer_size <= 128 * KB ; transfer_size *= 2 ){ 
         double do_time = 0 , do_speed = 0 ;
         for( int repeat = 0 , warmup = 0 ; repeat < REPEAT ; repeat ++ ){
-            vector<OffLen> test_set = genTestset( desc_cnt , array_len , range_lower , range_upper , access_type ) ;
+            vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
             size_t this_xfersize = 0 ;
             for( auto& it : test_set ) this_xfersize += it.len ;
 
@@ -101,14 +104,13 @@ void test_dsa_speed( int access_type , int method ){
                 repeat -- ;
                 continue ;
             }
-            uint64_t end = timeStamp_hires() ;
-            tot_xfersize += this_xfersize ;
-            do_time += ( end - start ) ;
+            uint64_t end = timeStamp_hires() ; 
+            do_time += ( end - start ) / 1.0 / REPEAT;
         } 
-        do_time *= ns_to_us ; // us 
-        do_speed = tot_xfersize / ( do_time * us_to_s ) / MB ;
-        printf( "desc_cnt = %5d , avg_size = %7s | avg_time = %8.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
-                desc_cnt , stdsiz( tot_xfersize / REPEAT ).c_str() , do_time / REPEAT , do_speed , REPEAT ) ; fflush( stdout ) ;  
+        do_time = do_time * ns_to_us / desc_cnt ; // us 
+        do_speed = transfer_size / ( do_time * us_to_s ) / MB ;
+        printf( "desc_cnt = %5d , transfer_size = %7s | avg_time = %8.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
+                desc_cnt , stdsiz( transfer_size ).c_str() , do_time / REPEAT , do_speed , REPEAT ) ; fflush( stdout ) ;  
     }
     if( method == 1 ) dsa_batch.print_stats() ;
     free( _src ) ;
@@ -117,15 +119,14 @@ void test_dsa_speed( int access_type , int method ){
  
 DSAop ___ ;
 int main(){
-    srand( 19260817 ) ;
-    for( size_t upper_size = 8 * KB ; upper_size <= 8 * KB ; upper_size *= 2 ){ 
-        range_upper = upper_size ;
-        for( int access_type = 1 ; access_type <= 1 ; access_type ++ ){
-            for( int method = 0 ; method <= 1 ; method ++ ){ 
-                test_dsa_speed( access_type , method ) ;
+    srand( 19260817 ) ; 
+    for( int access_type = 1 ; access_type <= 1 ; access_type ++ ){
+        for( int method = 0 ; method <= 1 ; method ++ ){ 
+            for( int aligned = 0 ; aligned <= 0 ; aligned ++ ){
+                test_dsa_speed( access_type , method , aligned ) ;
                 puts( "" ) ; 
             }
-        }
+        } 
     }
     return 0 ;
 }

@@ -98,7 +98,7 @@ void do_copy( int method , int op_type ){
         uint64_t start = timeStamp_hires() ;
         if( method == 0 ) { 
             for( auto &m : tasks ) {
-                if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+                if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
                 else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
                 else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
                 else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ; 
@@ -111,7 +111,7 @@ void do_copy( int method , int op_type ){
                 else                tap_read( src_arr + i ) ; 
             }
             for( auto &m : tasks ) {
-                if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+                if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
                 else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
                 else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
                 else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ;
@@ -122,7 +122,7 @@ void do_copy( int method , int op_type ){
                 if( op_type <= 1 )  for( size_t i = 0 ; i < m.len ; i += 4096 ) tap_write( m.dest + i ) ; 
                 else if( op_type == 2 ) for( size_t i = 0 ; i < m.len ; i += 4096 ) tap_read( m.dest + i ) ; 
                 else                for( size_t i = 0 ; i < m.len ; i += 4096 ) tap_read( m.src + i ) ;
-                if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+                if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
                 else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
                 else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
                 else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ;
@@ -139,7 +139,7 @@ void do_copy( int method , int op_type ){
                 if( op_type <= 1 )  for( size_t i = 0 ; i < m.len ; i += 2 * MB ) tap_write( m.dest + i ) ; 
                 else if( op_type == 2 ) for( size_t i = 0 ; i < m.len ; i += 2 * MB ) tap_read( m.dest + i ) ; 
                 else                for( size_t i = 0 ; i < m.len ; i += 2 * MB )     tap_read( m.src + i ) ;
-                if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+                if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
                 else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
                 else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
                 else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ;

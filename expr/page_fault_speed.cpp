@@ -145,7 +145,7 @@ void test_dsa_batch( int repeat , size_t len , int bsiz , int tdesc , bool warmu
         st_time = timeStamp_hires() ;
         for( int i = 0 ; i < tdesc ; i ++ ) touch_pf( b + ( i % bsiz ) * len , len ) ;
         ed_time = timeStamp_hires() , touch_time = ed_time - st_time , st_time = ed_time ; 
-        for( int i = 0 ; i < tdesc ; i ++ ) xfer.submit_memcpy( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ; 
+        for( int i = 0 ; i < tdesc ; i ++ ) xfer.submit_memmove( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ; 
         ed_time = timeStamp_hires() , submit_time = ed_time - st_time , st_time = ed_time ; 
         xfer.db_task.wait() ;
         ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 

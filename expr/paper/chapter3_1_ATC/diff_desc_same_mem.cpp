@@ -55,7 +55,7 @@ void test_dsa_batch( vector<OffLen> test_set , char *a , char* b , int method  )
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){ 
             xfer.db_task.clear() ; 
             st_time = timeStamp_hires() ;  
-            for( int i = 0 ; i < cnt ; i ++ ) xfer.submit_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ; 
+            for( int i = 0 ; i < cnt ; i ++ ) xfer.submit_memmove( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ; 
             xfer.db_task.wait() ;
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
@@ -70,7 +70,7 @@ void test_dsa_batch( vector<OffLen> test_set , char *a , char* b , int method  )
             for( int i = 0 ; i < cnt ; i ++ ){
                 int id = i % bsiz ;
                 memcpys[id]->wait() ;  
-                memcpys[id]->async_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+                memcpys[id]->async_memmove( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
             }
             for( int i = 0 ; i < bsiz ; i ++ ) memcpys[i]->wait() ; 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 

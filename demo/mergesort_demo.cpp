@@ -116,7 +116,7 @@ vector<Data> sort_by_dsa( std::vector<Data> &unsorted_data ){
     for( int i = 0 , lim = unsorted_data.size() ; i < lim ; i ++ ){
         pre_data[i].len = unsorted_data[i].len ;
         pre_data[i].data = pre + pos ;
-        dsa_batch.submit_memcpy( pre + pos , unsorted_data[i].data , unsorted_data[i].len ) ;
+        dsa_batch.submit_memmove( pre + pos , unsorted_data[i].data , unsorted_data[i].len ) ;
         pre[pos + unsorted_data[i].len] = '\0' ;
         pos += unsorted_data[i].len + 1 ;
     }
@@ -136,14 +136,14 @@ vector<Data> sort_by_dsa( std::vector<Data> &unsorted_data ){
             while( Lpos < Lposend && Rpos < Rposend ){
                 if( strcmp( pre_data[Lpos].data , pre_data[Rpos].data ) < 0 ){
                     now_data[now_Data_pos].len = pre_data[Lpos].len ; 
-                    dsa_batch.submit_memcpy( now + now_str_pos , pre_data[Lpos].data, pre_data[Lpos].len + 1 ) ;
+                    dsa_batch.submit_memmove( now + now_str_pos , pre_data[Lpos].data, pre_data[Lpos].len + 1 ) ;
                     now_data[now_Data_pos].data = now + now_str_pos ;
                     now_str_pos += pre_data[Lpos].len + 1 ;
                     now_Data_pos ++ ;
                     Lpos ++ ;
                 } else {
                     now_data[now_Data_pos].len = pre_data[Rpos].len ; 
-                    dsa_batch.submit_memcpy( now + now_str_pos , pre_data[Rpos].data, pre_data[Rpos].len + 1 ) ;
+                    dsa_batch.submit_memmove( now + now_str_pos , pre_data[Rpos].data, pre_data[Rpos].len + 1 ) ;
                     now_data[now_Data_pos].data = now + now_str_pos ;
                     now_str_pos += pre_data[Rpos].len + 1 ;
                     now_Data_pos ++ ;
@@ -152,7 +152,7 @@ vector<Data> sort_by_dsa( std::vector<Data> &unsorted_data ){
             }
             while( Lpos < Lposend ){
                 now_data[now_Data_pos].len = pre_data[Lpos].len ; 
-                dsa_batch.submit_memcpy( now + now_str_pos , pre_data[Lpos].data, pre_data[Lpos].len + 1 ) ;
+                dsa_batch.submit_memmove( now + now_str_pos , pre_data[Lpos].data, pre_data[Lpos].len + 1 ) ;
                 now_data[now_Data_pos].data = now + now_str_pos ;
                 now_str_pos += pre_data[Lpos].len + 1 ;
                 now_Data_pos ++ ;
@@ -160,7 +160,7 @@ vector<Data> sort_by_dsa( std::vector<Data> &unsorted_data ){
             }
             while( Rpos < Rposend ){
                 now_data[now_Data_pos].len = pre_data[Rpos].len ; 
-                dsa_batch.submit_memcpy( now + now_str_pos , pre_data[Rpos].data, pre_data[Rpos].len + 1 ) ;
+                dsa_batch.submit_memmove( now + now_str_pos , pre_data[Rpos].data, pre_data[Rpos].len + 1 ) ;
                 now_data[now_Data_pos].data = now + now_str_pos ;
                 now_str_pos += pre_data[Rpos].len + 1 ;
                 now_Data_pos ++ ;

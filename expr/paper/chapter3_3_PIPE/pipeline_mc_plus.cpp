@@ -1,3 +1,5 @@
+// this file is for rebuttal
+
 #include "src/async_dsa.hpp" 
 
 #include <cstdio>
@@ -12,8 +14,8 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 10 ;
-constexpr int bsiz = 32 , BIG_LEN = 16 * KB , SMALL_LEN = 512 ; 
-int small_cnt = 1 , big_cnt = 1 , desc_cnt = 100 , method = 0 , mix_len ;
+constexpr int bsiz = 32 , BIG_LEN = 4 * KB , SMALL_LEN = 256 ; 
+int small_cnt = 1 , big_cnt = 1 , desc_cnt = 100 , method = 0 , mix_small = 0 , mix_big = 0 ;
 
 struct OffLen{
     size_t off_src ;
@@ -87,18 +89,15 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
     if( method == 0 ) xfer.print_stats() ;
 } 
  
-vector<OffLen> genSeparate( int small_cnt , int big_cnt , int desc_cnt , int mix_len ){
+vector<OffLen> genSeparate( int small_cnt , int big_cnt , int desc_cnt , int mix_small , int mix_big ){
     vector<OffLen> rt , big , small ;
-    size_t offset = 0 ;
-    int in_seg_big = mix_len / ( big_cnt + small_cnt ) * big_cnt ;
-    int in_seg_small = mix_len / ( big_cnt + small_cnt ) * small_cnt ;
-
+    size_t offset = 0 ; 
     for( int i = 0 ; i < desc_cnt ; ){
-        for( int j = 0 ; j < in_seg_big && i < desc_cnt ; j ++ , i ++ ){ 
+        for( int j = 0 ; j < big_cnt && i < desc_cnt ; j ++ , i ++ ){ 
             big.emplace_back( offset , offset , BIG_LEN ) ;
             offset += BIG_LEN ; 
         }
-        for( int j = 0 ; j < in_seg_small && i < desc_cnt ; j ++ , i ++ ){ 
+        for( int j = 0 ; j < small_cnt && i < desc_cnt ; j ++ , i ++ ){ 
             small.emplace_back( offset , offset , SMALL_LEN ) ;
             offset += SMALL_LEN ; 
         }
@@ -107,10 +106,10 @@ vector<OffLen> genSeparate( int small_cnt , int big_cnt , int desc_cnt , int mix
     random_shuffle( big.begin() , big.end() ) ;
     int big_idx = 0 , small_idx = 0 ;
     for( int i = 0 ; i < desc_cnt ; ){
-        for( int j = 0 ; j < in_seg_big && i < desc_cnt ; j ++ , i ++ ){
+        for( int j = 0 ; j < mix_big && big_idx < big.size() && i < desc_cnt ; j ++ , i ++ ){
             rt.push_back( big[big_idx++] ) ;  
         }
-        for( int j = 0 ; j < in_seg_small && i < desc_cnt ; j ++ , i ++ ){  
+        for( int j = 0 ; j < mix_small && small_idx < small.size() && i < desc_cnt ; j ++ , i ++ ){  
             rt.push_back( small[small_idx++] ) ; 
         }
     }
@@ -120,30 +119,33 @@ vector<OffLen> genSeparate( int small_cnt , int big_cnt , int desc_cnt , int mix
 DSAop ___ ;
 int main( int argc , char** argv ){ 
     if( argc < 6 ){ 
-        printf("Usage: %s <method> <desc_cnt> <small_cnt> <big_cnt> <mix_len>\n", argv[0]) ;
+        printf("Usage: %s <method> <desc_cnt> <small_cnt> <big_cnt> <mix_small> <mix_big>\n", argv[0]) ;
         printf( "method    : 0 is DSA_batch, 1 is DSA_memcpy\n" ) ;
         printf( "desc_cnt  : number of descs\n" ) ;
         printf( "small_cnt : small desc in a group\n" ) ;
         printf( "big_cnt   : big desc in a group\n" ) ;
-        printf( "mix_len   : smallest segment to mix big/small memcpy\n" ) ;
+        printf( "mix_small : small desc inside mixed segment\n" ) ;
+        printf( "mix_big   : big desc inside mixed segment\n" ) ;
         return 0 ;
     } else {
         method = atoi( argv[1] ) ; 
         desc_cnt = atoi( argv[2] ) ;
         small_cnt = atoi( argv[3] ) ; 
         big_cnt = atoi( argv[4] ) ; 
-        mix_len = atoi( argv[5] ) ;
-        if( mix_len % ( small_cnt + big_cnt ) != 0 ){
-            printf( "mix_len should be divisible by (small_cnt + big_cnt)\n" ) ;
-            return 0 ;
-        }
+        mix_small = atoi( argv[5] ) ;
+        mix_big = atoi( argv[6] ) ;
     }  
-    printf( "method = %s , desc_cnt = %d (small(%s):big(%s) = %d:%d), mix_len = %d\n" ,
+    printf( "method = %s , desc_cnt = %d (small(%s):big(%s) = %d:%d), mix_pattern:(%dS:%dB) \n" ,
             method == 0 ? "DSA_batch" : "DSA_memcpy" , desc_cnt , 
-            stdsiz(SMALL_LEN).c_str(), stdsiz(BIG_LEN).c_str() , small_cnt , big_cnt , mix_len ) ;  
-    vector<OffLen> test_set = genSeparate( small_cnt , big_cnt , desc_cnt , mix_len ) ;
+            stdsiz(SMALL_LEN).c_str(), stdsiz(BIG_LEN).c_str() , small_cnt , big_cnt , mix_small , mix_big ) ;  
+    vector<OffLen> test_set = genSeparate( small_cnt , big_cnt , desc_cnt , mix_small , mix_big ) ;
      
     printf( "[ " ) ;
+    int tail_special = 0 ;
+    for( int i = test_set.size() - 1 ; i >= 0 ; i -- ){
+        if( test_set[i].len == ( mix_small < mix_big ? SMALL_LEN : BIG_LEN ) ) tail_special ++ ;
+        else break ;
+    }
     for( int i = 0 , cnt = 0 , type = 0 , switc = 0 ; (size_t)i < test_set.size() && switc < 8 ; i ++ ){ 
         if( test_set[i].len == BIG_LEN ){
             if( type == 0 ) cnt ++ ;
@@ -158,7 +160,8 @@ int main( int argc , char** argv ){
                 type = 1 , cnt = 1 , switc ++ ;
             }
         }
-    } printf( "... (%ld descs) ] \n" , test_set.size() ) ;
+    } if( tail_special > mix_small ) printf( "... (%d %c descs) ] \n" , tail_special , ( mix_small < mix_big ? 'S' : 'B' ) ) ;
+    else printf( "... (%ld descs) ] \n" , test_set.size() ) ;
 
     test_dsa_batch( small_cnt , big_cnt , test_set , method ) ;
     return 0 ;

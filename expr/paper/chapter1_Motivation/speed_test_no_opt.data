@@ -1,0 +1,45 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC +DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+method = CPU , op = memcpy, array_len = 4GB, access_type = random, aligned = 0
+desc_cnt = 100000 , transfer_size =   128 B | avg_time =     0.00 us | do_speed =  2743 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =   256 B | avg_time =     0.01 us | do_speed =  3687 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =   512 B | avg_time =     0.01 us | do_speed =  4222 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     1KB | avg_time =     0.02 us | do_speed =  4719 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     2KB | avg_time =     0.04 us | do_speed =  5294 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     4KB | avg_time =     0.06 us | do_speed =  6166 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     8KB | avg_time =     0.10 us | do_speed =  7589 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =    16KB | avg_time =     0.19 us | do_speed =  8296 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =    32KB | avg_time =     0.35 us | do_speed =  8944 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =    64KB | avg_time =     0.67 us | do_speed =  9318 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =   128KB | avg_time =     1.32 us | do_speed =  9494 MB/s | REPEAT = 10
+
+method = DSA , op = memcpy, array_len = 4GB, access_type = random, aligned = 0
+desc_cnt = 100000 , transfer_size =   128 B | avg_time =     0.06 us | do_speed =   197 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =   256 B | avg_time =     0.06 us | do_speed =   442 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =   512 B | avg_time =     0.07 us | do_speed =   717 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     1KB | avg_time =     0.07 us | do_speed =  1428 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     2KB | avg_time =     0.06 us | do_speed =  3424 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     4KB | avg_time =     0.07 us | do_speed =  5461 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =     8KB | avg_time =     0.08 us | do_speed =  9894 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =    16KB | avg_time =     0.10 us | do_speed = 15825 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =    32KB | avg_time =     0.14 us | do_speed = 22883 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =    64KB | avg_time =     0.24 us | do_speed = 26250 MB/s | REPEAT = 10
+desc_cnt = 100000 , transfer_size =   128KB | avg_time =     0.44 us | do_speed = 28143 MB/s | REPEAT = 10
+DSAbatch: to_cpu = 0, to_dsa = 12100000, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 12100000 , op_bytes = 288217600000
+             : page_fault_resolving = 0 , batch_fail_cnt = 0
+             : wq = wq0.0, memory_used = 0.242 MB

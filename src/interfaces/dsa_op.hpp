@@ -13,7 +13,7 @@ private :
 public :
     DSAop() ;
 
-    bool async_memcpy( void *dest , const void* src , size_t len ) noexcept( true ) ;
+    bool async_memmove( void *dest , const void* src , size_t len ) noexcept( true ) ;
     bool async_memfill( void *dest , uint64_t pattern , size_t len ) noexcept( true ) ;
     bool async_flush( void *dest , size_t len ) noexcept( true ) ;
     bool async_comp_pattern( const void *src , uint64_t pattern , size_t len ) noexcept( true ) ;

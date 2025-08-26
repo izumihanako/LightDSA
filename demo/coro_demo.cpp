@@ -111,7 +111,7 @@ public :
             int &cnt = buffer_cnt[hash] ;
             if( i % 1000000 == 0 ) { printf( "worker(%d) : i = %d\n" , worker_id , i ) ; fflush( stdout ) ;}
             if( useDSA ){ 
-                batch_[hash].submit_memcpy( &buffer[hash][cnt++] , &src[i] , sizeof( Data ) ) ; 
+                batch_[hash].submit_memmove( &buffer[hash][cnt++] , &src[i] , sizeof( Data ) ) ; 
             } else
                 buffer[hash][cnt++] = src[i] ;
             if( cnt == buffer_size ) { 
@@ -132,7 +132,7 @@ public :
         void *dest = after_dsa[buc_id].push_get_addr( cnt ) , *src = buffer[buc_id] ;
         size_t len = cnt * sizeof( Data ) ;
         if( useDSA ){
-            memcpy_.async_memcpy( dest , src , len ) ;
+            memcpy_.async_memmove( dest , src , len ) ;
             while( !memcpy_.check() ){ yield_out() ; }
         } else {
             memcpy( dest , src , len ) ; 

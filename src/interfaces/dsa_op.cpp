@@ -62,7 +62,7 @@ bool DSAop::async_memfill( void *dest , uint64_t pattern , size_t len ) noexcept
     return true ;
 }
 
-bool DSAop::async_memcpy( void *dest , const void* src , size_t len ) noexcept( true ){ 
+bool DSAop::async_memmove( void *dest , const void* src , size_t len ) noexcept( true ){ 
     if( dtask.check() == false ) return false ; 
     #if defined(SHORT_TO_CPU)
         if( len < 0x200 ) { 
@@ -114,7 +114,7 @@ bool DSAop::async_flush( void *dest , size_t len ) noexcept( true ){
 }
 
 void DSAop::sync_memcpy( void *dest , const void* src , size_t len ) noexcept( true ){ 
-    async_memcpy( dest , src , len ) ;
+    async_memmove( dest , src , len ) ;
     wait() ;
 }
 

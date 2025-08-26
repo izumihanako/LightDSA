@@ -64,7 +64,7 @@ bool DSAbatch::submit_memfill( void *dest , uint64_t pattern , size_t len ) noex
     return true ;
 }
 
-bool DSAbatch::submit_memcpy( void *dest , const void* src , size_t len ) noexcept( true ){ 
+bool DSAbatch::submit_memmove( void *dest , const void* src , size_t len ) noexcept( true ){ 
     if( db_task.full() ) { 
         // memcpy( dest , src , len ) ; 
         // return true ; 

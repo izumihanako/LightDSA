@@ -95,7 +95,7 @@ void memmove_with_major_page_fault(){
     vector<copy_meta> copy_metas = genCopies( src_arr , dest_arr , array_len , transfer_size ) ;
     uint64_t start = timeStamp_hires() ;
     for( auto& m : copy_metas ) { 
-        if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ; 
+        if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ; 
         else if( op_type == 1 ) batch.submit_memfill( m.src , pattern_ , m.len ) ;
         else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
         else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ; 
@@ -133,7 +133,7 @@ void memmove_with_minor_page_fault(){
         vector<copy_meta> copy_metas = genCopies( src_arr , dest_arr , array_len , transfer_size ) ; 
         uint64_t start = timeStamp_hires() ;
         for( auto& m : copy_metas ) { 
-            if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+            if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
             else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
             else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
             else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ; 
@@ -174,7 +174,7 @@ void memmove_with_ats_miss(){
         vector<copy_meta> copy_metas = genCopies( src_arr , dest_arr , array_len , transfer_size ) ;
         uint64_t start = timeStamp_hires() ; 
         for( auto& m : copy_metas ) { 
-            if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+            if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
             else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
             else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
             else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ; 
@@ -218,7 +218,7 @@ void memmove_without_page_fault(){
         vector<copy_meta> copy_metas = genCopies( src_arr , dest_arr , array_len , transfer_size ) ;
         uint64_t start = timeStamp_hires() ;
         for( auto& m : copy_metas ) { 
-            if( op_type == 0 )      batch.submit_memcpy( m.dest , m.src , m.len ) ;
+            if( op_type == 0 )      batch.submit_memmove( m.dest , m.src , m.len ) ;
             else if( op_type == 1 ) batch.submit_memfill( m.dest , pattern_ , m.len ) ;
             else if( op_type == 2 ) batch.submit_compare( m.dest , m.src , m.len ) ;
             else if( op_type == 3 ) batch.submit_comp_pattern( m.src , pattern_zero , m.len ) ; 

@@ -23,7 +23,7 @@ void test_DSA( char* a , char* b , int len , bool flush ){
         for( int i = 0 ; i < tdesc ; i ++ ) {
             int id = i % DSAmemcpy_cnt ;
             xfer[id].wait() ;
-            xfer[id].async_memcpy( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ; 
+            xfer[id].async_memmove( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ; 
         }
         for( int i = 0 ; i < DSAmemcpy_cnt ; i ++ ) xfer[i].wait() ;
         ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ;
@@ -64,7 +64,7 @@ void test_DSA_batch( char* a , char* b , int len , bool flush ){
     for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
         st_time = timeStamp_hires() ; 
         for( int i = 0 ; i < tdesc ; i ++ ) 
-                qfer[0].submit_memcpy( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ;  
+                qfer[0].submit_memmove( b + ( i % bsiz ) * len , a + ( i % bsiz ) * len , len ) ;  
         ed_time = timeStamp_hires() , submit_time = ed_time - st_time , st_time = ed_time ;
         for( int i = 0 ; i < 1 ; i ++ ) qfer[i].wait() ;  
         ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ;

@@ -31,11 +31,11 @@ public :
             size_t nxt_pos = expanding_pos + default_expand_step ;
             if( nxt_pos >= old_cap ){
                 nxt_pos = old_cap ;
-                dsa_batch.submit_memcpy( data + expanding_pos , old_data + expanding_pos , (nxt_pos - expanding_pos) * sizeof(T) ) ;
+                dsa_batch.submit_memmove( data + expanding_pos , old_data + expanding_pos , (nxt_pos - expanding_pos) * sizeof(T) ) ;
                 dsa_batch.wait() ; 
                 break ;
             } else {
-                dsa_batch.submit_memcpy( data + expanding_pos , old_data + expanding_pos , default_expand_size ) ;
+                dsa_batch.submit_memmove( data + expanding_pos , old_data + expanding_pos , default_expand_size ) ;
                 expanding_pos = nxt_pos ;
             }
         }

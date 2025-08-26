@@ -134,11 +134,11 @@ void test_out_of_order( int method , vector<OffLen> testset , int op_type ){
                 while( !tasks[i]->check() ) ;
             }
         }
-        // for( int i = 0 ; i <= start_id ; i ++ ){ 
-        //     if( states[i] == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
-        //     else printf( "W" ) ;
-        // } puts( "" ) ;
-        // printf( "last finished: %d\n" , cnt_finished ) ; 
+        for( int i = 0 ; i <= start_id ; i ++ ){ 
+            if( states[i] == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
+            else printf( "W" ) ;
+        } puts( "" ) ;
+        printf( "last finished: %d\n" , cnt_finished ) ; 
         if( warmup <= 10 ){ warmup ++ ; repeat -- ; continue ;}
         ooo_comp_avg_idx += 1.0 * cnt_finished / REPEAT ; 
     } 

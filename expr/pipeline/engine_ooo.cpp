@@ -59,7 +59,7 @@ void test_dsa_batch( size_t array_len , int cnt , vector<OffLen> test_set , int 
             for (int j = 0; j < wq_cnt ; j++) { xfer[j].db_task.clear(); }
             st_time = timeStamp_hires() ;
             for( int i = 0 ; i < cnt ; i ++ )
-                xfer[i % wq_cnt].submit_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ); 
+                xfer[i % wq_cnt].submit_memmove( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ); 
             for (int j = 0; j < wq_cnt; j++)xfer[j].db_task.wait(); 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
@@ -73,7 +73,7 @@ void test_dsa_batch( size_t array_len , int cnt , vector<OffLen> test_set , int 
             for( int i = 0 ; i < cnt ; i ++ ){ 
                 int id = i % wq_cnt ;
                 memcpys[id].wait() ;
-                memcpys[id].async_memcpy( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+                memcpys[id].async_memmove( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
             }
             for( int i = 0 ; i < wq_cnt ; i ++ ) memcpys[i].wait() ; 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 

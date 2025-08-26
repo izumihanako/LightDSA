@@ -1,0 +1,43 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC +DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+method = CPU , op = memcpy, array_len = 4GB, access_type = random, range in [128 B, 16KB]
+desc_cnt =   250 , avg_size = 1.975MB | avg_time =   241.95 us | do_speed =  8163 MB/s | REPEAT = 10
+desc_cnt =   500 , avg_size = 3.948MB | avg_time =   485.09 us | do_speed =  8139 MB/s | REPEAT = 10
+desc_cnt =  1000 , avg_size = 7.868MB | avg_time =   956.76 us | do_speed =  8223 MB/s | REPEAT = 10
+desc_cnt =  2000 , avg_size =  15.8MB | avg_time =  1909.15 us | do_speed =  8274 MB/s | REPEAT = 10
+desc_cnt =  4000 , avg_size = 31.56MB | avg_time =  3839.35 us | do_speed =  8221 MB/s | REPEAT = 10
+desc_cnt =  8000 , avg_size = 63.09MB | avg_time =  7628.98 us | do_speed =  8270 MB/s | REPEAT = 10
+desc_cnt = 16000 , avg_size =   126MB | avg_time = 15231.17 us | do_speed =  8271 MB/s | REPEAT = 10
+desc_cnt = 32000 , avg_size = 252.3MB | avg_time = 30518.45 us | do_speed =  8266 MB/s | REPEAT = 10
+desc_cnt = 64000 , avg_size = 503.6MB | avg_time = 60960.27 us | do_speed =  8261 MB/s | REPEAT = 10
+desc_cnt = 128000 , avg_size =  1008MB | avg_time = 122106.57 us | do_speed =  8258 MB/s | REPEAT = 10
+
+method = DSA , op = memcpy, array_len = 4GB, access_type = random, range in [128 B, 16KB]
+desc_cnt =   250 , avg_size = 1.986MB | avg_time =   219.45 us | do_speed =  9052 MB/s | REPEAT = 10
+desc_cnt =   500 , avg_size = 3.902MB | avg_time =   380.63 us | do_speed = 10251 MB/s | REPEAT = 10
+desc_cnt =  1000 , avg_size = 7.821MB | avg_time =   662.48 us | do_speed = 11806 MB/s | REPEAT = 10
+desc_cnt =  2000 , avg_size = 15.83MB | avg_time =  1263.97 us | do_speed = 12523 MB/s | REPEAT = 10
+desc_cnt =  4000 , avg_size = 31.48MB | avg_time =  2430.16 us | do_speed = 12955 MB/s | REPEAT = 10
+desc_cnt =  8000 , avg_size = 62.93MB | avg_time =  4753.58 us | do_speed = 13239 MB/s | REPEAT = 10
+desc_cnt = 16000 , avg_size = 125.8MB | avg_time =  9438.23 us | do_speed = 13331 MB/s | REPEAT = 10
+desc_cnt = 32000 , avg_size =   252MB | avg_time = 18781.96 us | do_speed = 13417 MB/s | REPEAT = 10
+desc_cnt = 64000 , avg_size = 503.9MB | avg_time = 37452.83 us | do_speed = 13453 MB/s | REPEAT = 10
+desc_cnt = 128000 , avg_size =  1007MB | avg_time = 74914.16 us | do_speed = 13441 MB/s | REPEAT = 10
+DSAbatch: to_cpu = 0, to_dsa = 2813250, align_sum = 0
+DSAbatch_task: batch_capacity = 80 , batch_siz = 32
+             : op_cnt = 2813250 , op_bytes = 23217300642
+             : page_fault_resolving = 0 , batch_fail_cnt = 0
+             : wq = wq0.0, memory_used = 0.242 MB

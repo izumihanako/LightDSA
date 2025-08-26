@@ -20,8 +20,8 @@ int DSAbatch_submit_memfill( DSAbatch* dsa, void *dest, uint64_t pattern, size_t
     return dsa->submit_memfill( dest , pattern , len ) ;
 }
 
-int DSAbatch_submit_memcpy( DSAbatch* dsa, void *dest, const void* src, size_t len ){
-    return dsa->submit_memcpy( dest , src , len ) ;
+int DSAbatch_submit_memmove( DSAbatch* dsa, void *dest, const void* src, size_t len ){
+    return dsa->submit_memmove( dest , src , len ) ;
 }
 
 int DSAbatch_submit_flush( DSAbatch* dsa, void *dest, size_t len ){

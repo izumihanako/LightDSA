@@ -1,0 +1,78 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC +DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+Huge_cnt = 0 , Small_cnt = 100000
+  repeat 0, time cost 0.014s
+  repeat 1, time cost 0.014s
+  repeat 2, time cost 0.014s
+  repeat 3, time cost 0.014s
+  repeat 4, time cost 0.014s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.00% | tot_siz =  390.6MB | time cost 0.014s | speed = 27.671GB/s
+Huge_cnt = 2 , Small_cnt = 99998
+  repeat 0, time cost 0.014s
+  repeat 1, time cost 0.014s
+  repeat 2, time cost 0.014s
+  repeat 3, time cost 0.014s
+  repeat 4, time cost 0.014s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.00% | tot_siz =  394.6MB | time cost 0.014s | speed = 27.222GB/s
+Huge_cnt = 4 , Small_cnt = 99996
+  repeat 0, time cost 0.014s
+  repeat 1, time cost 0.014s
+  repeat 2, time cost 0.014s
+  repeat 3, time cost 0.014s
+  repeat 4, time cost 0.014s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.00% | tot_siz =  398.6MB | time cost 0.014s | speed = 27.120GB/s
+Huge_cnt = 8 , Small_cnt = 99992
+  repeat 0, time cost 0.015s
+  repeat 1, time cost 0.015s
+  repeat 2, time cost 0.015s
+  repeat 3, time cost 0.015s
+  repeat 4, time cost 0.015s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.01% | tot_siz =  406.6MB | time cost 0.015s | speed = 26.960GB/s
+Huge_cnt = 15 , Small_cnt = 99985
+  repeat 0, time cost 0.015s
+  repeat 1, time cost 0.015s
+  repeat 2, time cost 0.015s
+  repeat 3, time cost 0.015s
+  repeat 4, time cost 0.015s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.02% | tot_siz =  420.6MB | time cost 0.015s | speed = 26.959GB/s
+Huge_cnt = 28 , Small_cnt = 99972
+  repeat 0, time cost 0.016s
+  repeat 1, time cost 0.016s
+  repeat 2, time cost 0.016s
+  repeat 3, time cost 0.016s
+  repeat 4, time cost 0.016s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.03% | tot_siz =  446.5MB | time cost 0.016s | speed = 26.978GB/s
+Huge_cnt = 73 , Small_cnt = 99927
+  repeat 0, time cost 0.019s
+  repeat 1, time cost 0.019s
+  repeat 2, time cost 0.019s
+  repeat 3, time cost 0.019s
+  repeat 4, time cost 0.019s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.06% | tot_siz =  536.3MB | time cost 0.019s | speed = 27.066GB/s
+Huge_cnt = 137 , Small_cnt = 99863
+  repeat 0, time cost 0.024s
+  repeat 1, time cost 0.024s
+  repeat 2, time cost 0.024s
+  repeat 3, time cost 0.024s
+  repeat 4, time cost 0.024s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.13% | tot_siz =  664.1MB | time cost 0.024s | speed = 27.314GB/s
+Huge_cnt = 261 , Small_cnt = 99739
+  repeat 0, time cost 0.032s
+  repeat 1, time cost 0.032s
+  repeat 2, time cost 0.032s
+  repeat 3, time cost 0.032s
+  repeat 4, time cost 0.032s
+method = naive dsa | migration_cnt = 100000 | Huge_ratio = 0.26% | tot_siz =  911.6MB | time cost 0.032s | speed = 27.837GB/s
