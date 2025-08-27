@@ -19,7 +19,7 @@ groups = [ "256" , "512" , "1K" , "2K" , "4K" , "8K" , "16K" , "32K" , "64K" , "
 #         [ [ 3687 , 4222 , 4719 , 5294 , 6166 , 7589 , 8296 , 8944 , 9318 , 9494 ],  
 #         [ 442 , 717 , 1428 , 3424 , 5461 , 9894 , 15825 , 22883 , 26250 , 28143 ],
 #         [ 1976 , 3941 , 7787 , 15254 , 28348 , 29110 , 29606 , 29796 , 29869 , 29903 ] ] ).T 
-data = np.loadtxt('speed_data.txt')  # 10 lines, 3 columns
+data = np.loadtxt('data.txt')  # 10 lines, 3 columns
 data = data / 1000  # turns to GB/s  
 
 # create figure and axis

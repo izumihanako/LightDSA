@@ -107,7 +107,7 @@ void test_dsa_speed( int access_type , int method ){
         } 
         do_time *= ns_to_us ; // us 
         do_speed = tot_xfersize / ( do_time * us_to_s ) / MB ;
-        printf( "desc_cnt = %5d , avg_size = %7s | avg_time = %8.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
+        printf( "desc_cnt = %6d | avg_size = %7s | avg_time = %8.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
                 desc_cnt , stdsiz( tot_xfersize / REPEAT ).c_str() , do_time / REPEAT , do_speed , REPEAT ) ; fflush( stdout ) ;  
     }
     if( method == 1 ) dsa_batch.print_stats() ;
@@ -116,15 +116,21 @@ void test_dsa_speed( int access_type , int method ){
 } 
  
 DSAop ___ ;
-int main(){
+int main( int argc , char **argv ){
+    int method = 0 ;
+    if( argc > 1 ) method = atoi( argv[1] ) ;
+    else {
+        printf( "Usage: %s method\n method: 0 for CPU , 1 for DSA\n" , argv[0] ) ;
+        return 0 ;
+    }
     srand( 19260817 ) ;
     for( size_t upper_size = 8 * KB ; upper_size <= 8 * KB ; upper_size *= 2 ){ 
         range_upper = upper_size ;
         for( int access_type = 1 ; access_type <= 1 ; access_type ++ ){
-            for( int method = 0 ; method <= 1 ; method ++ ){ 
-                test_dsa_speed( access_type , method ) ;
-                puts( "" ) ; 
-            }
+            // for( int method = 0 ; method <= 1 ; method ++ ){ 
+               test_dsa_speed( access_type , method ) ;
+                // puts( "" ) ; 
+            // }
         }
     }
     return 0 ;

@@ -103,8 +103,10 @@ void memmove_with_major_page_fault(){
     batch.wait() ;
     uint64_t end = timeStamp_hires() ;
     double time_seconds = ( end - start ) / 1000000000.0 , speed = ( array_len / time_seconds ) / GB ;
-    printf( "time: %.3f seconds, speed: %.3f GB/s, NO REPEAT\n" , time_seconds , speed ) ; fflush( stdout ) ;
-    batch.print_stats() ;
+    // notice that memfill will never trigger major page fault, so its speed is no meaning, just print 0
+    if( op_type == 1 ) speed = 0 ;
+    printf( "average time: %.3f seconds, average speed: %.3f GB/s, REPEAT = 1\n" , time_seconds , speed ) ; fflush( stdout ) ;
+    // batch.print_stats() ;
     swap( src_arr , dest_arr ) ;
     munmap( dest_arr , array_len ) ;
     close( fd ) ;
@@ -141,14 +143,14 @@ void memmove_with_minor_page_fault(){
         batch.wait() ;
         uint64_t end = timeStamp_hires() ; 
         double time_seconds = ( end - start ) / 1000000000.0 , speed = ( array_len / time_seconds ) / GB ;
-        printf( "time: %.3f seconds, speed: %.3f GB/s\n" , time_seconds , speed ) ; fflush( stdout ) ;
+        // printf( "time: %.3f seconds, speed: %.3f GB/s\n" , time_seconds , speed ) ; fflush( stdout ) ;
         avg_time += time_seconds / REPEAT ;
         avg_speed += speed / REPEAT ;
         free( dest_arr ) ;
         free( src_arr ) ;
     }
-    batch.print_stats() ;
-    printf( "memmove with minor page fault\n" ) ; fflush( stdout ) ; 
+    // batch.print_stats() ;
+    // printf( "%s with minor page fault\n" , op_type == 0 ? "memmove" : op_type == 1 ? "memfill" : op_type == 2 ? "compare" : "compval" ) ; fflush( stdout ) ;
     printf( "average time: %.3f seconds, average speed: %.3f GB/s, REPEAT = %d\n" , avg_time , avg_speed , REPEAT ) ; fflush( stdout ) ;
 }
 
@@ -182,14 +184,14 @@ void memmove_with_ats_miss(){
         batch.wait() ;
         uint64_t end = timeStamp_hires() ;
         double time_seconds = ( end - start ) / 1000000000.0 , speed = ( array_len / time_seconds ) / GB ;
-        printf( "time: %.3f seconds, speed: %.3f GB/s\n" , time_seconds , speed ) ; fflush( stdout ) ;
+        // printf( "time: %.3f seconds, speed: %.3f GB/s\n" , time_seconds , speed ) ; fflush( stdout ) ;
         avg_time += time_seconds / REPEAT ;
         avg_speed += speed / REPEAT ;
         free( dest_arr ) ;
         free( src_arr ) ;
     }
-    batch.print_stats() ;
-    printf( "memmove with ATS miss\n" ) ; fflush( stdout ) ;
+    // batch.print_stats() ;
+    // printf( "%s with ATS miss\n" , op_type == 0 ? "memmove" : op_type == 1 ? "memfill" : op_type == 2 ? "compare" : "compval" ) ; fflush( stdout ) ;
     printf( "average time: %.3f seconds, average speed: %.3f GB/s, REPEAT = %d\n" , avg_time , avg_speed , REPEAT ) ; fflush( stdout ) ;
 }
 
@@ -226,26 +228,26 @@ void memmove_without_page_fault(){
         batch.wait() ;
         uint64_t end = timeStamp_hires() ;
         double time_seconds = ( end - start ) / 1000000000.0 , speed = ( array_len / time_seconds ) / GB ;
-        printf( "time: %.3f seconds, speed: %.3f GB/s\n" , time_seconds , speed ) ; fflush( stdout ) ;
+        // printf( "time: %.3f seconds, speed: %.3f GB/s\n" , time_seconds , speed ) ; fflush( stdout ) ;
         avg_time += time_seconds / REPEAT ;
         avg_speed += speed / REPEAT ;
         munmap( dest_arr , array_len) ;
         munmap( src_arr , array_len) ;
     }
-    batch.print_stats() ; fflush( stdout ) ;
-    printf( "memmove without page fault\n" ) ; fflush( stdout ) ;
+    // batch.print_stats() ; fflush( stdout ) ;
+    // printf( "%s without page fault\n" , op_type == 0 ? "memmove" : op_type == 1 ? "memfill" : op_type == 2 ? "compare" : "compval" ) ; fflush( stdout ) ;
     printf( "average time: %.3f seconds, average speed: %.3f GB/s, REPEAT = %d\n" , avg_time , avg_speed , REPEAT ) ; fflush( stdout ) ;
 }
 
 int main(){ 
     system( "echo 0 > /proc/sys/vm/nr_hugepages" ) ;
-    for( int me = 1 ; me <= 3 ; me ++ ){
+    for( int me = 0 ; me <= 3 ; me ++ ){
         for( int op = 0 ; op <= 3 ; op ++ ){ 
             method = me , op_type = op ;
-            printf( "method = %s, op_type = %s, transfer_size = %s, REPEAT = %d\n" , 
+            printf( "method = %s, op_type = %s, transfer_size = %s\n" , 
                 ( method == 0 ? "major PF" : ( method == 1 ? "minor PF" : ( method == 2 ? "ATS miss" :  "no PF" ) ) ) ,
                 ( op_type == 0 ? "memmove" : ( op_type == 1 ? "memfill" : ( op_type == 2 ? "compare" : "compval" ) ) ) ,
-                stdsiz( transfer_size ).c_str() , REPEAT ) ;
+                stdsiz( transfer_size ).c_str() ) ;
             if( method == 0 ) memmove_with_major_page_fault() ;
             else if( method == 1 ) memmove_with_minor_page_fault() ;
             else if( method == 2 ) memmove_with_ats_miss() ;

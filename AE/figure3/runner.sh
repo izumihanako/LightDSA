@@ -6,8 +6,7 @@ echo 0 | sudo tee /proc/sys/kernel/numa_balancing
 ../../scripts/setup_dsa.sh -d dsa0
 ../../scripts/setup_dsa.sh -d dsa0 -w 1 -m s -e 4 -f 1
 
-# "dsa_conf_naiveDSA.hpp" DISABLE all optimization in LightDSA. 
-# To measure the peak performace of naive DSA, we also disable DEST_READBACK flag here.
+# "dsa_conf_naiveDSA.hpp" DISABLE all optimization in LightDSA.
 cp dsa_conf_naiveDSA.hpp ../../src/details/dsa_conf.hpp
 cd ../../build
 make -j8 > /dev/null

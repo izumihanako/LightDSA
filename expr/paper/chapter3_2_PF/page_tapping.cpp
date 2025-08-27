@@ -54,17 +54,17 @@ void do_copy( int method , int op_type ){
     double avg_time = 0 ;
     double avg_speed = 0 ;
     if( method == 0 ) {
-        printf( "no tap\n" ) ; fflush( stdout ) ;
+        // printf( "no tap\n" ) ; fflush( stdout ) ;
     } else if( method == 1 ) {
-        printf( "tap all\n" ) ; fflush( stdout ) ;
+        // printf( "tap all\n" ) ; fflush( stdout ) ;
     } else if( method == 2 ) {
-        printf( "tap needed\n" ) ; fflush( stdout ) ;
+        // printf( "tap needed\n" ) ; fflush( stdout ) ;
     } else if( method == 3 ){
-        printf( "tap only, no copy\n" ) ; fflush( stdout ) ;
+        // printf( "tap only, no copy\n" ) ; fflush( stdout ) ;
     } else if( method == 4 ){
-        printf( "tap needed with large page\n" ) ; fflush( stdout ) ;
+        // printf( "tap needed with large page\n" ) ; fflush( stdout ) ;
     } else if( method == 5 ){
-        printf( "tap only with large page\n" ) ; fflush( stdout ) ;
+        // printf( "tap only with large page\n" ) ; fflush( stdout ) ;
     } else {
         printf( "unknown method %d\n" , method ) ; fflush( stdout ) ;
         return ;
@@ -174,24 +174,32 @@ void do_copy( int method , int op_type ){
             free( dest_arr ) ;
         } 
     }
-    batch.print_stats() ;
     printf( "average time: %.3f seconds, average speed: %.3f GB/s\n" , avg_time , avg_speed ) ; fflush( stdout ) ;
+    batch.print_stats() ;
     return ;
 }
 
 DSAop __ ;
-int main(){  
-    // for( int me = 0 ; me <= 5 ; me ++ ){
-    //     for( int op = 0 ; op <= 3 ; op ++ ){ 
-    for( int me = 0 ; me <= 0 ; me ++ ){
-        for( int op = 1 ; op <= 1 ; op ++ ){ 
-            method = me , op_type = op ;
-            printf( "method = %s, op_type = %s, transfer_size = %s, REPEAT = %d \n" , 
-                ( method == 0 ? "no tap" : ( method == 1 ? "tap all" : ( method == 2 ? "tap needed" : 
-                ( method == 3 ? "tap only, no copy" : ( method == 4 ? "tap needed with large page" : "tap only with large page" ) ) ) ) ) ,
-                ( op_type == 0 ? "memcpy" : ( op_type == 1 ? "memfill" : ( op_type == 2 ? "compare" : "compval" ) ) ) ,
-                stdsiz(transfer_size).c_str() , REPEAT ) ; fflush( stdout ) ;
-            do_copy( method , op_type ) ;
-        }
+int main( int argc , char **argv ){
+    int me = 0 ;
+    if( argc > 1 ) {
+        me = atoi( argv[1] ) ; 
+    } else {
+        printf( "usage: %s method\n" , argv[0] ) ; fflush( stdout ) ;
+        printf( "method: 0 no tap, 1 tap all, 2 tap needed, 3 tap only\n" ) ; fflush( stdout ) ;
+        printf( "        4 tap needed with large page, 5 tap only with large page\n" ) ; fflush( stdout ) ;
+        return 0 ;
+    } 
+    method = me ;
+    // for( int me = 0 ; me <= 0 ; me ++ ){
+    for( int op = 0 ; op <= 3 ; op ++ ){ 
+        op_type = op ;
+        printf( "method = %s, op_type = %s, transfer_size = %s, REPEAT = %d \n" , 
+            ( method == 0 ? "no tap" : ( method == 1 ? "tap all" : ( method == 2 ? "tap needed" : 
+            ( method == 3 ? "tap only" : ( method == 4 ? "tap needed with large page" : "tap only with large page" ) ) ) ) ) ,
+            ( op_type == 0 ? "memcpy" : ( op_type == 1 ? "memfill" : ( op_type == 2 ? "compare" : "compval" ) ) ) ,
+            stdsiz(transfer_size).c_str() , REPEAT ) ; fflush( stdout ) ;
+        do_copy( method , op_type ) ;
     }
+    // }
 }

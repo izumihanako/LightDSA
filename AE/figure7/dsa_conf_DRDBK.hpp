@@ -10,7 +10,7 @@ constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
 // #define FLAG_BLOCK_ON_FAULT                 /*** use desc flag BLOCK_ON_FAULT ***/ 
 #define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
-// #define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
+#define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
 
 // #define DESCS_QUEUE_RECYCLE_WINDOW_ENABLE /*** use recycle window ***/  
 constexpr int QUEUE_RECYCLE_UNFINISHED_LIMIT = 25 ; /*** 每个WQ对应的batch回收探查区间长度 ***/

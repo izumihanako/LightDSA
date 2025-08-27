@@ -1,0 +1,79 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+·>  engine0.1, group 0
+·>  engine0.2, group 0
+·>  engine0.3, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable + with cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF +CC -DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+method = major PF, op_type = memmove, transfer_size = 32KB
+major page fault
+average time: 142.279 seconds, average speed: 0.007 GB/s, REPEAT = 1
+
+method = major PF, op_type = memfill, transfer_size = 32KB
+major page fault
+average time: 1.112 seconds, average speed: 0.000 GB/s, REPEAT = 1
+
+method = major PF, op_type = compare, transfer_size = 32KB
+major page fault
+average time: 140.922 seconds, average speed: 0.007 GB/s, REPEAT = 1
+
+method = major PF, op_type = compval, transfer_size = 32KB
+major page fault
+average time: 141.756 seconds, average speed: 0.007 GB/s, REPEAT = 1
+
+method = minor PF, op_type = memmove, transfer_size = 32KB
+minor page fault
+average time: 1.076 seconds, average speed: 0.929 GB/s, REPEAT = 10
+
+method = minor PF, op_type = memfill, transfer_size = 32KB
+minor page fault
+average time: 1.068 seconds, average speed: 0.937 GB/s, REPEAT = 10
+
+method = minor PF, op_type = compare, transfer_size = 32KB
+minor page fault
+average time: 0.198 seconds, average speed: 5.048 GB/s, REPEAT = 10
+
+method = minor PF, op_type = compval, transfer_size = 32KB
+minor page fault
+average time: 0.183 seconds, average speed: 5.472 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = memmove, transfer_size = 32KB
+with ATS miss
+average time: 0.034 seconds, average speed: 29.137 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = memfill, transfer_size = 32KB
+with ATS miss
+average time: 0.034 seconds, average speed: 29.451 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = compare, transfer_size = 32KB
+with ATS miss
+average time: 0.068 seconds, average speed: 14.743 GB/s, REPEAT = 10
+
+method = ATS miss, op_type = compval, transfer_size = 32KB
+with ATS miss
+average time: 0.034 seconds, average speed: 29.425 GB/s, REPEAT = 10
+
+method = no PF, op_type = memmove, transfer_size = 32KB
+without page fault
+average time: 0.034 seconds, average speed: 29.433 GB/s, REPEAT = 10
+
+method = no PF, op_type = memfill, transfer_size = 32KB
+without page fault
+average time: 0.034 seconds, average speed: 29.450 GB/s, REPEAT = 10
+
+method = no PF, op_type = compare, transfer_size = 32KB
+without page fault
+average time: 0.067 seconds, average speed: 14.858 GB/s, REPEAT = 10
+
+method = no PF, op_type = compval, transfer_size = 32KB
+without page fault
+average time: 0.034 seconds, average speed: 29.644 GB/s, REPEAT = 10
+
