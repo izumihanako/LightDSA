@@ -14,22 +14,22 @@ DSA configures:
 -  Touch pages if frequent PF disable
 FLAGS: -BOF -CC -DRDBK -SHORT_TO_CPU -CPU_FLUSH 
 method = batch32, op = memcpy, array_len = 4GB, access_type = sequential
-transfer_size =  128 B | do_time =  0.03 us | do_speed =  3551 MB/s | REPEAT = 10
-transfer_size =  256 B | do_time =  0.03 us | do_speed =  7647 MB/s | REPEAT = 10
-transfer_size =  512 B | do_time =  0.03 us | do_speed = 19083 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.04 us | do_speed =  2824 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.04 us | do_speed =  6093 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.03 us | do_speed = 17498 MB/s | REPEAT = 10
 transfer_size =    1KB | do_time =  0.04 us | do_speed = 24162 MB/s | REPEAT = 10
-transfer_size =    2KB | do_time =  0.07 us | do_speed = 26918 MB/s | REPEAT = 10
-transfer_size =    4KB | do_time =  0.14 us | do_speed = 28546 MB/s | REPEAT = 10
-transfer_size =    8KB | do_time =  0.27 us | do_speed = 29433 MB/s | REPEAT = 10
-DSAbatch: to_cpu = 0, to_dsa = 732430336, align_sum = 0
+transfer_size =    2KB | do_time =  0.07 us | do_speed = 26919 MB/s | REPEAT = 10
+transfer_size =    4KB | do_time =  0.14 us | do_speed = 28547 MB/s | REPEAT = 10
+transfer_size =    8KB | do_time =  0.27 us | do_speed = 29432 MB/s | REPEAT = 10
+DSAbatch: to_cpu = 0, to_dsa = 1470627840, align_sum = 0
 DSAbatch_task: batch_capacity = 80 , batch_siz = 32
-             : op_cnt = 732430336 , op_bytes = 330712481792
+             : op_cnt = 1470627840 , op_bytes = 377957122048
              : page_fault_resolving = 0 , batch_fail_cnt = 0
              : wq = wq0.0, memory_used = 0.242 MB
-CPU: transfer_size =  128 B | do_time =  0.02 us | do_speed =  5555 MB/s | REPEAT = 10
-CPU: transfer_size =  256 B | do_time =  0.03 us | do_speed =  6979 MB/s | REPEAT = 10
+CPU: transfer_size =  128 B | do_time =  0.02 us | do_speed =  5617 MB/s | REPEAT = 10
+CPU: transfer_size =  256 B | do_time =  0.04 us | do_speed =  6970 MB/s | REPEAT = 10
 CPU: transfer_size =  512 B | do_time =  0.07 us | do_speed =  7230 MB/s | REPEAT = 10
-CPU: transfer_size =    1KB | do_time =  0.19 us | do_speed =  5102 MB/s | REPEAT = 10
-CPU: transfer_size =    2KB | do_time =  0.34 us | do_speed =  5734 MB/s | REPEAT = 10
-CPU: transfer_size =    4KB | do_time =  0.44 us | do_speed =  8782 MB/s | REPEAT = 10
-CPU: transfer_size =    8KB | do_time =  0.89 us | do_speed =  8816 MB/s | REPEAT = 10
+CPU: transfer_size =    1KB | do_time =  0.19 us | do_speed =  5139 MB/s | REPEAT = 10
+CPU: transfer_size =    2KB | do_time =  0.34 us | do_speed =  5748 MB/s | REPEAT = 10
+CPU: transfer_size =    4KB | do_time =  0.45 us | do_speed =  8776 MB/s | REPEAT = 10
+CPU: transfer_size =    8KB | do_time =  0.89 us | do_speed =  8823 MB/s | REPEAT = 10

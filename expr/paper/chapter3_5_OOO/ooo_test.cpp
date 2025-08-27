@@ -134,11 +134,11 @@ void test_out_of_order( int method , vector<OffLen> testset , int op_type ){
                 while( !tasks[i]->check() ) ;
             }
         }
-        for( int i = 0 ; i <= start_id ; i ++ ){ 
-            if( states[i] == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
-            else printf( "W" ) ;
-        } puts( "" ) ;
-        printf( "last finished: %d\n" , cnt_finished ) ; 
+        // for( int i = 0 ; i <= start_id ; i ++ ){ 
+        //     if( states[i] == DSA_COMP_SUCCESS ) printf_RGB( 0x00ff00 , "S" ) ;
+        //     else printf( "W" ) ;
+        // } puts( "" ) ;
+        // printf( "last finished: %d\n" , cnt_finished ) ; 
         if( warmup <= 10 ){ warmup ++ ; repeat -- ; continue ;}
         ooo_comp_avg_idx += 1.0 * cnt_finished / REPEAT ; 
     } 
@@ -152,8 +152,8 @@ void test_out_of_order( int method , vector<OffLen> testset , int op_type ){
 DSAop ___ ;
 int main(){ 
     for( int op_type = 0 ; op_type <= 3 ; op_type ++ ){
-        for( size_t first_size = 64 * KB ; first_size <= 8 * MB ; first_size *= 2 ){ 
-            printf( "DSA_batch , op_type = %s , first_size: %s, follow_size: %s, REPEAT = %d\n" , 
+        for( size_t first_size = 128 * KB ; first_size <= 8 * MB ; first_size *= 2 ){ 
+            printf( "DSA_batch , op_type = %s , first_size: %6s, follow_size: %s, REPEAT = %d\n" , 
                 op_type == 0 ? "MEMMOVE" : op_type == 1 ? "MEMFILL" : op_type == 2 ? "COMPARE" : "COMPVAL" ,
                 stdsiz( first_size ).c_str() , stdsiz( follow_size ).c_str() , REPEAT ) ;
             vector<OffLen> testset = genTestset( first_size , follow_size , array_len) ;

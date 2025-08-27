@@ -1,0 +1,39 @@
+There are a total of 1 device
+device : dsa0
+·>  wq0.0, shared, group 0
+·>  engine0.0, group 0
+
+DSA configures:
+-  Recycle window disable
+-  In-batch pipeline disable
+-  Write address 64Byte alignment disable - without cache control
+-  Contiguous allocation disable
+-  Touch pages if frequent PF disable
+FLAGS: -BOF -CC -DRDBK -SHORT_TO_CPU -CPU_FLUSH 
+method = DSA_batch, op = memcpy, desc_cnt = 50000, array_len = 4GB, alignment = 16 bytes
+src_arr @ 0x7f3e1b0ff550 , dest_arr @ 0x7f3d1affd550
+transfer_size =   64 B | do_time =  0.74 us | do_speed =    83 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.74 us | do_speed =   164 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.74 us | do_speed =   332 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.74 us | do_speed =   664 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.74 us | do_speed =  1321 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.76 us | do_speed =  2564 MB/s | REPEAT = 10
+
+method = DSA_batch, op = memcpy, desc_cnt = 50000, array_len = 4GB, alignment = 32 bytes
+src_arr @ 0x7f3e1b0ff560 , dest_arr @ 0x7f3d1affd560
+transfer_size =   64 B | do_time =  0.37 us | do_speed =   166 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.37 us | do_speed =   333 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.37 us | do_speed =   659 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.37 us | do_speed =  1320 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.38 us | do_speed =  2556 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.40 us | do_speed =  4918 MB/s | REPEAT = 10
+
+method = DSA_batch, op = memcpy, desc_cnt = 50000, array_len = 4GB, alignment = 64 bytes
+src_arr @ 0x7f3e1b0ff540 , dest_arr @ 0x7f3d1affd540
+transfer_size =   64 B | do_time =  0.08 us | do_speed =   799 MB/s | REPEAT = 10
+transfer_size =  128 B | do_time =  0.07 us | do_speed =  1634 MB/s | REPEAT = 10
+transfer_size =  256 B | do_time =  0.07 us | do_speed =  3581 MB/s | REPEAT = 10
+transfer_size =  512 B | do_time =  0.06 us | do_speed =  7761 MB/s | REPEAT = 10
+transfer_size =    1KB | do_time =  0.06 us | do_speed = 15842 MB/s | REPEAT = 10
+transfer_size =    2KB | do_time =  0.08 us | do_speed = 24782 MB/s | REPEAT = 10
+

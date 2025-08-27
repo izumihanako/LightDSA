@@ -68,7 +68,7 @@ void test_dsa_speed( int op_type , int access_type ){
     }
 
     DSAbatch dsa_batch( 32 , 80 ) ; 
-    for( size_t transfer_size = 128 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){
+    for( size_t transfer_size = 64 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){
         size_t desc_cnt = array_len / transfer_size ;
         vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
         size_t tot_xfersize = 0 ;
@@ -113,13 +113,14 @@ void test_dsa_speed( int op_type , int access_type ){
         do_time *= ns_to_us ; // us
         do_time /= desc_cnt ; // single desc time
         do_speed = transfer_size / ( do_time * us_to_s ) / MB ; // GB/s
+        if( transfer_size <= 64 ) continue ;
         printf( "transfer_size = %6s | do_time = %5.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
                 stdsiz( transfer_size ).c_str() , do_time , do_speed , REPEAT ) ; fflush( stdout ) ; 
     }
     dsa_batch.print_stats() ;
 
     // test speed for single core CPU 
-    for( size_t transfer_size = 128 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){ 
+    for( size_t transfer_size = 64 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){ 
         size_t desc_cnt = array_len / transfer_size ;
         vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
         double do_time = 0 , do_speed = 0 ;
@@ -148,6 +149,7 @@ void test_dsa_speed( int op_type , int access_type ){
         do_time *= ns_to_us ; // us
         do_time /= desc_cnt ; // single desc time
         do_speed = transfer_size / ( do_time * us_to_s ) / MB ; // GB/s
+        if( transfer_size <= 64 ) continue ;
         printf( "CPU: transfer_size = %6s | do_time = %5.2f us | do_speed = %5.0f MB/s | REPEAT = %d\n" , 
                 stdsiz( transfer_size ).c_str() , do_time , do_speed , REPEAT ) ; fflush( stdout ) ; 
     } 

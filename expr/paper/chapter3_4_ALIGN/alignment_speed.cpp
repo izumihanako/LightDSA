@@ -72,7 +72,7 @@ void test_dsa_speed( int alignment = 64 ){
 
     DSAbatch dsa_batch( 32 , 20 ) ;
     DSAop    dsa_op , dsa_ops[128] ;
-    for( size_t transfer_size = 64 ; transfer_size <= 1 * MB ; transfer_size *= 2 ){
+    for( size_t transfer_size = 64 ; transfer_size <= 2 * KB ; transfer_size *= 2 ){
         if( op_type == 0 ){
             for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = i ; 
         } else if( op_type == 1 ){
@@ -172,7 +172,7 @@ int main( int argc , char** argv ){
         op_type = atoi( argv[2] ) ;
         desc_cnt = atoi( argv[3] ) ; 
     } 
-    for( int alignment = 8 ; alignment <= 128 ; alignment *= 2 ){ 
+    for( int alignment = 16 ; alignment <= 64 ; alignment *= 2 ){ 
         test_dsa_speed( alignment) ;
         puts( "" ) ;
     } 

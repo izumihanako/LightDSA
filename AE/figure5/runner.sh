@@ -3,6 +3,7 @@
 # first setup DSA, init hugepages and disable numa balancing
 echo 20480 > /proc/sys/vm/nr_hugepages
 echo 0 | sudo tee /proc/sys/kernel/numa_balancing
+echo 3 > /proc/sys/vm/drop_caches
 ../../scripts/setup_dsa.sh -d dsa0
 ../../scripts/setup_dsa.sh -d dsa0 -w 1 -m s -e 4 -f 1
 
