@@ -59,7 +59,7 @@ public :
             if( method == 0 ){ // use memcpy 
                 memcpy( new_data , data , vector_cap * sizeof( T ) ) ;
             } else if( method == 1 ){
-                dsa_op.sync_memcpy( new_data , data , vector_cap * sizeof( T ) ) ;
+                dsa_op.sync_memmove( new_data , data , vector_cap * sizeof( T ) ) ;
             } else if( method == 2 ){ // use DSA with memcpy
                 if( vector_cap <= 512 * KB / sizeof( T ) ){ // for cache locality
                     memcpy( new_data , data , vector_cap * sizeof( T ) ) ; 

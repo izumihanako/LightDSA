@@ -113,7 +113,7 @@ bool DSAop::async_flush( void *dest , size_t len ) noexcept( true ){
     return true ;
 }
 
-void DSAop::sync_memcpy( void *dest , const void* src , size_t len ) noexcept( true ){ 
+void DSAop::sync_memmove( void *dest , const void* src , size_t len ) noexcept( true ){ 
     async_memmove( dest , src , len ) ;
     wait() ;
 }

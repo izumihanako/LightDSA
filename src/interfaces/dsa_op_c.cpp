@@ -32,8 +32,8 @@ int DSAop_async_compare( DSAop* dsa, const void *dest, const void* src, size_t l
     return dsa->async_compare( dest , src , len ) ;
 }
 
-void DSAop_sync_memcpy( DSAop* dsa, void *dest, const void* src, size_t len ) {
-    dsa->sync_memcpy( dest , src , len ) ;
+void DSAop_sync_memmove( DSAop* dsa, void *dest, const void* src, size_t len ) {
+    dsa->sync_memmove( dest , src , len ) ;
 }
 
 void DSAop_sync_memfill( DSAop* dsa, void *dest, uint64_t pattern, size_t len ) {

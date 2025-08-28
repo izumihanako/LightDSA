@@ -17,7 +17,7 @@ int  DSAop_async_flush( DSAop* dsa, void *dest, size_t len ) ;
 int  DSAop_async_comp_pattern( DSAop* dsa, const void *src, uint64_t pattern, size_t len ) ;
 int  DSAop_async_compare( DSAop* dsa, const void *dest, const void* src, size_t len ) ;
 
-void DSAop_sync_memcpy( DSAop* dsa, void *dest, const void* src, size_t len ) ;
+void DSAop_sync_memmove( DSAop* dsa, void *dest, const void* src, size_t len ) ;
 void DSAop_sync_memfill( DSAop* dsa, void *dest, uint64_t pattern, size_t len ) ;
 void DSAop_sync_flush( DSAop* dsa, void *dest, size_t len ) ;
 void DSAop_sync_comp_pattern( DSAop* dsa, void *src, uint64_t pattern, size_t len ) ;

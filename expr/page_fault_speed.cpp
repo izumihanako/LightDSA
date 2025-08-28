@@ -105,7 +105,7 @@ void test_dsa_single( int repeat , size_t len , bool warmup ){
             st_time = timeStamp_hires() ; 
             touch_pf( b + i * len , len ) ;
             ed_time = timeStamp_hires() , touch_time += ed_time - st_time , st_time = ed_time ; 
-            single_xfer.sync_memcpy( b + i * len , a + i * len , len ) ;  
+            single_xfer.sync_memmove( b + i * len , a + i * len , len ) ;  
             ed_time = timeStamp_hires() , do_time += ed_time - st_time , st_time = ed_time ;  
         }
         DSA_do    += do_time / cnt ;  

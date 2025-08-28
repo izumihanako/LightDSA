@@ -33,7 +33,7 @@ int main(){
     DSAop *memcpy_ = (DSAop*)DSAop_create() ;
     memset( b , 0 , 0x1000000 ) ;
     for( int i = 0 ; i < 0x1000 ; i ++ ){
-        DSAop_sync_memcpy( memcpy_ , b + i * 0x1000 , a + i * 0x1000 , 0x1000 ) ;
+        DSAop_sync_memmove( memcpy_ , b + i * 0x1000 , a + i * 0x1000 , 0x1000 ) ;
     } 
     // check if correct
     for( int i = 0 ; i < 0x1000000 ; i ++ ) {

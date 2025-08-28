@@ -19,7 +19,7 @@ public :
     bool async_comp_pattern( const void *src , uint64_t pattern , size_t len ) noexcept( true ) ;
     bool async_compare( const void *dest , const void* src , size_t len ) noexcept( true ) ;
     
-    void sync_memcpy( void *dest , const void* src , size_t len ) noexcept( true ) ;
+    void sync_memmove( void *dest , const void* src , size_t len ) noexcept( true ) ;
     void sync_memfill( void *dest , uint64_t pattern , size_t len ) noexcept( true ) ;
     void sync_flush( void *dest , size_t len ) noexcept( true ) ;
     void sync_comp_pattern( const void *src , uint64_t pattern , size_t len ) noexcept( true ) ;

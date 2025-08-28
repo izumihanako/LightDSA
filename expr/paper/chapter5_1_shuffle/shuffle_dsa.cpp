@@ -10,9 +10,10 @@
 #include <sys/mman.h>
 #include <numa.h>
 #include <numaif.h>
+#include <cmath>
 using namespace std ;
  
-constexpr int thread_cnt = 16 , REPEAT = 5 ;
+constexpr int thread_cnt = 16 , REPEAT = 10 ;
 constexpr int str_per_thread = 100000 ;
 constexpr double ns_to_s = 1.0 / 1000000000.0 ;
 int bytes_min = 128 , bytes_max = 8192 , method = 0 ;
@@ -221,7 +222,8 @@ void shuffle_data_main(){
     } 
     double speed = 1.0 * tot_siz / GB / seconds ;
     if( method == 0 ){
-        speed /= thread_cnt ;
+        speed /= thread_cnt ; 
+        speed = std::ceil(speed * 10) / 10 ; // up precision speed to 0.1
         printf( "shuffle_data() : %d threads, %d strings, REPEAT = %d, time = %.3fs, bytes = %lld , speed = %.1fGB/s per CPU \n" , thread_cnt , str_per_thread , REPEAT , seconds , tot_siz , speed ) ;
     }
     else 
@@ -252,10 +254,13 @@ void clear_main(){
     } 
 }
  
-int main(){
-    DSAagent::get_instance() ;
-    for( int me = 0 ; me <= 0 ; me ++ ){
+int main( int argc , char** argv ){
+    int me = 0 ;
+    if( argc > 1 ){
+        me = atoi( argv[1] ) ;
+        if( me < 0 || me > 1 ) me = 0 ;
         method = me ;
+        DSAagent::get_instance() ; 
         for( int L_length = 128 ; L_length <= 16384 ; L_length *= 2 ){  
             bytes_min = L_length ;
             bytes_max = L_length * 2 ;
@@ -266,6 +271,10 @@ int main(){
             check_shuffle_main() ;
             clear_main() ;
         }
+    }
+    else {
+        printf( "usage: %s method(0: CPU, 1: DSA)\n" , argv[0] ) ;
+        return 0 ;
     }
 }
 

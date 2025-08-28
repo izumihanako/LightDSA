@@ -113,7 +113,7 @@ void test_dsa_speed( int alignment = 64 ){
                 for( int dsa_id = 0 ; dsa_id < 128 ; dsa_id ++ ) dsa_ops[dsa_id].wait() ;  
             } else if( method == 2 ){
                 for( auto& it : test_set ){
-                    if( op_type == 0 ) dsa_op.sync_memcpy( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
+                    if( op_type == 0 ) dsa_op.sync_memmove( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 1 ) dsa_op.sync_memfill( dest_arr + it.off_dest , pattern_ , it.len ) ;
                     else if( op_type == 2 ) dsa_op.sync_compare( dest_arr + it.off_dest , src_arr + it.off_src , it.len ) ;
                     else if( op_type == 3 ) dsa_op.sync_comp_pattern( src_arr + it.off_src , pattern_ , it.len ) ;
