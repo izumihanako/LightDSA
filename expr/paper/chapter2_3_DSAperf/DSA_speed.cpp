@@ -12,7 +12,7 @@ using namespace std ;
 
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
-constexpr int REPEAT = 10 ;  
+constexpr int REPEAT = 20 ;  
 size_t array_len = 4 * GB ;
 char* src_arr = nullptr , *dest_arr = nullptr ;
 
@@ -159,6 +159,7 @@ void test_dsa_speed( int op_type , int access_type ){
  
 DSAop ___ ;
 int main( int argc , char** argv ){
+    srand( 0 ) ;
     int op = 0 , access_type = 0 ;
     if( argc >= 3 ){
         op = atoi( argv[1] ) ;

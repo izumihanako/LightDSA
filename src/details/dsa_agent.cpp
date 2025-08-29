@@ -86,16 +86,16 @@ void DSAagent::init(){
     print_wqs() ;
 
     printf_RGB( 0x88B806 , "\nDSA configures:\n" ) ;
-    #if defined(DESCS_QUEUE_RECYCLE_WINDOW_ENABLE)
-        printf_RGB( 0x00cc33 , "+  Recycle window enable, window len = %d\n" , QUEUE_RECYCLE_UNFINISHED_LIMIT ) ;
+    #if defined(DESCS_OUT_OF_ORDER_RECYCLE_ENABLE)
+        printf_RGB( 0x00cc33 , "+  OoO recycle enable, T_init = %d\n" , OUT_OF_ORDER_RECYCLE_T_INIT ) ;
     #else 
-        printf_RGB( 0xcc0011 , "-  Recycle window disable\n" ) ;
+        printf_RGB( 0xcc0011 , "-  OoO recycle disable\n" ) ;
     #endif
 
-    #if defined(DESCS_INBATCH_REDISTRIBUTE_ENABLE)
-        printf_RGB( 0x00cc33 , "+  In-batch pipeline enable\n" ) ;  
+    #if defined(DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE)
+        printf_RGB( 0x00cc33 , "+  In-batch descs mixing enable\n" ) ;  
     #else 
-        printf_RGB( 0xcc0011 , "-  In-batch pipeline disable\n" ) ;
+        printf_RGB( 0xcc0011 , "-  In-batch descs mixing disable\n" ) ;
     #endif
 
     #if defined(DESCS_ADDRESS_ALIGNMENT)
@@ -110,20 +110,20 @@ void DSAagent::init(){
     } 
 
     #if defined(ALLOCATOR_CONTIGUOUS_ENABLE)
-        printf_RGB( 0x00cc33 , "+  Contiguous allocation enable" ) ;
+        printf_RGB( 0x00cc33 , "+  Contiguous allocator enable" ) ;
         #if defined(ALLOCATOR_USE_HUGEPAGE)
             printf_RGB( 0x00cc33 , "(enable huge-page)" ) ;
         #endif
         puts( "" ) ;
     #else
-        printf_RGB( 0xcc0011 , "-  Contiguous allocation disable\n" ) ;
+        printf_RGB( 0xcc0011 , "-  Contiguous allocator disable\n" ) ;
     #endif
 
-    #if defined(PAGE_FAULT_RESOLVE_TOUCH_ENABLE)
-        printf_RGB( 0x00cc33 , "+  Touch pages if frequent PF enable( pf_limit = %d Bytes )\n" , 
+    #if defined(INTERLEAVED_PAGEFAULT_ENABLE)
+        printf_RGB( 0x00cc33 , "+  Interleaved page fault enable( pf_limit = %d Bytes )\n" , 
                 DSA_PF_LEN_LIMIT ) ;
     #else
-        printf_RGB( 0xcc0011 , "-  Touch pages if frequent PF disable\n" ) ;
+        printf_RGB( 0xcc0011 , "-  Interleaved page fault disable\n" ) ;
     #endif
      
     printf_RGB( 0x88B806 , "FLAGS: ") ;

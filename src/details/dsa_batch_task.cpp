@@ -192,7 +192,7 @@ void DSAbatch_task::print_stats(){
 }
 
 void DSAbatch_task::add_no_op(){
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         rdstrb.push_back( dsa_rdstrb_entry( DSA_OPCODE_NOOP ) ) ; 
     #else 
         prepare_desc( now_pos() , dsa_rdstrb_entry( DSA_OPCODE_NOOP ) ) ; 
@@ -201,7 +201,7 @@ void DSAbatch_task::add_no_op(){
 }
 
 void DSAbatch_task::submit_forward(){ 
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         // int tmp ;
         // if( tmp = rdstrb.special_rule_for_all_small() ){
         //     op_cnt -= batch_siz ;
@@ -213,7 +213,7 @@ void DSAbatch_task::submit_forward(){
             forward_pos() ;
         } while ( rdstrb.pop_phase() ) ;
     #endif 
-    #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE
+    #ifdef INTERLEAVED_PAGEFAULT_ENABLE
         for( int i = batch_base ; i < batch_base + desc_idx ; i ++ ){
             // ignore small transfers, because touch may be random access which causes overhead
             if( descs[i].xfer_size < DSA_PAGE_FAULT_TOUCH_LEN - 4 * KB ) continue ;
@@ -303,7 +303,7 @@ int DSAbatch_task::resolve_error( int batch_idx ) {
             wr ? *t = *t : *t ; 
             PF_adjust_desc( idx ) ; 
             // printf( "wr = %d. " , wr ) ;
-            #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE )
+            #if defined( INTERLEAVED_PAGEFAULT_ENABLE )
                 char* this_fault = (char*) comps[idx].fault_addr ;
                 if( ( ( descs[idx].src_addr + 0xfff ) >> 12 ) == ( (uintptr_t)this_fault >> 12 ) ) {// src's pf
                     if( last_fault_addr_src[idx] && this_fault - last_fault_addr_src[idx] < DSA_PF_LEN_LIMIT ){ 
@@ -359,7 +359,7 @@ void DSAbatch_task::add_op( dsa_opcode op_type ){
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
     }
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         rdstrb.push_back( dsa_rdstrb_entry( op_type ) ) ;
         if( rdstrb.should_submit() ) submit_forward() ;
     #else 
@@ -376,7 +376,7 @@ void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , size_t len ){
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
     } 
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         rdstrb.push_back( dsa_rdstrb_entry( op_type , dest , len ) ) ;
         if( rdstrb.should_submit() ) submit_forward() ;
     #else 
@@ -393,7 +393,7 @@ void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , 
         printf( "DSAbatch_task::add_op() : full\n" ) ;
         return ;
     } 
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         rdstrb.push_back( dsa_rdstrb_entry( op_type , dest , src , len ) ) ;
         if( rdstrb.should_submit() ) submit_forward() ;
     #else
@@ -405,7 +405,7 @@ void DSAbatch_task::add_op( dsa_opcode op_type , void *dest , const void* src , 
 }
 
 void DSAbatch_task::wait(){
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         if( !rdstrb.empty() ){
             while( rdstrb.can_submit() == false ) add_no_op() ;
             submit_forward() ;
@@ -420,7 +420,7 @@ void DSAbatch_task::wait(){
 }
 
 bool DSAbatch_task::check(){
-    #ifdef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+    #ifdef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
         if( !rdstrb.empty() ){
             while( rdstrb.can_submit() == false ) add_no_op() ;
             submit_forward() ;
@@ -440,9 +440,9 @@ bool DSAbatch_task::collect(){
     // buzy_queue.print() ;
     // free_queue.print() ; 
     int recycle_pass = 1 , watch_limit = batch_capacity ;
-    #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE )
+    #if defined( DESCS_OUT_OF_ORDER_RECYCLE_ENABLE )
         recycle_pass = 1 ;
-        watch_limit = QUEUE_RECYCLE_UNFINISHED_LIMIT ;
+        watch_limit = OUT_OF_ORDER_RECYCLE_T_INIT ;
     #endif
 
     for( int i = 0 ; i < recycle_pass ; i ++ ) {
@@ -473,7 +473,7 @@ bool DSAbatch_task::collect(){
                 //     printf( " : wtf ? op_status = %d\n" , op_status( bcomp[batch_idx].status ) );   
                 //     getchar() ;
                 // } else puts( "" ) ;
-                #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE ) 
+                #if defined( DESCS_OUT_OF_ORDER_RECYCLE_ENABLE ) 
                     if( op_status( bcomp[batch_idx].status ) == 1 ){
                         free_queue.push_back( batch_idx ) ;
                         buzy_queue.delay_front_and_pop( q_idx ) ;

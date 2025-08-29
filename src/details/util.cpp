@@ -164,5 +164,6 @@ void touch_trigger_pf( char* addr , size_t len , int wr ){
         volatile char x ;
         for( ; (uintptr_t) addr <= (uintptr_t) limit ; addr += 4096 ) x = (*addr) ;
         x = (*limit) ;
+        (void)x;
     }
 }

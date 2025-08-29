@@ -134,9 +134,9 @@ int main( int argc , char** argv ){
         small_cnt = atoi( argv[3] ) ; 
         big_cnt = atoi( argv[4] ) ; 
     } 
-    #if defined( DESCS_QUEUE_RECYCLE_WINDOW_ENABLE )
+    #if defined( DESCS_OUT_OF_ORDER_RECYCLE_ENABLE )
         printf( "DSA batch recycle window enabled\n" ) ;
-        printf( "QUEUE_RECYCLE_UNFINISHED_LIMIT = %d\n" , QUEUE_RECYCLE_UNFINISHED_LIMIT ) ;
+        printf( "OUT_OF_ORDER_RECYCLE_T_INIT = %d\n" , OUT_OF_ORDER_RECYCLE_T_INIT ) ;
     #endif
     printf( "method = %s , batch_cnt = %d (small:big = %d:%d)\n" ,
             method == 0 ? "DSA_batch" : "DSA_memcpy" , batch_cnt , small_cnt , big_cnt ) ;

@@ -161,7 +161,7 @@ void DSAtask::solve_pf(){
     volatile char *t = (char*) comp->fault_addr ;
     wr ? *t = *t : *t ; 
     PF_adjust_desc() ;
-    #if defined( PAGE_FAULT_RESOLVE_TOUCH_ENABLE ) 
+    #if defined( INTERLEAVED_PAGEFAULT_ENABLE ) 
         char* this_fault = (char*) comp->fault_addr ;
         if( last_fault_addr && this_fault - last_fault_addr < DSA_PF_LEN_LIMIT ){ 
             page_fault_resolving ++ ;
@@ -198,7 +198,7 @@ bool DSAtask::check(){
 
 void DSAtask::do_op() noexcept( true ) {
     is_doing_flag = true ; 
-    #ifdef PAGE_FAULT_RESOLVE_TOUCH_ENABLE 
+    #ifdef INTERLEAVED_PAGEFAULT_ENABLE 
         if( desc.xfer_size > 128 * KB ){
             switch ( desc.opcode ) { 
                 case DSA_OPCODE_MEMMOVE : // 3

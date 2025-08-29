@@ -16,3 +16,8 @@ output/
 *.so
 lib/
 # Ignore object files and static/shared libraries
+
+# Ignore AE temporary files
+AE/*/*.pdf
+AE/*/*.png
+AE/*/*.txt
