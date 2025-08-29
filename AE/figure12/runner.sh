@@ -1,5 +1,6 @@
 #!/bin/zsh
 
+set -e
 # first setup DSA, init hugepages and disable numa balancing
 echo 20480 > /proc/sys/vm/nr_hugepages
 echo 0 | sudo tee /proc/sys/kernel/numa_balancing
