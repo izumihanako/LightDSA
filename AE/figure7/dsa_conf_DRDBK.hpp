@@ -12,20 +12,20 @@ constexpr int DEFAULT_BATCH_SIZE = 32 ;
 #define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
 #define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
 
-// #define DESCS_QUEUE_RECYCLE_WINDOW_ENABLE /*** use recycle window ***/  
-constexpr int QUEUE_RECYCLE_UNFINISHED_LIMIT = 25 ; /*** 每个WQ对应的batch回收探查区间长度 ***/
+// #define DESCS_OUT_OF_ORDER_RECYCLE_ENABLE /*** use recycle window ***/  
+constexpr int OUT_OF_ORDER_RECYCLE_T_INIT = 25 ; /*** T_init value ***/
 
-// #define PAGE_FAULT_RESOLVE_TOUCH_ENABLE     /*** touch pages if frequent PF, touch leading pages before submit ***/
+// #define INTERLEAVED_PAGEFAULT_ENABLE     /*** touch pages if frequent PF, touch leading pages before submit ***/
 constexpr int DSA_PF_LEN_LIMIT = ( 128 * KB ) ;
 constexpr int DSA_PAGE_FAULT_TOUCH_LEN = ( 128 * KB ) ;
 
-// #define DESCS_INBATCH_REDISTRIBUTE_ENABLE   /*** redistribute descs in batch ***/
+// #define DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE   /*** mix descs in batch ***/
 
 // #define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
 
 // #define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Contiguous Allocation Strategy ***/
 #define ALLOCATOR_USE_HUGEPAGE              /*** use HugePage for comps and descs allocation ***/
-constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** 每个WQ对应的内存池大小为POOL_SIZE ***/
+constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** memory pool size for each WQ is POOL_SIZE ***/
 
 // #define SHORT_TO_CPU                        /*** use CPU for short descs ***/
 // #define MUST_PERSIST_WRITE                  /*** ensure every CPU write is write back ***/
@@ -42,8 +42,8 @@ constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** 每个WQ对应的内存池大�
 #endif
 
 // do not redistribute when Readback is not set
-#if defined( DESCS_INBATCH_REDISTRIBUTE_ENABLE ) && !defined( FLAG_DEST_READBACK )
-    #undef DESCS_INBATCH_REDISTRIBUTE_ENABLE
+#if defined( DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE ) && !defined( FLAG_DEST_READBACK )
+    #undef DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE
 #endif
 
 /********************************** defs ***********************************/
