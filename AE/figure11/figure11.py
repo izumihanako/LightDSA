@@ -92,8 +92,8 @@ legend = ax.legend( loc='upper left', fontsize=12 , ncols = 1 , handlelength = 1
  
 plt.tight_layout()
  
-plt.savefig('figure10.png', bbox_inches='tight', transparent=True)
-plt.savefig('figure10.pdf', bbox_inches='tight') 
+plt.savefig('figure11.png', bbox_inches='tight', transparent=True)
+plt.savefig('figure11.pdf', bbox_inches='tight') 
 
 # Speedup over CPU implementation for three DSA-accelerated vector under varying append ratios. 
 # Naive DSA uses DSA directly, LightDSA replaces direct usage with LightDSA library, and Insighted Design incorporates additional coding-level optimizations.

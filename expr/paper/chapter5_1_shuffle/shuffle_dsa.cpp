@@ -13,7 +13,7 @@
 #include <cmath>
 using namespace std ;
  
-constexpr int thread_cnt = 16 , REPEAT = 10 ;
+constexpr int thread_cnt = 16 , REPEAT = 20 ;
 constexpr int str_per_thread = 100000 ;
 constexpr double ns_to_s = 1.0 / 1000000000.0 ;
 int bytes_min = 128 , bytes_max = 8192 , method = 0 ;

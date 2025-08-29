@@ -12,7 +12,7 @@ cp dsa_conf_withPRS.hpp ../../src/details/dsa_conf.hpp
 cd ../../build
 make -j8 > /dev/null
 cd ../AE/figure6
-echo "Running RPS..."
+echo "Running PRS..."
 numactl -C0 --membind=0 ../../build/expr/paper/chapter3_2_PF/page_tapping 0 0 > PRS.txt
 
 

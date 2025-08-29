@@ -12,7 +12,7 @@ using namespace std ;
 
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
-constexpr int REPEAT = 20 ;  
+int REPEAT = 20 ;  
 size_t array_len = 4 * GB ;
 char* src_arr = nullptr , *dest_arr = nullptr ;
 
@@ -49,8 +49,8 @@ vector<OffLen> genTestset( int desc_cnt , size_t array_len , size_t transfer_siz
 uint64_t pattern_ = 0x0f0f0f0f0f0f0f0f ;
 char char_patt = pattern_ & 0xff ;
 void test_dsa_speed( int op_type , int access_type ){ 
-    char* _src = (char*) aligned_alloc( 4096 , array_len ) ;
-    char* _dest = (char*) aligned_alloc( 4096 , array_len ) ;
+    char* _src = (char*) aligned_alloc( 32768 , array_len ) ;
+    char* _dest = (char*) aligned_alloc( 32768 , array_len ) ;
     src_arr = _src ; dest_arr = _dest ; 
 
     printf( "method = batch32, op = %s, array_len = %s, access_type = %s\n" ,
@@ -75,6 +75,9 @@ void test_dsa_speed( int op_type , int access_type ){
         for( auto& it : test_set ) tot_xfersize += it.len ;
 
         double do_time = 0 , do_speed = 0 ;
+        if( transfer_size <= 256 ) REPEAT = 40 ;
+        else if( transfer_size == 512 ) REPEAT = 80 ; // most unstable case
+        else REPEAT = 10 ;
         for( int repeat = 0 , warmup = 0 ; repeat < REPEAT ; repeat ++ ){
             for( size_t i = 0 ; i < array_len ; i += 4096 ) {
                 src_arr[i] = src_arr[i] ^ 0;
@@ -120,6 +123,7 @@ void test_dsa_speed( int op_type , int access_type ){
     dsa_batch.print_stats() ;
 
     // test speed for single core CPU 
+    REPEAT = 10 ; // CPU performance is stable, so reduce REPEAT
     for( size_t transfer_size = 64 ; transfer_size <= 8 * KB ; transfer_size *= 2 ){ 
         size_t desc_cnt = array_len / transfer_size ;
         vector<OffLen> test_set = genTestset( desc_cnt , array_len , transfer_size , access_type ) ;
