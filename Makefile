@@ -7,8 +7,8 @@ LDFLAGS = -laccel-config
 # 获取源文件列表
 SRCS = $(wildcard src/*.cpp) $(wildcard src/interfaces/*.cpp) $(wildcard src/details/*.cpp) 
 OBJS = $(SRCS:.cpp=.o)
-TARGET = lib/libdsa_memcpy.a
-SO_TARGET = lib/libdsa_memcpy.so
+TARGET = lib/liblightDSA.a
+SO_TARGET = lib/liblightDSA.so
 
 .PHONY: all clean dirs
 
