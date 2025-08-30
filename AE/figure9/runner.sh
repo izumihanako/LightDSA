@@ -1,12 +1,9 @@
 #!/bin/zsh
 
 set -e
-# first setup DSA, init hugepages and disable numa balancing
-echo 20480 > /proc/sys/vm/nr_hugepages
-echo 0 | sudo tee /proc/sys/kernel/numa_balancing
-echo 3 > /proc/sys/vm/drop_caches
-../../scripts/setup_dsa.sh -d dsa0
-../../scripts/setup_dsa.sh -d dsa0 -w 1 -m s -e 4 -f 1
+# Setup DSA
+sudo ../../scripts/setup_dsa.sh -d dsa0
+sudo ../../scripts/setup_dsa.sh -d dsa0 -w 1 -m s -e 4 -f 1
 
 # Use the naive configuration  
 cp dsa_conf_naiveDSA.hpp ../../src/details/dsa_conf.hpp
@@ -14,7 +11,7 @@ cd ../../build
 make -j8 > /dev/null
 cd ../AE/figure9
 
-numactl -C0 --membind=0 ../../build/expr/paper/chapter3_5_OOO/ooo_test > ooo_test.txt
+sudo numactl -C0 --membind=0 ../../build/expr/paper/chapter3_5_OOO/ooo_test > ooo_test.txt
 
 ops=(MEMMOVE MEMFILL COMPARE COMPVAL)
 
@@ -32,4 +29,4 @@ rm *_batch.txt
 
 # draw figure9
 python3 figure9.py
-echo "Figure 9 done!"
+echo "Done!"

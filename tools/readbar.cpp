@@ -95,3 +95,5 @@ int main(){
     printf( "PERFCAP at addr %p:\n" , PERFCAP ) ;
     printbits( PERFCAP , 64 ) ;
 }
+
+// g++ readbar.cpp -o readbar

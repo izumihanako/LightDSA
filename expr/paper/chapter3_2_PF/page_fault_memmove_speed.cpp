@@ -49,7 +49,7 @@ uint64_t pattern_zero = 0 , pattern_ = 0x0f0f0f0f0f0f0f0f ;
 char char_patt = pattern_zero & 0xff ; 
 DSAbatch batch ;
 void memmove_with_major_page_fault(){ 
-    system( "echo 0 > /proc/sys/vm/nr_hugepages" ) ; 
+    system( "echo 0 | sudo tee /proc/sys/vm/nr_hugepages >/dev/null" ) ; 
     printf( "major page fault\n" ) ; fflush( stdout ) ;
     dest_arr = (char*) aligned_alloc( 4096 , array_len ) ;
     const char* filename = "tmpfile.tmp" ;
@@ -77,7 +77,7 @@ void memmove_with_major_page_fault(){
     msync( src_arr , array_len , MS_SYNC ) ;
     munmap( src_arr , array_len ) ;
     close( fd ) ;
-    system( "echo 3 > /proc/sys/vm/drop_caches" ) ;
+    system( "echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null" ) ;
     fd = open( filename , O_RDWR ) ;
     if( fd < 0 ) {
         printf( "open %s failed\n" , filename ) ; fflush( stdout ) ;
@@ -89,7 +89,7 @@ void memmove_with_major_page_fault(){
         printf( "mmap %s failed\n" , filename ) ; fflush( stdout ) ;
         return ;
     }
-    system( "echo 3 > /proc/sys/vm/drop_caches" ) ;
+    system( "echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null" ) ;
     // to simulate the situation that src are swapped out 
     // so src is the disk file
     vector<copy_meta> copy_metas = genCopies( src_arr , dest_arr , array_len , transfer_size ) ;
@@ -131,7 +131,7 @@ void memmove_with_minor_page_fault(){
             // do not touch anything                                    // src will PF;
         }
         
-        system( "echo 3 > /proc/sys/vm/drop_caches" ) ;
+        system( "echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null" ) ;
         vector<copy_meta> copy_metas = genCopies( src_arr , dest_arr , array_len , transfer_size ) ; 
         uint64_t start = timeStamp_hires() ;
         for( auto& m : copy_metas ) { 
@@ -161,7 +161,7 @@ void memmove_with_ats_miss(){
     for( int run = 0 ; run < REPEAT ; run ++ ){
         src_arr = (char*) aligned_alloc( 4096 , array_len ) ;
         dest_arr = (char*) aligned_alloc( 4096 , array_len ) ;
-        (void)system( "echo 3 > /proc/sys/vm/drop_caches" ) ;
+        (void)system( "echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null" ) ;
 
         if( op_type == 0 ){         // memmove
             for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = dest_arr[i] = i ;
@@ -199,7 +199,7 @@ void memmove_without_page_fault(){
     printf( "without page fault\n" ) ; fflush( stdout ) ;
     double avg_time = 0 ;
     double avg_speed = 0 ;
-    system( "echo 4 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages" ) ;
+    system( "echo 4 | sudo tee /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages >/dev/null" ) ;
     for( int run = 0 ; run < REPEAT ; run ++ ){
         char* dest_arr = (char*)mmap( NULL,  array_len,  PROT_READ | PROT_WRITE, 
             MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | (30 << MAP_HUGE_SHIFT), 
@@ -207,7 +207,7 @@ void memmove_without_page_fault(){
         src_arr = (char*)mmap( NULL,  array_len,  PROT_READ | PROT_WRITE, 
             MAP_PRIVATE | MAP_ANONYMOUS | MAP_HUGETLB | (30 << MAP_HUGE_SHIFT), 
             -1, 0 );
-        system( "echo 3 > /proc/sys/vm/drop_caches" ) ;
+        system( "echo 3 | sudo tee /proc/sys/vm/drop_caches >/dev/null" ) ;
         if( op_type == 0 ){         // memmove
             for( size_t i = 0 ; i < array_len ; i ++ ) src_arr[i] = dest_arr[i] = i ;
         } else if( op_type == 1 ){  // memfill 
@@ -239,8 +239,8 @@ void memmove_without_page_fault(){
     printf( "average time: %.3f seconds, average speed: %.3f GB/s, REPEAT = %d\n" , avg_time , avg_speed , REPEAT ) ; fflush( stdout ) ;
 }
 
-int main(){ 
-    system( "echo 0 > /proc/sys/vm/nr_hugepages" ) ;
+int main(){
+    system( "echo 0 | sudo tee /proc/sys/vm/nr_hugepages >/dev/null" ) ;
     for( int me = 0 ; me <= 3 ; me ++ ){
         for( int op = 0 ; op <= 3 ; op ++ ){ 
             method = me , op_type = op ;
@@ -252,7 +252,7 @@ int main(){
             else if( method == 1 ) memmove_with_minor_page_fault() ;
             else if( method == 2 ) memmove_with_ats_miss() ;
             else if( method == 3 ) memmove_without_page_fault() ;
-            system( "echo 0 > /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages" ) ;
+            system( "echo 0 | sudo tee /sys/kernel/mm/hugepages/hugepages-1048576kB/nr_hugepages >/dev/null" ) ;
             puts( "" ) ;
         }
     }

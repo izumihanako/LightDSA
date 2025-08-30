@@ -21,3 +21,6 @@ lib/
 AE/*/*.pdf
 AE/*/*.png
 AE/*/*.txt
+
+# Ignore compiled binaries
+tools/readbar

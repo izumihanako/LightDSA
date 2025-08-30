@@ -1,11 +1,9 @@
 #!/bin/zsh
 set -e
 
-# first setup DSA, init hugepages and disable numa balancing
-echo 20480 > /proc/sys/vm/nr_hugepages
-echo 0 | sudo tee /proc/sys/kernel/numa_balancing
-../../scripts/setup_dsa.sh -d dsa0
-../../scripts/setup_dsa.sh -d dsa0 -w 1 -m s -e 1 -f 1
+# Setup DSA
+sudo ../../scripts/setup_dsa.sh -d dsa0
+sudo ../../scripts/setup_dsa.sh -d dsa0 -w 1 -m s -e 1 -f 1
 
 # "dsa_conf_naiveDSA.hpp" DISABLE all optimization in LightDSA, same as Figure 1
 # Get naive DSA performance
@@ -14,7 +12,7 @@ cd ../../build
 make -j8 > /dev/null
 cd ../AE/figure4
 echo "Running naiveDSA test..."
-numactl -C0 --membind=0 ../../build/expr/paper/chapter1_Motivation/motivation 1 > naiveDSA.txt # 1: DSA, 0: CPU
+sudo numactl -C0 --membind=0 ../../build/expr/paper/chapter1_Motivation/motivation 1 > naiveDSA.txt # 1: DSA, 0: CPU
 
 # Get LightDSA performance
 cp dsa_conf_LightDSA.hpp ../../src/details/dsa_conf.hpp
@@ -22,11 +20,11 @@ cd ../../build
 make -j8 > /dev/null
 cd ../AE/figure4
 echo "Running LightDSA test..."
-numactl -C0 --membind=0 ../../build/expr/paper/chapter1_Motivation/motivation 1 > LightDSA.txt # 1: DSA, 0: CPU
+sudo numactl -C0 --membind=0 ../../build/expr/paper/chapter1_Motivation/motivation 1 > LightDSA.txt # 1: DSA, 0: CPU
 
 # Finally, we get CPU performance
 echo "Running CPU test..."
-numactl -C0 --membind=0 ../../build/expr/paper/chapter1_Motivation/motivation 0 > CPU.txt # 1: DSA, 0: CPU
+sudo numactl -C0 --membind=0 ../../build/expr/paper/chapter1_Motivation/motivation 0 > CPU.txt # 1: DSA, 0: CPU
 
 # Extract do_speed values and save to output.txt
 echo "Extracting do_speed values..."
