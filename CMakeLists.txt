@@ -1,52 +1,21 @@
 cmake_minimum_required( VERSION 3.16 )
 project( DSA_Memcpy ) 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
-
-### ------------------------ defines ------------------------ ###
-# defs 
-# option( FLAG_BOF    "option for desc flag BOF"  off )
-# option( FLAG_CC     "option for desc flag CC "  off )
-# option( FLAG_DRDBK  "option for desc flag RDBK, use it to ensure that data written has become persistent" off )
-# option( opt_align64 "optimization 1: descs in batch src always align to 64B" off )
-
-# add_definitions( -DCMAKE_BUILD_TYPE=${CMAKE_BUILD_TYPE} )
-# message(STATUS "CMAKE_BUILD_TYPE: " ${CMAKE_BUILD_TYPE} )
-# # apply defs 
-# message(STATUS "FLAG_BOF    : " ${FLAG_BOF} ) 
-# if( FLAG_BOF )
-#     add_definitions( -DFLAG_BLOCK_ON_FAULT ) 
-# endif()
-
-# message(STATUS "FLAG_CC     : " ${FLAG_CC} )
-# if( FLAG_CC )
-#     add_definitions( -DFLAG_CACHE_CONTROL ) 
-# endif()
-
-# message(STATUS "FLAG_DRDBK  : " ${FLAG_DRDBK} )
-# if( FLAG_DRDBK )
-#     add_definitions( -DFLAG_DEST_READBACK ) 
-# endif()
-
-# message(STATUS "opt_align64 : " ${opt_align64} )
-# if( opt_align64 )
-#     add_definitions( -DDESCS_ADDRESS_ALIGNMENT ) 
-# endif()
-
-# if( BUILD_RELEASE )
-#     add_definitions( -DBUILD_RELEASE )
-# endif() 
 ### ------------------------ compile ------------------------ ###
 
 # compile options
 set(CMAKE_CXX_STANDARD 14) 
 include_directories(${CMAKE_SOURCE_DIR})
 
+# find Boost lib
+# find_package( Boost 1.74.0 REQUIRED context coroutine )
+# include_directories( ${Boost_INCLUDE_DIRS} ) 
+# ----------------NOTICE--------------------
+# The boost is just used in demo/coro_demo, but not used in the LightDSA library.
+# So we do not set Boost as a required package for the whole project.
+
 # find NUMA lib
 find_library(NUMA_LIBRARY numa REQUIRED)
-
-# find Boost lib
-find_package( Boost 1.74.0 REQUIRED context coroutine )
-include_directories( ${Boost_INCLUDE_DIRS} )
 
 # find libpmem
 find_package(Pmem REQUIRED)

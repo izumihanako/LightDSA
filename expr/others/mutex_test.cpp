@@ -1,4 +1,6 @@
 // Compile as: g++ -std=c++14  -D_GNU_SOURCE -O2 -pthread mutex_test.cpp  -lboost_system
+// This needs boost libraries to be installed.
+// On Ubuntu, do: sudo apt-get install libboost-all-dev
 
 #include <iostream>
 #include <thread>
