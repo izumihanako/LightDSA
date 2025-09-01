@@ -19,12 +19,12 @@ constexpr int OUT_OF_ORDER_RECYCLE_T_INIT = 25 ; /*** T_init value ***/
 constexpr int DSA_PF_LEN_LIMIT = ( 128 * KB ) ;
 constexpr int DSA_PAGE_FAULT_TOUCH_LEN = ( 128 * KB ) ;
 
-// #define DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE   /*** mix descs in batch ***/
+// #define DESCS_INBATCH_DESCRIPTORS_MIXING_ENABLE   /*** mix descriptors in batch ***/
 
 // #define DESCS_ADDRESS_ALIGNMENT             /*** align desc write address to 64 bytes ***/
 
-// #define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Contiguous Allocation Strategy ***/
-#define ALLOCATOR_USE_HUGEPAGE              /*** use HugePage for comps and descs allocation ***/
+// #define ALLOCATOR_CONTIGUOUS_ENABLE         /*** use Descriptor Space Allocator ***/
+#define ALLOCATOR_USE_HUGEPAGE              /*** use HugePage for Allocator ***/
 constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** memory pool size for each WQ is POOL_SIZE ***/
 
 // #define SHORT_TO_CPU                        /*** use CPU for short descs ***/
