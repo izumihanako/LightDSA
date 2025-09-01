@@ -1,4 +1,4 @@
-# remove all the generated files
+# clear all generated files by AE scripts
 rm */*.txt
 rm */*.png 
 rm */*.pdf
