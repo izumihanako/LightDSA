@@ -2,6 +2,8 @@
 
 LightDSA is a user-friendly, asynchronous DSA library featuring low-overhead, run-to-completion optimizations. It is designed to eliminate the negative performance impact of DSA features, enabling DSA to run efficiently under any workload.
 
+More information about LightDSA can be found in our EuroSys '26 paper.
+
 ## Overview
 The key directories of this project and their contents are as follows:
 ```
