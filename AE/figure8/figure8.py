@@ -84,8 +84,8 @@ ax.spines['right'].set_visible(False)
 ax.legend(loc='upper left', fontsize=10 , ncol=2 , handlelength = 1.25 )  
 
 plt.tight_layout()
-plt.savefig('Chap3_combine_memmove.png', bbox_inches='tight', transparent=True)  
-plt.savefig('Chap3_combine_memmove.pdf', bbox_inches='tight' , transparent=True) 
+plt.savefig('figure8.png', bbox_inches='tight', transparent=True)  
+plt.savefig('figure8.pdf', bbox_inches='tight' , transparent=True) 
 plt.show()
 
 

@@ -50,8 +50,8 @@ target_include_directories( dsa_memcpy PUBLIC ${CMAKE_SOURCE_DIR}/src )
 target_compile_options( dsa_memcpy PRIVATE -fPIC -O2 -mclflushopt -mclwb )
 target_link_libraries( dsa_memcpy PRIVATE ${accel_config_LIBRARY} )
 
-# compile demo
-add_subdirectory( demo/ )
+# compile example
+add_subdirectory( example/ )
 
 # compile experiment
 add_subdirectory( expr/ )

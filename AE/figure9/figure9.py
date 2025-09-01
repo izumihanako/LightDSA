@@ -66,8 +66,8 @@ ax.spines['right'].set_visible(False)
 ax.legend(loc='upper left', fontsize=11 , ncol=2 , handlelength = 1.5 )
 
 plt.tight_layout() 
-plt.savefig('Chap3_OOO_complete.png', bbox_inches='tight', transparent=True) 
-plt.savefig('Chap3_OOO_complete.pdf', bbox_inches='tight' , transparent=True)
+plt.savefig('figure9.png', bbox_inches='tight', transparent=True) 
+plt.savefig('figure9.pdf', bbox_inches='tight' , transparent=True)
 plt.show()
 
 # Out-of-order (OoO) completion when varying the first descriptor’s size in the first batch.

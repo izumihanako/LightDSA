@@ -1,3 +1,14 @@
+/***************** Notice *********************
+This demo depends on boost::coroutine2 and boost::context library.
+These two libraries are not needed in LightDSA, so you may need to install them manually.
+
+On Ubuntu, you can install them using the following command:
+    sudo apt-get install libboost-coroutine-dev libboost-context-dev
+
+Once you have installed them, you can compile this demo by modifying the CMakeLists.txt
+Just uncomment the relevant lines in demo/CMakeLists.txt and recompile the project.
+
+***********************************************/
 #include <boost/coroutine2/all.hpp>
 #include "src/async_dsa.hpp"
 #include <vector> 
