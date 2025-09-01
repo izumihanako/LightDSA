@@ -98,7 +98,7 @@ int main( int argc , char *argv[] ){
         printf( "array_len : KB\n" ) ;
         printf( "copy_len  : bytes\n" ) ;
         printf( "tdesc     : num of memcpy\n" ) ;
-        printf( "bsiz(opt) : num of descs\n" ) ;
+        printf( "bsiz(opt) : num of descriptor\n" ) ;
         return 0 ;
     }
 

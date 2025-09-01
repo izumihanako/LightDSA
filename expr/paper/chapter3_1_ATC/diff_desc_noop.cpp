@@ -52,12 +52,12 @@ int main( int argc , char *argv[] ){
         if( argc > 2 ) bsiz = atoi(argv[2]) ;
     } else {
         printf( "Usage     : %s tdesc\n" , argv[0] ) ;
-        printf( "tdesc     : num of memcpy\n" ) ;
-        printf( "bsiz(opt) : num of descs\n" ) ;
+        printf( "op_cnt    : num of noop operation\n" ) ;
+        printf( "desc_cnt  : num of descriptor\n" ) ;
         return 0 ;
     }
 
-    printf( "DSA noop %d descs , bsiz = %d\n" , tdesc , bsiz ) ; fflush(stdout) ; 
+    printf( "DSA noop %d descs , desc_cnt = %d\n" , tdesc , bsiz ) ; fflush(stdout) ; 
     test_dsa_batch( tdesc ) ; 
 }
 

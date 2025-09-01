@@ -149,7 +149,7 @@ void DSAtask::set_wq( DSAworkingqueue *new_wq ){
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
         comp = (dsa_completion_record*) working_queue->allocator->allocate( sizeof( dsa_completion_record ) ) ;
     #else 
-        comp = (dsa_completion_record*) aligned_alloc( 32 , sizeof( dsa_completion_record ) ) ;
+        comp = (dsa_completion_record*) aligned_alloc( 4096 , sizeof( dsa_completion_record ) ) ;
     #endif
     memset( comp , 0 , sizeof( dsa_completion_record ) ) ;
     comp->status = 0 ; // DSA_COMP_NONE

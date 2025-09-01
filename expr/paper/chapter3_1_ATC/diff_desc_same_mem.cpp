@@ -109,11 +109,11 @@ int main( int argc , char *argv[] ){
         printf( "array_len : KB\n" ) ;
         printf( "copy_len  : bytes\n" ) ;
         printf( "tdesc     : num of memcpy\n" ) ;
-        printf( "bsiz(opt) : num of descs\n" ) ;
+        printf( "bsiz(opt) : num of descriptor\n" ) ;
         return 0 ;
     }
 
-    printf( "%s, array %s, copy %s * %d descs , bsiz = %d \n" , 
+    printf( "%s, array %s, copy %s * %d memcpy , bsiz = %d \n" , 
         method == 0 ? "DSA_batch" : "DSA_single" , 
         stdsiz( ARRAY_LEN ).c_str() , stdsiz( COPY_LEN ).c_str() , tdesc , bsiz ) ; fflush(stdout) ;
 

@@ -118,17 +118,17 @@ int main( int argc , char *argv[] ){
         printf( "array_len : KB\n" ) ;
         printf( "copy_len  : bytes\n" ) ;
         printf( "tdesc     : num of memcpy\n" ) ;
-        printf( "bsiz(opt) : num of descs\n" ) ;
+        printf( "bsiz(opt) : num of descriptor\n" ) ;
         return 0 ;
     }
 
-    printf( "%s, array %s, copy %s * %d descs , bsiz = %d \n" , 
+    printf( "%s, array %s, copy %s * %d memcpy , bsiz = %d \n" , 
         method == 0 ? "DSA_batch" : ( method == 1 ? "DSA_single" : "memcpy" ) , 
         stdsiz( ARRAY_LEN ).c_str() , stdsiz( COPY_LEN ).c_str() , tdesc , bsiz ) ; fflush(stdout) ;
 
     char *a_ = (char*)aligned_alloc( 4096 , ARRAY_LEN * 4 ) ;
     touch_pf( a_ , ARRAY_LEN * 4 ) ;
-    char *a = a_ , *b = a + ARRAY_LEN * 2 ; 
+    char *a = a_ , *b = a + ARRAY_LEN * 2 ;
     
     vector<OffLen> test_set = genCopySet( tdesc ) ; 
     test_dsa_batch( test_set , a , b , method ) ; 
