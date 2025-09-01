@@ -1,5 +1,5 @@
 cmake_minimum_required( VERSION 3.16 )
-project( DSA_Memcpy ) 
+project( lightDSA ) 
 set(CMAKE_MODULE_PATH ${CMAKE_MODULE_PATH} ${CMAKE_CURRENT_SOURCE_DIR}/cmake)
 ### ------------------------ compile ------------------------ ###
 
@@ -45,10 +45,10 @@ file( GLOB_RECURSE HEADER_LIST "${CMAKE_SOURCE_DIR}/src/*.hpp" )
 # endforeach(list)
 
 # generate .a
-add_library( dsa_memcpy SHARED ${SRC_LIST} )
-target_include_directories( dsa_memcpy PUBLIC ${CMAKE_SOURCE_DIR}/src )
-target_compile_options( dsa_memcpy PRIVATE -fPIC -O2 -mclflushopt -mclwb )
-target_link_libraries( dsa_memcpy PRIVATE ${accel_config_LIBRARY} )
+add_library( lightDSA SHARED ${SRC_LIST} )
+target_include_directories( lightDSA PUBLIC ${CMAKE_SOURCE_DIR}/src )
+target_compile_options( lightDSA PRIVATE -fPIC -O2 -mclflushopt -mclwb )
+target_link_libraries( lightDSA PRIVATE ${accel_config_LIBRARY} )
 
 # compile example
 add_subdirectory( example/ )
