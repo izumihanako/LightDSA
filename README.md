@@ -8,7 +8,7 @@ The key directories of this project and their contents are as follows:
 LightDSA 
 ├── AE              # Scripts for artifact evaluation of the paper
 │   ├── figure1         # Scripts for reproduce Figure 1
-│   ├── figure2         # Scripts for reproduce Figure 2
+│   ├── figure3         # Scripts for reproduce Figure 3
 │   ├── ...
 ├── example         # Simple example programs using LightDSA
 ├── expr            # Source code for the paper's experiments
@@ -21,7 +21,7 @@ LightDSA
 
 ## Dependencies 
 
-All hardware and software dependencies are pre-configured on the provided server. To reproduce the experiments on a custom machine, ensure the following requirements are met:
+To reproduce the experiments on a custom machine, ensure the following requirements are met:
 
 ### Hardware Dependencies
 
@@ -40,7 +40,7 @@ All hardware and software dependencies are pre-configured on the provided server
 - Any C++ compiler supporting CXX14 (g++ 11.4.0 on the provided server)
 
 
-## Build
+## Build & Reproduce
 
 First, install the required dependencies by running:
 ```
@@ -52,15 +52,22 @@ To build LightDSA, run:
 ```
 ./build.sh
 ```
-This will create a `build` directory, from which all experiments can be executed.
-For example, to reproduce an experiment such as Figure 1, go to the corresponding directory and run `runner.sh`:
+We also provide a one-click script to reproduce all experiments:
+```
+cd AE && ./reproduce.sh 
+```
+The figures for each experiment will be generated in their corresponding figureX directories (X = 1, 3, 4, 5, 6, 7, 8, 9, 11, 12).
+If you prefer to run a specific experiment, each directory contains a `runner.sh` script to reproduce the experiment and generate the figure. For example, to reproduce Figure 1:
 ```
 cd AE/figure1 && ./runner.sh
 ```
 This will generate `figure1.pdf` in the same directory, corresponding to Figure 1 in the paper.
 
+## As A Library
+
 After building, a shared library `liblightDSA.so` will be available in the `build` directory. 
-If you prefer to use the Makefile directly, we also provide one in the project root. Simply run:
+
+If you prefer to use the Makefile directly, we also provide a `Makefile` in the project root directory. Simply run:
 ```
 make
 ```
