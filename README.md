@@ -75,6 +75,23 @@ make
 ```
 and you will find both `liblightDSA.so` and `liblightDSA.a` in the `lib` directory.
 
+## Configuration of LightDSA
+
+The configuration of LightDSA is located in the header file src/details/dsa_conf.hpp. 
+All configurable options are defined as macros, with names and comments consistent with those in the paper. 
+You can disable an optimization or option by commenting the corresponding line. 
+For example, consider the following two lines in the configuration:
+```
+#define DESCS_OUT_OF_ORDER_RECYCLE_ENABLE   /*** use Out-of-Order recycle ***/  
+constexpr int OUT_OF_ORDER_RECYCLE_T_INIT = 25 ; /*** T_init value ***/
+```
+If the first line is commented, the out-of-order recycle optimization is disabled.
+The second line sets $t_{init}$ to 25. However, if the first line is commented, this definition has no effect.
+For details on out-of-order recycle and the meaning of $t_{init}$, please refer to Section 4.5 of the LightDSA paper.
+
+
+LightDSA determines all configurations at compile time rather than at run time. This choice maximizes performance and simplifies the API. The descriptor contains a `FLAG` field whose value depends on the configuration. If configurations were determined at run time, the API would become more complex, and every descriptor initialization would require extra computations to determine the FLAG value—an overhead that is especially significant for short-running operations. By computing the FLAG values at compile time, LightDSA reduces the initialization overhead of the `FLAG` field to a single constant assignment, thus ensuring minimal overhead.
+
 <!-- Figure1 109.60s user 14.68s system 153% cpu 1:20.86 total  -->
 <!-- Figure3 2814.38s user 46.42s system 100% cpu 47:26.92 total -->
 <!-- Figure4 58.98s user 14.48s system 248% cpu 29.620 total  -->

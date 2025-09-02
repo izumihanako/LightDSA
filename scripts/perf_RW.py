@@ -67,7 +67,7 @@ if __name__ == "__main__":
         # print("Perf stat output:")
         # print(output)
         stats = parse_perf_stat( output )  
-        print("Parsed metrics:")
+        print("Perf metrics:")
         for name, value in stats.items():
             if name in name_mapping:
                 print( f"{name_mapping[name]:<30}: {value:<8} , {stats[name + ' percent']}" )

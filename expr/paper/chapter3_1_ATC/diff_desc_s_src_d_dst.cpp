@@ -97,12 +97,12 @@ int main( int argc , char *argv[] ){
         printf( "shuffle   : 0 no shuffle, 1 shuffle\n" ) ;
         printf( "array_len : KB\n" ) ;
         printf( "copy_len  : bytes\n" ) ;
-        printf( "tdesc     : num of memcpy\n" ) ;
+        printf( "tdesc     : num of memmove\n" ) ;
         printf( "bsiz(opt) : num of descriptor\n" ) ;
         return 0 ;
     }
 
-    printf( "%s, array %s, copy %s * %d descs , bsiz = %d \n" , is_shuffle == 0 ? "no shuffle" : "shuffle" , 
+    printf( "%s, array %s, copy %s * %d memmove , desc_cnt = %d \n" , is_shuffle == 0 ? "no shuffle" : "shuffle" , 
         stdsiz( ARRAY_LEN ).c_str() , stdsiz( COPY_LEN ).c_str() , tdesc , bsiz ) ; fflush(stdout) ;
 
     char *a_ = (char*)aligned_alloc( 4 * KB , ARRAY_LEN * 4 ) ;

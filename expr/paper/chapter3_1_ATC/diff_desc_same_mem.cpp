@@ -69,8 +69,9 @@ void test_dsa_batch( vector<OffLen> test_set , char *a , char* b , int method  )
             st_time = timeStamp_hires() ;  
             for( int i = 0 ; i < cnt ; i ++ ){
                 int id = i % bsiz ;
-                memcpys[id]->wait() ;  
+                // memcpys[id]->wait() ;  
                 memcpys[id]->async_memmove( b + test_set[i].off_dest , a + test_set[i].off_src , test_set[i].len ) ;
+                memcpys[id]->wait() ;
             }
             for( int i = 0 ; i < bsiz ; i ++ ) memcpys[i]->wait() ; 
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
@@ -108,12 +109,12 @@ int main( int argc , char *argv[] ){
         printf( "method    : 0 DSA_batch, 1 DSA_single\n" ) ;
         printf( "array_len : KB\n" ) ;
         printf( "copy_len  : bytes\n" ) ;
-        printf( "tdesc     : num of memcpy\n" ) ;
+        printf( "tdesc     : num of memmove\n" ) ;
         printf( "bsiz(opt) : num of descriptor\n" ) ;
         return 0 ;
     }
 
-    printf( "%s, array %s, copy %s * %d memcpy , bsiz = %d \n" , 
+    printf( "%s, array %s, copy %s * %d memmove , desc_cnt = %d \n" , 
         method == 0 ? "DSA_batch" : "DSA_single" , 
         stdsiz( ARRAY_LEN ).c_str() , stdsiz( COPY_LEN ).c_str() , tdesc , bsiz ) ; fflush(stdout) ;
 

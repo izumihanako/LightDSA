@@ -57,7 +57,7 @@ int main( int argc , char *argv[] ){
         return 0 ;
     }
 
-    printf( "DSA noop %d descs , desc_cnt = %d\n" , tdesc , bsiz ) ; fflush(stdout) ; 
+    printf( "DSA noop cnt %d, desc_cnt = %d\n" , tdesc , bsiz ) ; fflush(stdout) ; 
     test_dsa_batch( tdesc ) ; 
 }
 

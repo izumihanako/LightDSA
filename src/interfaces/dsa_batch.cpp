@@ -122,6 +122,15 @@ bool DSAbatch::submit_flush( void *dest , size_t len ) noexcept( true ){
     return true ;
 }
 
+bool DSAbatch::submit_noop() noexcept( true ){
+    if( db_task.full() ) {
+        while( !db_task.collect() ) ;
+    }
+    to_dsa ++ ;
+    db_task.add_op( DSA_OPCODE_NOOP ) ;
+    return true ;
+}
+
 bool DSAbatch::check() {
     return db_task.check() ;
 }

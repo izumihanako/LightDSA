@@ -30,3 +30,9 @@ add_executable( diff_desc_diff_mem diff_desc_diff_mem.cpp )
 target_compile_features( diff_desc_diff_mem PRIVATE cxx_std_17)
 target_compile_options( diff_desc_diff_mem PRIVATE -Wall -Wextra -O0 -mcmodel=large )
 target_link_libraries( diff_desc_diff_mem lightDSA )
+
+# compile batch_noop_memmove
+add_executable( batch_noop_memmove batch_noop_memmove.cpp )
+target_compile_features( batch_noop_memmove PRIVATE cxx_std_17)
+target_compile_options( batch_noop_memmove PRIVATE -Wall -Wextra -O0 -mcmodel=large )
+target_link_libraries( batch_noop_memmove lightDSA )
