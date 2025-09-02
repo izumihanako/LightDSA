@@ -12,6 +12,7 @@ LightDSA
 │   ├── figure1         # Scripts for reproduce Figure 1
 │   ├── figure3         # Scripts for reproduce Figure 3
 │   ├── ...
+│   └── ATCexplore      # Scripts for reproduce ATC structure exploration
 ├── example         # Simple example programs using LightDSA
 ├── expr            # Source code for the paper's experiments
 ├── Makefile        # Builds both static and shared libraries
@@ -65,7 +66,7 @@ cd AE/figure1 && ./runner.sh
 ```
 This will generate `figure1.pdf` in the same directory, corresponding to Figure 1 in the paper.
 
-## As A Library
+## As a Library
 
 After building, a shared library `liblightDSA.so` will be available in the `build` directory. 
 
@@ -89,8 +90,12 @@ If the first line is commented, the out-of-order recycle optimization is disable
 The second line sets $t_{init}$ to 25. However, if the first line is commented, this definition has no effect.
 For details on out-of-order recycle and the meaning of $t_{init}$, please refer to Section 4.5 of the LightDSA paper.
 
+### Why Determine All Configurations at Compile Time?
+LightDSA determines all configurations at compile time rather than at run time. This maximizes performance and simplifies the API. Each descriptor contains a `flags` field whose value depends on the configuration. If configurations are determined at run time, the API would need extra knobs, and every descriptor initialization would perform extra computations to determine the `flags` value. This extra computation overhead is especially noticeable for short-running operations. By computing the `flags` values at compile time, LightDSA reduces the initialization overhead of the `flags` field to a single constant assignment, thereby ensuring minimal overhead and simplifying the API.
 
-LightDSA determines all configurations at compile time rather than at run time. This choice maximizes performance and simplifies the API. The descriptor contains a `FLAG` field whose value depends on the configuration. If configurations were determined at run time, the API would become more complex, and every descriptor initialization would require extra computations to determine the FLAG value—an overhead that is especially significant for short-running operations. By computing the FLAG values at compile time, LightDSA reduces the initialization overhead of the `FLAG` field to a single constant assignment, thus ensuring minimal overhead.
+
+## API and Code Examples
+
 
 <!-- Figure1 109.60s user 14.68s system 153% cpu 1:20.86 total  -->
 <!-- Figure3 2814.38s user 46.42s system 100% cpu 47:26.92 total -->
