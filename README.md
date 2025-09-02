@@ -6,7 +6,7 @@ More information about LightDSA can be found in our EuroSys '26 paper.
 
 ## Overview
 The key directories of this project and their contents are as follows:
-```
+```bash
 LightDSA 
 ├── AE              # Scripts for artifact evaluation of the paper
 │   ├── figure1         # Scripts for reproduce Figure 1
@@ -46,32 +46,34 @@ To reproduce the experiments on a custom machine, ensure the following requireme
 ## Build & Reproduce
 
 First, install the required dependencies by running:
-```
+```bash
 ./prerequisite.sh
 ```
 This script installs `python3-pip`, `libnuma`, `libpmem`, and `CMake` via the package manager, installs the required Python libraries via `pip`, and clones and installs the **idxd-config** from Intel's official repository.
 
 To build LightDSA, run: 
-```
+```bash
 ./build.sh
 ```
-We also provide a one-click script to reproduce all experiments:
-```
+We also provide a end-to-end script to reproduce all experiments:
+```bash
 cd AE && ./reproduce.sh 
 ```
 The figures for each experiment will be generated in their corresponding figureX directories (X = 1, 3, 4, 5, 6, 7, 8, 9, 11, 12).
 If you prefer to run a specific experiment, each directory contains a `runner.sh` script to reproduce the experiment and generate the figure. For example, to reproduce Figure 1:
-```
+```bash
 cd AE/figure1 && ./runner.sh
 ```
 This will generate `figure1.pdf` in the same directory, corresponding to Figure 1 in the paper.
+
+For more details on reproduction, see the [README.md](https://github.com/izumihanako/LightDSA-AE/blob/master/README.md) in the LightDSA-AE repository.
 
 ## As a Library
 
 After building, a shared library `liblightDSA.so` will be available in the `build` directory. 
 
 If you prefer to use the Makefile directly, we also provide a `Makefile` in the project root directory. Simply run:
-```
+```bash
 make
 ```
 and you will find both `liblightDSA.so` and `liblightDSA.a` in the `lib` directory.
@@ -82,8 +84,8 @@ The configuration of LightDSA is located in the header file src/details/dsa_conf
 All configurable options are defined as macros, with names and comments consistent with those in the paper. 
 You can disable an optimization or option by commenting the corresponding line. 
 For example, consider the following two lines in the configuration:
-```
-#define DESCS_OUT_OF_ORDER_RECYCLE_ENABLE   /*** use Out-of-Order recycle ***/  
+```c++
+#define DESCS_OUT_OF_ORDER_RECYCLE_ENABLE        /*** use Out-of-Order recycle ***/  
 constexpr int OUT_OF_ORDER_RECYCLE_T_INIT = 25 ; /*** T_init value ***/
 ```
 If the first line is commented, the out-of-order recycle optimization is disabled.
