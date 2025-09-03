@@ -98,6 +98,67 @@ LightDSA determines all configurations at compile time rather than at run time. 
 
 ## API and Code Examples
 
+We provide "Hello World" examples in the `example` directory for both C (`example_c.c`) and C++ (`example_cpp.cpp`), each with detailed comments.
+
+All APIs are declared in the header files under `src/interfaces`. For use, simply include `src/lightdsa.hpp` (C++) or `src/lightdsa_c.h` (C). APIs are organized into four categories based on (1) synchronicity (synchronous vs. asynchronous) and (2) submission mode (batch vs. single operation).
+
+
+### Batch Submission
+Batch submission is always asynchronous. See `dsa_batch.hpp` for the detailed interfaces.
+
+Before submitting operations, create a `DSAbatch` object, e.g., `DSAbatch batch`.
+| Operation type       | Interface                                                    |
+| -------------------- | ------------------------------------------------------------ |
+| memmove (async)      | `batch.submit_memmove(void *dest, void *src, size_t len)`    |
+| memfill (async)      | `batch.submit_memfill(void *dest, uint64_t pattern, size_t len)` |
+| compare (async)      | `batch.submit_compare(void *dest, void *src, size_t len)`    |
+| comp_pattern (async) | `batch.submit_comp_pattern(void *src, uint64_t pattern, size_t len)` |
+| flush (async)        | `batch.submit_flush(void *dest, size_t len)`                 |
+| noop (async)         | `batch.submit_noop()`                                        |
+| check                | `batch.check()`                                              |
+| wait                 | `batch.waut()`                                               |
+
+
+- `batch.submit_memmove` copies `len` bytes from `src` to `dest`.
+- `batch.submit_memfill` fills `len` bytes at `dest` by repeating the 8-byte `pattern`.
+- `batch.submit_compare` compares `len` bytes at `dest` and `src` for equality.
+- `batch.submit_comp_pattern` checks whether `len` bytes at `src` match the 8-byte `pattern`.
+- `batch.submit_flush` flushes `len` bytes starting at `dest` from CPU caches back to memory.
+- `batch.submit_noop` is a no-op that do nothing.
+- `batch.check` returns `1` if all submitted operations have completed, otherwise `0`.
+- `batch.wait` blocks until all submitted operations complete
+
+All operations execute asynchronously and may not start immediately upon submission. Use `batch.wait()` to wait for completion. Execution order is ***not guaranteed*** to follow submission order; if strict ordering is required, call `batch.wait()` as needed (note this can significantly reduce performance).
+
+Note: For compare and comp_pattern in the batch API, result retrieval helpers are not provided. Refer to the single-operation API and define your own handling as needed.
+
+
+### Single-Operation Submission
+See `dsa_op.hpp` for the detailed interfaces.
+
+Before submitting operations, create a `DSAop` object, e.g., `DSAop dsaop`.
+| Operation type       | Interface                                                    |
+| -------------------- | ------------------------------------------------------------ |
+| memmove              | `dsaop.sync_memmove(void *dest, void *src, size_t len)`      |
+| memmove (async)      | `dsaop.async_memmove(void *dest, void *src, size_t len)`     |
+| memfill              | `dsaop.sync_memfill(void *dest, uint64_t pattern, size_t len)` |
+| memfill (async)      | `dsaop.async_memfill(void *dest, uint64_t pattern, size_t len)` |
+| compare              | `dsaop.sync_compare(void *dest, void *src, size_t len)`      |
+| compare (async)      | `dsaop.async_compare(void *dest, void *src, size_t len)`     |
+| comp_pattern         | `dsaop.sync_comp_pattern(void *src, uint64_t pattern, size_t len)` |
+| comp_pattern (async) | `dsaop.async_comp_pattern(void *src, uint64_t pattern, size_t len)` |
+| flush                | `dsaop.sync_flush(void *dest, size_t len)`                   |
+| flush (async)        | `dsaop.async_flush(void *dest, size_t len)`                  |
+| wait                 | `dsaop.wait()`                                               |
+| check                | `dsaop.check()`                                              |
+| compare_res          | `dsaop.compare_res()`                                        |
+| compare_offset       | `dsaop.compare_differ_offset()`                              |
+
+
+- Operations that also exist in the batch API have the same semantics here. Methods prefixed with `sync_` are synchronous (equivalent to calling the corresponding `async_` method followed by `wait()`)
+- `dsaop.compare_res` returns the comparison result: `0` if the regions match, `1` if they differ.
+- `dsaop.compare_differ_offset` returns the byte offset of the first difference; if the regions match, it returns `len`.
+  
 
 <!-- Figure1 109.60s user 14.68s system 153% cpu 1:20.86 total  -->
 <!-- Figure3 2814.38s user 46.42s system 100% cpu 47:26.92 total -->
