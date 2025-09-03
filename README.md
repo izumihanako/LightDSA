@@ -111,8 +111,6 @@ Before submitting operations, create a `DSAbatch` object, e.g., `DSAbatch batch`
 | -------------------- | ------------------------------------------------------------ |
 | memmove (async)      | `batch.submit_memmove(void *dest, void *src, size_t len)`    |
 | memfill (async)      | `batch.submit_memfill(void *dest, uint64_t pattern, size_t len)` |
-| compare (async)      | `batch.submit_compare(void *dest, void *src, size_t len)`    |
-| comp_pattern (async) | `batch.submit_comp_pattern(void *src, uint64_t pattern, size_t len)` |
 | flush (async)        | `batch.submit_flush(void *dest, size_t len)`                 |
 | noop (async)         | `batch.submit_noop()`                                        |
 | check                | `batch.check()`                                              |
@@ -121,8 +119,6 @@ Before submitting operations, create a `DSAbatch` object, e.g., `DSAbatch batch`
 
 - `batch.submit_memmove` copies `len` bytes from `src` to `dest`.
 - `batch.submit_memfill` fills `len` bytes at `dest` by repeating the 8-byte `pattern`.
-- `batch.submit_compare` compares `len` bytes at `dest` and `src` for equality.
-- `batch.submit_comp_pattern` checks whether `len` bytes at `src` match the 8-byte `pattern`.
 - `batch.submit_flush` flushes `len` bytes starting at `dest` from CPU caches back to memory.
 - `batch.submit_noop` is a no-op that do nothing.
 - `batch.check` returns `1` if all submitted operations have completed, otherwise `0`.
@@ -130,8 +126,7 @@ Before submitting operations, create a `DSAbatch` object, e.g., `DSAbatch batch`
 
 All operations execute asynchronously and may not start immediately upon submission. Use `batch.wait()` to wait for completion. Execution order is ***not guaranteed*** to follow submission order; if strict ordering is required, call `batch.wait()` as needed (note this can significantly reduce performance).
 
-Note: For compare and comp_pattern in the batch API, result retrieval helpers are not provided. Refer to the single-operation API and define your own handling as needed.
-
+Note: Batch APIs for `compare` and `comp_pattern` are not yet provided. Because the *Intra-Batch Descriptors Mixing* policy may reorder operations within a batch, retrieving comparison results requires an intermediate layer to track submission order. We plan to add this functionality in a future update.
 
 ### Single-Operation Submission
 See `dsa_op.hpp` for the detailed interfaces.
@@ -156,9 +151,15 @@ Before submitting operations, create a `DSAop` object, e.g., `DSAop dsaop`.
 
 
 - Operations that also exist in the batch API have the same semantics here. Methods prefixed with `sync_` are synchronous (equivalent to calling the corresponding `async_` method followed by `wait()`)
+- `dsaop.sync_compare` compares `len` bytes at `dest` and `src` for equality.
+- `dsaop.sync_comp_pattern` checks whether `len` bytes at `src` match the 8-byte `pattern`.
 - `dsaop.compare_res` returns the comparison result: `0` if the regions match, `1` if they differ.
 - `dsaop.compare_differ_offset` returns the byte offset of the first difference; if the regions match, it returns `len`.
   
+## Reference
+
+We use some scripts from [Intel dsa-perf-micros repository](https://github.com/intel/dsa-perf-micros).
+
 
 <!-- Figure1 109.60s user 14.68s system 153% cpu 1:20.86 total  -->
 <!-- Figure3 2814.38s user 46.42s system 100% cpu 47:26.92 total -->
