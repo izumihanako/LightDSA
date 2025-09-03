@@ -10,7 +10,7 @@ Just uncomment the relevant lines in demo/CMakeLists.txt and recompile the proje
 
 ***********************************************/
 #include <boost/coroutine2/all.hpp>
-#include "src/async_dsa.hpp"
+#include "src/lightdsa.hpp"
 #include <vector> 
 #include <atomic>
 #include <cstring>

@@ -1,7 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "src/async_dsa_c.h"
+#include "src/lightdsa_c.h"
 
 int main(){
     #ifdef __cplusplus
