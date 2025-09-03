@@ -19,8 +19,13 @@ target_compile_options( pmem_demo PRIVATE -Wall -Wextra -O2 )
 target_link_libraries( pmem_demo lightDSA ${PMEM_LIBRARY} )
 # target_link_options( pmem_demo PRIVATE -lm )
 
-# compile c_example
-add_executable( c_example c_example.c )
-set_target_properties( c_example PROPERTIES LINKER_LANGUAGE C ) 
-target_compile_options( c_example PRIVATE -Wall -Wextra -O2 )
-target_link_libraries( c_example PRIVATE lightDSA )
+# compile example_c
+add_executable( example_c example_c.c )
+set_target_properties( example_c PROPERTIES LINKER_LANGUAGE C ) 
+target_compile_options( example_c PRIVATE -Wall -Wextra -O2 )
+target_link_libraries( example_c PRIVATE lightDSA )
+
+# compile example_cpp
+add_executable( example_cpp example_cpp.cpp )
+target_compile_options( example_cpp PRIVATE -Wall -Wextra -O2 )
+target_link_libraries( example_cpp PRIVATE lightDSA )
