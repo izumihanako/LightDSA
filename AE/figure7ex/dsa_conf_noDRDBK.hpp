@@ -10,7 +10,7 @@ constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
 // #define FLAG_BLOCK_ON_FAULT                 /*** use desc flag BLOCK_ON_FAULT ***/ 
 #define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
-#define FLAG_DEST_READBACK                      /*** use desc flag DEST_READBACK ***/
+// #define FLAG_DEST_READBACK                  /*** use desc flag DEST_READBACK ***/
 
 // #define DESCS_OUT_OF_ORDER_RECYCLE_ENABLE /*** use recycle window ***/  
 constexpr int OUT_OF_ORDER_RECYCLE_T_INIT = 25 ; /*** T_init value ***/

@@ -1,7 +1,5 @@
 // this file is for rebuttal
-
 #include "src/lightdsa.hpp" 
-
 #include <cstdio>
 #include <cstring>
 #include <cstdlib> 
@@ -14,7 +12,7 @@ using namespace std ;
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
 constexpr int REPEAT = 20 ;
-constexpr int bsiz = 4 , BIG_LEN = 16 * KB , SMALL_LEN = 512 ; 
+constexpr int bsiz = 32 , BIG_LEN = 16 * KB , SMALL_LEN = 512 ; 
 int small_cnt = 1 , big_cnt = 1 , desc_cnt = 100 , method = 0 , mix_small = 0 , mix_big = 0 ;
 
 struct OffLen{
@@ -66,6 +64,7 @@ void test_dsa_batch( int small_cnt , int big_cnt , vector<OffLen> test_set , int
             xfer.db_task.wait() ;
             ed_time = timeStamp_hires() , do_time = ed_time - st_time , st_time = ed_time ; 
             dsa_time += ( do_time ) / REPEAT ;
+            // printf( "%5.5lfMB/s\n" , tot_siz / ( do_time * ns_to_us * us_to_s ) / MB ) ; fflush( stdout ) ;
         }
     } else if( method == 1 ){
         for( int tmp = 0 ; tmp < REPEAT ; tmp ++ ){  
@@ -104,17 +103,25 @@ vector<OffLen> genSeparate( int small_cnt , int big_cnt , int desc_cnt , int mix
     } 
     random_shuffle( small.begin() , small.end() ) ;
     random_shuffle( big.begin() , big.end() ) ;
-    int big_idx = 0 , small_idx = 0 ;
-    for( int i = 0 ; i < desc_cnt && big_idx < (int)big.size() && small_idx < (int) small.size() ; ){
-        for( int j = 0 ; j < mix_big && big_idx < (int)big.size() && i < desc_cnt ; j ++ , i ++ ){
-            rt.push_back( big[big_idx++] ) ;  
-        }
-        for( int j = 0 ; j < mix_small && small_idx < (int)small.size() && i < desc_cnt ; j ++ , i ++ ){  
-            rt.push_back( small[small_idx++] ) ; 
-        }
-    }
-    while( big_idx   < (int)big.size()   ) rt.push_back( big  [big_idx++]  ) ;
-    while( small_idx < (int)small.size() ) rt.push_back( small[small_idx++]) ;
+
+    // for( int i = 0 ; i < 4 ; i ++ ) rt.push_back( small[rand() % small.size()] ) ;
+	int big_idx = 0 , small_idx = 0 ; 
+	// here we just rearrange descriptors inside batch
+	while( big_idx < (int)big.size() ){
+		int big_left = bsiz / 2 , small_left = bsiz / 2 ;
+        // for( int i = 0 ; i < 4 && small_left ; i ++ ) rt.push_back( small[small_idx++] ) , small_left -- ;
+		while( big_left + small_left >= mix_big + mix_small && small_left && big_left ){
+			for( int j = 0 ; j < mix_big   && big_idx   < (int) big.size()   && big_left  ; j ++ , big_left -- ) 
+                rt.push_back( big[big_idx++] ) ;
+			for( int j = 0 ; j < mix_small && small_idx < (int) small.size() && small_left; j ++ , small_left -- ) 
+                rt.push_back( small[small_idx++] ) ;
+            if( (int)rt.size() == desc_cnt || small_idx == (int)small.size() || big_idx == (int)big.size() ) break ;
+		}
+		for( int j = 0 ; j < big_left   && big_idx   < (int) big.size()   ; j ++ ) rt.push_back( big[big_idx++] ) ;
+		for( int j = 0 ; j < small_left && small_idx < (int) small.size() ; j ++ ) rt.push_back( small[small_idx++] ) ;
+        // swap( rt[rt.size()-bsiz+mix_big] , rt[rt.size()-bsiz+mix_big-1] ) ;
+        // printf( "rt.size() = %d\n" , rt.size() ) ;
+	} 
     return rt ;
 }
 
@@ -136,34 +143,35 @@ int main( int argc , char** argv ){
         big_cnt = atoi( argv[4] ) ; 
         mix_small = atoi( argv[5] ) ;
         mix_big = atoi( argv[6] ) ;
+        if( mix_small == mix_big && mix_small == 0 ) mix_small = mix_big = bsiz / 2 ;
     }  
     printf( "method = %s , desc_cnt = %d (small(%s):big(%s) = %d:%d), mix_pattern:(%dS:%dB) \n" ,
             method == 0 ? "DSA_batch" : "DSA_memcpy" , desc_cnt , 
             stdsiz(SMALL_LEN).c_str(), stdsiz(BIG_LEN).c_str() , small_cnt , big_cnt , mix_small , mix_big ) ;  
     vector<OffLen> test_set = genSeparate( small_cnt , big_cnt , desc_cnt , mix_small , mix_big ) ;
-     
-    printf( "[ " ) ;
-    int tail_special = 0 ;
-    for( int i = test_set.size() - 1 ; i >= 0 ; i -- ){
-        if( test_set[i].len == (size_t)( mix_small < mix_big ? SMALL_LEN : BIG_LEN ) ) tail_special ++ ;
-        else break ;
-    }
-    for( int i = 0 , cnt = 0 , type = 0 , switc = 0 ; (size_t)i < test_set.size() && switc < 8 ; i ++ ){ 
-        if( test_set[i].len == BIG_LEN ){
-            if( type == 0 ) cnt ++ ;
-            if( type == 1 ) {
-                printf_RGB( 0xcccc00 , "S%d " , cnt ) ;
-                type = 0 , cnt = 1 , switc ++ ;
-            }
-        } else {
-            if( type == 1 ) cnt ++ ;
-            if( type == 0 ) {
-                printf_RGB( 0x00cc00 , "B%d " , cnt ) ;
-                type = 1 , cnt = 1 , switc ++ ;
-            }
-        }
-    } if( tail_special > mix_small ) printf( "... (%d %c descs) ] \n" , tail_special , ( mix_small < mix_big ? 'S' : 'B' ) ) ;
-    else printf( "... (%ld descs) ] \n" , test_set.size() ) ;
+
+	for( int _ = 0 , i = 0 , cnt = 0 , type = 0 ; _ <= 1 ; _ ++ ){
+		printf( "[ " ) ;
+		for( int j = 0 ; i < (int) test_set.size() && j < bsiz ; i ++ , j ++ ){ 
+			if( test_set[i].len == BIG_LEN ){
+				if( type == 0 ) cnt ++ ;
+				if( type == 1 ) {
+					printf_RGB( 0xcccc00 , "S%d " , cnt ) ;
+					type = 0 , cnt = 1 ;
+				}
+			} else {
+				if( type == 1 ) cnt ++ ;
+				if( type == 0 ) {
+					printf_RGB( 0x00cc00 , "B%d " , cnt ) ;
+					type = 1 , cnt = 1 ;
+				}
+			}
+		}
+		if( type == 0 ) printf_RGB( 0x00cc00 , "B%d " , cnt ) ;
+		if( type == 1 ) printf_RGB( 0xcccc00 , "S%d " , cnt ) ;
+		cnt = 0 , type = 0 ;
+		printf( " ]" ) ;
+	} puts( "" ) ; fflush( stdout ) ;
 
     test_dsa_batch( small_cnt , big_cnt , test_set , method ) ;
     return 0 ;

@@ -11,8 +11,8 @@ using namespace std ;
 
 double ns_to_us = 0.001 ;
 double us_to_s  = 0.001 * 0.001 ;
-constexpr int REPEAT = 10 , bsiz = 32 ;
-constexpr int BIG_LEN = 128 * KB , SMALL_LEN = 4 * KB ;
+constexpr int REPEAT = 10 , bsiz = 64 ;
+constexpr int BIG_LEN = 16 * KB , SMALL_LEN = 512 ;
 int small_cnt = 1 , big_cnt = 1 , group_cnt = 100 , method = 0 , is_random = 0 , is_divide = 0 ;
 
 struct OffLen{
