@@ -2,6 +2,7 @@
 #include "util.hpp"
 #include <sys/mman.h>
 #include <cstdio>
+#include <mutex>
 
 DSAworkingqueue::DSAworkingqueue( void *wq_portal , accfg_wq *wq ): wq_portal( wq_portal ) , wq( wq ) {
     #ifdef ALLOCATOR_CONTIGUOUS_ENABLE
@@ -177,3 +178,4 @@ DSAdevice* DSAagent::get_device( int dev_id ) const {
 }
 
 DSAagent* DSAagent::inst = nullptr ;
+std::once_flag DSAagent::init_flag ;

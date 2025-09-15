@@ -5,6 +5,7 @@
 #include "dsa_constant.hpp"
 #include <atomic>
 #include <vector>
+#include <mutex>
 
 struct DSAworkingqueue{ 
     void *wq_portal ; 
@@ -45,6 +46,7 @@ private :
     std::vector<DSAdevice*> devices ; 
     accfg_ctx *ctx ; 
     static DSAagent *inst ;
+    static std::once_flag init_flag ;
 
     void init() ;
 
@@ -68,9 +70,7 @@ public :
     DSAdevice* get_device( int dev_id ) const ;
  
     static DSAagent& get_instance(){
-        if( inst == NULL ){
-            inst = new DSAagent() ;
-        }
+        std::call_once( init_flag , []() { inst = new DSAagent() ; } ) ;
         return *inst ; 
     }
 
