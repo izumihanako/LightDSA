@@ -100,6 +100,27 @@ LightDSA determines all configurations at compile time rather than at run time. 
 
 We provide "Hello World" examples in the `example` directory for both C (`example_c.c`) and C++ (`example_cpp.cpp`), each with detailed comments.
 
+To run these examples, first build LightDSA:
+
+```bash
+./build.sh
+```
+
+Next, go to the `build` folder and manually setup DSA:
+
+```bash
+cd build
+sudo ./setup_dsa.sh -d dsa0 -w 1 -m s -e 1 -f 1
+```
+
+Then, you can run the `Hello World` example:
+
+```bash
+sudo ./example/example_c # or sudo ./example/example_cpp
+```
+
+You will see output, including the DSA configuration on the machine and the status of various LightDSA optimizations.
+
 All APIs are declared in the header files under `src/interfaces`. For use, simply include `src/lightdsa.hpp` (C++) or `src/lightdsa_c.h` (C). APIs are organized into four categories based on (1) synchronicity (synchronous vs. asynchronous) and (2) submission mode (batch vs. single operation).
 
 
