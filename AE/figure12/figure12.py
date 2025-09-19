@@ -11,23 +11,25 @@ plt.rcParams.update({
     'grid.linewidth': 0.3,
     'figure.dpi': 300,
 })
-  
-clusters = ['CPU core', 'naive DSA', 'LightDSA']
-groups = ["7", "8", "9", "10", "11", "12", "13", "14"]
+ 
+tap_only_speed = 3.150  # 仅tap的速度
+clusters = [ 'Naive DSA' , '+ LightDSA' , '+ Insighted Design' ]
+groups = [ "1%" , "5%" , "25%" , "50%" , "75%" , "95%" , "99%" , "100%" ]
 data = np.loadtxt('data.txt')
-# data = np.array([
-#         [0.3, 0.6, 1, 1.8, 3, 3.8, 4.3, 4.6],
-#         [1.1, 2, 3.7, 6.8, 12, 19.1, 25, 26.7], 
-#         [4.4, 7.8, 13.6, 22.9, 25.8, 26.6, 26.9, 27.2]]).T 
+# data = np.array([ 
+#         [ 0.411 , 0.562 , 1.009 , 1.446 , 1.498 , 1.253 , 1.037 , 0.913 ],
+#         [ 0.396 , 0.654 , 1.602 , 2.388 , 3.359 , 2.83 , 2.702 , 2.515 ],
+#         [ 0.395 , 0.543 , 0.958 , 1.401 , 1.439 , 1.174 , 0.945 , 0.824 ],
+#         [ 0.396 , 0.538 , 0.932 , 1.343 , 1.331 , 1.079 , 0.845 , 0.716 ] ] ).T
 
-print( data[:,2] / data[:,1] )
-# calculate speedup ratios compared to CPU core
-speedup_naive = data[:, 1] / data[:, 0]  # naive DSA / CPU core
-speedup_our = data[:, 2] / data[:, 0]    # Our lib / CPU core
+# data includes time for CPU, naiveDSA, std_vector, nve_dsa_vector, my_dsa_vector
+speed = 1 / data # calculate speed 
+print( speed )
+speed_up = [ ( speed[:, i] / speed[:, 0] - 1 ) for i in range(1, 4) ] # calculate speedup over CPU
+data = np.array(speed_up).T * 100 # convert to percentage
+print( data )
  
-fig, ax1 = plt.subplots(figsize=(5, 2.5)) 
- 
-ax2 = ax1.twinx()
+fig, ax = plt.subplots(figsize=(5, 2.5)) 
  
 bar_width = 0.025 
 gap_between_bars = 0.01 
@@ -42,63 +44,56 @@ for i in range(n_clusters):
     x_positions.append(cluster_centers + i * (bar_width + gap_between_bars))
 x_positions = np.array(x_positions)
  
-colors = ['#8c9e8e', '#6A8DBA', '#a6b0c5'] 
-colors.reverse()
+colors = ['#8c9e8e', '#6A8DBA'  , '#a6b0c5'] 
+colors.reverse() 
 
-ax1.set_ylim(0, 30) 
-y_min = ax1.get_ylim()[0] 
+ax.set_ylim( -5 , 28 ) 
+y_min = ax.get_ylim()[0] 
 broken_bar_height = 0.5 * y_min
 broken_gap = 1
-
 for i in range(n_clusters): 
-    bars = ax1.bar(x_positions[i], data[:, i], 
+    bars = ax.bar(x_positions[i], data[:, i], 
           width=bar_width,
           color=colors[i], 
           linewidth=0.3,
-          label=clusters[i], zorder=3) 
+          label=clusters[i])
+    for j in range( n_groups ):
+            bar = bars[j]
+            height = bar.get_height()  
+            if height < y_min:  
+                bar.set_height( broken_bar_height ) 
+                ax.bar( x_positions[i,j], y_min - broken_bar_height - broken_gap ,
+                    bottom = broken_bar_height - broken_gap,
+                    width=bar_width, 
+                    color=colors[i],  
+                    linewidth=0.3 )
+                ax.plot([ x_positions[i,j] - bar_width/2, x_positions[i,j] + bar_width/2], 
+                    [ broken_bar_height , broken_bar_height - broken_gap ], 
+                    color='black', linewidth=0.5) 
+                ax.text(bar.get_x() + bar.get_width() / 2 - 0.07 , y_min * 0.6 ,
+                    f'{height:.0f}', ha='center', va='top', color='gray', fontsize=10 )
  
-ax2.set_ylim(0, 15) 
-ax2.plot(x_positions[1], speedup_naive, 'o--', color='#FDB813', markersize=4, linewidth=1, label='naive DSA speedup')
-ax2.plot(x_positions[2], speedup_our, 's--', color='#9467BD', markersize=4, linewidth=1, label='LightDSA speedup')
- 
-ax1.set_xticks(cluster_centers + (n_clusters-1)*(bar_width+gap_between_bars)/2)
-ax1.set_xticklabels(groups, fontsize=11)  
-ax1.xaxis.grid(False) 
-ax1.set_xlabel('String length in $[2^n, 2^{n+1})$ (B)') 
-ax1.spines['bottom'].set_color('black') 
+ax.set_xticks(cluster_centers + (n_clusters-1)*(bar_width+gap_between_bars)/2)
+ax.set_xticklabels(groups , fontsize=11)  
+ax.xaxis.grid(False) 
+ax.set_xlabel('Percentage of append') 
+ax.spines['bottom'].set_color('black') 
   
-ax1.yaxis.set_major_locator(MultipleLocator(4)) 
-ax1.yaxis.set_minor_locator(MultipleLocator(2)) 
-ax1.grid(axis='y', which='major', linestyle='-', linewidth=0.3, alpha=0.7,zorder=0) 
-ax1.grid(axis='y', which='minor', linestyle=':', linewidth=0.3, alpha=0.7,zorder=0) 
-ax1.set_ylabel('Speed/device (GB/s)') 
-ax1.spines['left'].set_color('black') 
-ax2.spines['bottom'].set_color('black')  
+ax.yaxis.set_major_locator(MultipleLocator(6)) 
+ax.yaxis.set_minor_locator(MultipleLocator(3)) 
+ax.grid(axis='y', which='major', linestyle='-', linewidth=0.3, alpha=0.7) 
+ax.grid(axis='y', which='minor', linestyle=':', linewidth=0.3, alpha=0.7) 
+ax.set_ylabel('Speed change vs CPU (%)')  
+ax.spines['left'].set_color('black') 
  
-ax2.set_ylabel('Speedup ratio (vs CPU core)')
-ax2.yaxis.set_major_locator(MultipleLocator(2)) 
-ax2.yaxis.set_minor_locator(MultipleLocator(1)) 
-ax2.spines['right'].set_color('black') 
-ax2.grid( visible=False) 
-ax2.spines['bottom'].set_color('black') 
+ax.spines['top'].set_visible(False) 
+ax.spines['right'].set_visible(False) 
+legend = ax.legend( loc='upper left', fontsize=12 , ncols = 1 , handlelength = 1.5 , handletextpad=0.5 ) 
  
-ax1.spines['top'].set_visible(False) 
-ax2.spines['top'].set_visible(False) 
-ax2.spines['left'].set_visible(False)  
- 
-lines1, labels1 = ax1.get_legend_handles_labels()
-lines2, labels2 = ax2.get_legend_handles_labels()
-ax2.legend(lines1 + lines2, labels1 + labels2, loc='upper left', ncol=1, borderpad=0, handlelength=1.5,
-           fontsize=10, frameon=False)
-  
-
 plt.tight_layout()
  
 plt.savefig('figure12.png', bbox_inches='tight', transparent=True)
 plt.savefig('figure12.pdf', bbox_inches='tight') 
- 
-plt.show()
 
-# Hash shuffle performance per device: average throughput per CPU core vs. individual DSA. 
-# The x-axis shows string lengths in the range $[2^n, 2^{n+1})$ bytes. 
-# Bars represent raw throughput (left y-axis), and lines indicate speedup over CPU core (right y-axis).
+# Speedup over CPU implementation for three DSA-accelerated vector under varying append ratios. 
+# Naive DSA uses DSA directly, LightDSA replaces direct usage with LightDSA library, and Insighted Design incorporates additional coding-level optimizations.

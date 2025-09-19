@@ -99,5 +99,5 @@ ax.annotate(f'{Z_drdbk[min_pos]:.2f}', xy=(min_pos[1]+0.5, min_pos[0]+0.5),
            color='white', fontweight='bold', backgroundcolor='black', alpha=0.7)
 
 plt.tight_layout()  # 调整布局
-plt.savefig('figure7ex.png', bbox_inches='tight')
-plt.savefig('figure7ex.pdf', bbox_inches='tight') 
+plt.savefig('figure15.png', bbox_inches='tight')
+plt.savefig('figure15.pdf', bbox_inches='tight') 

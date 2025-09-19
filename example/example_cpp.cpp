@@ -53,3 +53,15 @@ int main(){
     printf( "Memmove Done\n" ) ;
 
 }
+
+void Glibc(char** src, char** dest, int *len, int n){
+    for( int i = 0; i < n; i ++ )
+        memmove(dest[i], src[i], len[i]) ;
+}
+
+void LightDSA(char** src, char** dest, int *len, int n){
+    DSAbatch batch ;
+    for( int i = 0; i < n; i ++ )
+        batch.submit_memmove(dest[i], src[i], len[i]) ;
+    while( !batch.check() ) ; // or batch.wait() ;
+}

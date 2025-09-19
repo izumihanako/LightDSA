@@ -9,8 +9,8 @@ constexpr int DEFAULT_BATCH_CAPACITY = 80 ;
 constexpr int DEFAULT_BATCH_SIZE = 32 ;
 
 // #define FLAG_BLOCK_ON_FAULT                 /*** use desc flag BLOCK_ON_FAULT ***/ 
-// #define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
-// #define FLAG_DEST_READBACK                      /*** use desc flag DEST_READBACK ***/
+#define FLAG_CACHE_CONTROL                  /*** use desc flag CACHE_CONTROL ***/
+#define FLAG_DEST_READBACK                      /*** use desc flag DEST_READBACK ***/
 
 // #define DESCS_OUT_OF_ORDER_RECYCLE_ENABLE /*** use recycle window ***/  
 constexpr int OUT_OF_ORDER_RECYCLE_T_INIT = 25 ; /*** T_init value ***/
@@ -29,7 +29,7 @@ constexpr int DEFAULT_POOL_SIZE = 16 * MB ; /*** memory pool size for each WQ is
 
 // #define SHORT_TO_CPU                        /*** use CPU for short descs ***/
 // #define MUST_PERSIST_WRITE                  /*** ensure every CPU write is write back ***/
-// #define OUTPUT_TO_FILE                      /*** will disable RGB output ***/
+#define OUTPUT_TO_FILE                      /*** will disable RGB output ***/
 
 
 /****************** do not modify the following content ********************/

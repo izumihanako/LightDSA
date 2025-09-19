@@ -12,7 +12,7 @@ plt.rcParams.update({
 })
 
 # prepare data
-clusters = ['CPU' , 'naive DSA' , 'LightDSA' ]
+clusters = ['CPU' , 'Naive DSA' , 'LightDSA' ]
 groups = [ "256" , "512" , "1K" , "2K" , "4K" , "8K" , "16K" , "32K" , "64K" , "128K" ]
 
 # data = np.array(
