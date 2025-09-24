@@ -1,6 +1,10 @@
 from matplotlib.ticker import MultipleLocator, FixedLocator, LogLocator , NullFormatter
 import matplotlib.pyplot as plt
-import numpy as np
+import numpy as np 
+import matplotlib
+
+matplotlib.rcParams['pdf.fonttype'] = 42  # TrueType
+matplotlib.rcParams['ps.fonttype'] = 42
 
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams.update({

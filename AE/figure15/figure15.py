@@ -5,6 +5,10 @@ from matplotlib import colors as mcolors
 from matplotlib.ticker import FuncFormatter
 from matplotlib.patches import Rectangle 
 
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams.update({
     'font.family': 'Times New Roman',

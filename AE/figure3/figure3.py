@@ -3,6 +3,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import sys
 
+
+import matplotlib
+matplotlib.rcParams['pdf.fonttype'] = 42
+matplotlib.rcParams['ps.fonttype'] = 42
+
 # 设置紧凑型学术图表参数
 plt.style.use('seaborn-v0_8-whitegrid')
 plt.rcParams.update({
