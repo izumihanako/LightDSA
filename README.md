@@ -4,6 +4,17 @@ LightDSA is a user-friendly, asynchronous DSA library featuring low-overhead, ru
 
 More information about LightDSA can be found in our EuroSys '26 paper.
 
+Please kindly cite our paper if you find this project is useful:
+```
+@inproceedings {lightdsa-eurosys,
+  author       = {Yuansen Wang, Teng Ma, Yuanhui Luo, Dongbiao He, Zheng Liu and Yunpeng Chai},
+  title        = {LightDSA: Enabling Efficient DSA Through Hardware-Aware Transparent Optimization},
+  booktitle    = {Eurosys},
+  year         = {2026},
+  publisher    = {ACM},
+}
+```
+
 ## Overview
 The key directories of this project and their contents are as follows:
 ```bash
